@@ -1,0 +1,30 @@
+{
+  "name": "cptn-rest",
+  "version": "1.0.0",
+  "description": "RESTFull API para el Colegio de Profesionales Técnicos del Neuquén",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "node_modules/nodemon/bin/nodemon.js index.js",
+    "initdb": "node ./tasks/initdb.js"
+  },
+  "keywords": [
+    "rest",
+    "node",
+    "express",
+    "api",
+    "neuquen",
+    "argnu"
+  ],
+  "author": "ARGNU",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "bunyan": "^1.8.12",
+    "express": "^4.15.4",
+    "pg": "^7.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}
