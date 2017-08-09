@@ -17,7 +17,7 @@ router.get('/:id', function(req, res) {
 
 router.post('/', function(req, res) {
   db.add(req.body)
-    .then(r => res.status(201).json(r.rows[0]))
+    .then(r => res.status(201).json(r))
     .catch(e => console.error(e));
 });
 
