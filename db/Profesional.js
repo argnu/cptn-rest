@@ -63,6 +63,18 @@ module.exports.add = function(nuevo_profesional) {
         return client.query(query, values);
       }
 
+      function addFormacion(formacion) {
+        let query = `
+          INSERT INTO formacion (titulo, tipo, fecha, institucion, profesional)
+          VALUES($1, $2, $3, $4, $5)
+        `;
+        let values = [
+          formacion.titulo, formacion.tipo, formacion.fecha,
+          formacion.institucion, formacion.profesional
+        ];
+        return client.query(query, values);
+      }
+
 
       client.query('BEGIN', (err) => {
         if (err) reject(err);
@@ -81,6 +93,14 @@ module.exports.add = function(nuevo_profesional) {
                 c.profesional = id_profesional;
                 return addContacto(c);
               });
+
+              let proms_formaciones = nuevo_profesional.formaciones.map(f => {
+                f.profesional = id_profesional;
+                return addFormacion(f);
+              });
+
+              proms_contactos.concat(proms_formaciones);
+
               Promise.all(proms_contactos)
               .then(rs => {
                   client.query('COMMIT', (err) => {
@@ -101,12 +121,78 @@ module.exports.add = function(nuevo_profesional) {
 
 
 module.exports.getAll = function() {
-  return pool.query('SELECT * FROM profesional');
+  return new Promise(function(resolve, reject) {
+    let profesionales = [];
+    pool.query('SELECT * FROM profesional')
+    .then(r => {
+      profesionales = r.rows;
+      let proms = []
+      for(let profesional of profesionales) {
+        proms.push(getDatosProfesional(profesional));
+      }
+      return Promise.all(proms);
+    })
+    .then(rs => {
+      rs.forEach((value, index) => fillDataProfesional(profesionales[index], value));
+      resolve(profesionales);
+    })
+  });
 }
 
 
+function getDatosProfesional(profesional) {
+
+  function getDomicilios(real, legal) {
+    let query = 'SELECT * FROM domicilio WHERE id=$1 OR id=$2';
+    let values = [ real, legal ];
+    return pool.query(query, values);
+  }
+
+  function getContactos(id) {
+    let query = 'SELECT * FROM contacto WHERE profesional=$1';
+    let values = [ id ];
+    return pool.query(query, values);
+  }
+
+  function getFormaciones(id) {
+    let query = `SELECT titulo, tipo, fecha, institucion.nombre as institucion
+                 FROM formacion INNER JOIN institucion ON formacion.institucion=institucion.id
+                 WHERE profesional=$1`;
+    let values = [ id ];
+    return pool.query(query, values);
+  }
+
+  return Promise.all([
+      getDomicilios(profesional.domicilioreal, profesional.domiciliolegal),
+      getContactos(profesional.id),
+      getFormaciones(profesional.id)
+    ]);
+}
+
+function fillDataProfesional(profesional, responses) {
+  for(let domicilio of responses[0].rows) {
+    if (domicilio.id == profesional.domiciliolegal) profesional.domiciliolegal = domicilio;
+    else if (domicilio.id == profesional.domicilioreal) profesional.domicilioreal = domicilio;
+  }
+  profesional.contactos = responses[1].rows;
+  profesional.formaciones = responses[2].rows;
+}
+
 module.exports.get = function(id) {
-  let query = 'SELECT * FROM profesional WHERE id=$1';
-  let values = [ id ]
-  return pool.query(query, values);
+  return new Promise(function(resolve, reject) {
+    let profesional = {};
+
+    let query = 'SELECT * FROM profesional WHERE id=$1';
+    let values = [ id ];
+    pool.query(query, values)
+    .then(r => {
+      profesional = r.rows[0];
+      return getDatosProfesional(profesional);
+    })
+    .then(rs => {
+      fillDataProfesional(profesional, rs);
+      resolve(profesional)
+    })
+    .catch(e => reject(e));
+  });
 }

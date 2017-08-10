@@ -5,13 +5,13 @@ router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
   db.getAll()
-    .then(r => res.status(200).json(r.rows))
+    .then(r => res.status(200).json(r))
     .catch(e => console.error(e));
 });
 
 router.get('/:id', function(req, res) {
   db.get(req.params.id)
-    .then(r => res.status(200).json(r.rows[0]))
+    .then(r => res.status(200).json(r))
     .catch(e => console.error(e));
 });
 
