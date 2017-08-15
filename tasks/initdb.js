@@ -112,21 +112,57 @@ function createFormacion() {
   });
 }
 
+function createSolicitud() {
+  return new Promise(function(resolve, reject) {
+    let create_table_solicitud = `CREATE TABLE solicitud (
+         id SERIAL PRIMARY KEY,
+         fecha DATE,
+         estado VARCHAR(45),
+         delegacion INT references delegacion(id),
+         profesional INT references profesional(id)
+       )`;
 
-pool.query('DROP TABLE IF EXISTS contacto')
+   pool.query(create_table_solicitud, (err, res) => {
+     if (err) reject(err);
+     console.info(`Tabla "solicitud" creada`);
+     resolve();
+   });
+  });
+}
+
+function createDelegacion() {
+  return new Promise(function(resolve, reject) {
+    let create_table_delegacion = `CREATE TABLE delegacion (
+         id SERIAL PRIMARY KEY,
+         nombre VARCHAR(255)
+       )`;
+
+   pool.query(create_table_delegacion, (err, res) => {
+     if (err) reject(err);
+     console.info(`Tabla "delegacion" creada`);
+     resolve();
+   });
+  });
+}
+
+
+pool.query('DROP TABLE IF EXISTS solicitud')
+.then(r => pool.query('DROP TABLE IF EXISTS contacto'))
 .then(r => pool.query('DROP TABLE IF EXISTS formacion'))
 .then(r => pool.query('DROP TABLE IF EXISTS profesional'))
 .then(r => pool.query('DROP TABLE IF EXISTS domicilio'))
 .then(r => pool.query('DROP TABLE IF EXISTS condafip'))
 .then(r => pool.query('DROP TABLE IF EXISTS institucion'))
+.then(r => pool.query('DROP TABLE IF EXISTS delegacion'))
 .then(rs => {
   Promise.all([
     createCondAfip(),
     createDomicilio(),
-    createInstitucion()
+    createInstitucion(),
+    createDelegacion()
   ])
   .then(rs => createProfesional())
-  .then(r => Promise.all([createContacto(), createFormacion()]))
+  .then(r => Promise.all([createContacto(), createFormacion(), createSolicitud()]))
   .then(rs => {
     console.info('Todas las tablas han sido creadas');
     process.exit();
