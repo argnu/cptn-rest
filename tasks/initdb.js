@@ -145,6 +145,12 @@ function createDelegacion() {
   });
 }
 
+function populate() {
+  return Promise.all([
+    pool.query(`INSERT INTO institucion (nombre) VALUES ('UNCO')`),
+    pool.query(`INSERT INTO delegacion (nombre) VALUES ('Neuquen')`)
+  ]);
+}
 
 pool.query('DROP TABLE IF EXISTS solicitud')
 .then(r => pool.query('DROP TABLE IF EXISTS contacto'))
@@ -165,7 +171,15 @@ pool.query('DROP TABLE IF EXISTS solicitud')
   .then(r => Promise.all([createContacto(), createFormacion(), createSolicitud()]))
   .then(rs => {
     console.info('Todas las tablas han sido creadas');
-    process.exit();
+
+    populate()
+      .then(r => {
+          console.info('Tables populated!');
+          process.exit();
+        })
+      .catch(e => {
+        console.log(e)
+      });
   })
   .catch(e => {
     console.error(e);

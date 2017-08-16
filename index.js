@@ -13,4 +13,5 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use('/profesionales', routes.profesionales); 
+app.use('/profesionales', routes.profesionales);
+app.use('/solicitudes', routes.solicitudes); 
