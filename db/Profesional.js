@@ -87,10 +87,9 @@ function addProfesional(client, nuevo_profesional) {
           .then(rs => {
             resolve(id_profesional);
           })
-          .catch(e => reject(e));
         })
-        .catch(e => reject(e));
-      });
+      })
+      .catch(e => reject(e));
   });
 }
 

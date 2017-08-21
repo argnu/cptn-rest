@@ -10,7 +10,6 @@ module.exports.add = function(nueva_solicitud) {
       if (err) reject(err);
 
       function rollback(e) {
-        console.error(e);
         client.query('ROLLBACK', (err) => {
           if (err) {
             console.error('Error rolling back', err);
@@ -31,7 +30,7 @@ module.exports.add = function(nueva_solicitud) {
         ];
 
         return client.query(query, values)
-      }      
+      }
 
       client.query('BEGIN', (err) => {
         if (err) reject(err);
@@ -47,7 +46,6 @@ module.exports.add = function(nueva_solicitud) {
                   resolve(id_solicitud);
                 });
               })
-              .catch(e => rollback(e));
           })
           .catch(e => rollback(e));
       });
@@ -70,7 +68,6 @@ module.exports.getAll = function() {
                });
                resolve(solicitudes);
              })
-             .catch(e => reject(e));
     })
     .catch(e => reject(e));
   });

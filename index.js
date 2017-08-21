@@ -14,4 +14,4 @@ app.use(function(req, res, next) {
 });
 
 app.use('/profesionales', routes.profesionales);
-app.use('/solicitudes', routes.solicitudes); 
+app.use('/solicitudes', routes.solicitudes);
