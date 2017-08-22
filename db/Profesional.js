@@ -37,12 +37,11 @@ function addProfesional(client, nuevo_profesional) {
 
   function addDomicilio(domicilio) {
     let query = `
-      INSERT INTO domicilio (calle, numero, codpostal, localidad)
-      VALUES($1, $2, $3, $4) RETURNING id
+      INSERT INTO domicilio (calle, numero, localidad)
+      VALUES($1, $2, $3) RETURNING id
     `;
     let values = [
-      domicilio.calle, domicilio.numero,
-      domicilio.codpostal, domicilio.localidad
+      domicilio.calle, domicilio.numero, domicilio.localidad
     ];
     return client.query(query, values);
   }

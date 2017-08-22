@@ -51,7 +51,6 @@ function createDomicilio() {
          id SERIAL PRIMARY KEY,
          calle VARCHAR(45) NOT NULL,
          numero INT NOT NULL,
-         codpostal INT,
          localidad INT
        )`;
 
@@ -97,9 +96,9 @@ function createFormacion() {
   return new Promise(function(resolve, reject) {
     let create_table_formacion = `CREATE TABLE formacion (
          id SERIAL PRIMARY KEY,
-         titulo VARCHAR(255),
-         tipo VARCHAR(45),
-         fecha DATE,
+         titulo VARCHAR(255) NOT NULL,
+         tipo VARCHAR(45) NOT NULL,
+         fecha DATE NOT NULL,
          institucion INT references institucion(id),
          profesional INT references profesional(id)
        )`;
