@@ -10,7 +10,7 @@ function createProfesional() {
            nombre VARCHAR(45) NOT NULL,
            apellido VARCHAR(45) NOT NULL,
            fechaNacimiento DATE NOT NULL,
-           sexo CHAR(1),
+           sexo VARCHAR(45),
            nacionalidad VARCHAR(45),
            estadoCivil VARCHAR(45),
            observaciones TEXT,
@@ -144,11 +144,45 @@ function createDelegacion() {
   });
 }
 
-function populate() {
+function createTable(name, query) {
+  return new Promise(function(resolve, reject) {
+   pool.query(query, (err, res) => {
+     if (err) reject(err);
+     console.info(`Tabla "${name}" creada`);
+     resolve();
+   });
+  });
+}
+
+function populateOpciones() {
+  return Promise.all([
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('sexo', 'femenino')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('sexo', 'masculino')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('estadocivil', 'casado')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('estadocivil', 'soltero')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('estadocivil', 'concubino')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('estadocivil', 'viudo')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('formacion', 'grado')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('formacion', 'posgrado')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'fijo')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'celular')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'email')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'web')`)
+  ]);
+}
+
+function fakeData() {
   return Promise.all([
     pool.query(`INSERT INTO institucion (nombre) VALUES ('UNCO')`),
     pool.query(`INSERT INTO delegacion (nombre) VALUES ('Neuquen')`)
   ]);
+}
+
+function populate() {
+  return Promise.all([
+    populateOpciones(),
+    fakeData()
+  ])
 }
 
 pool.query('DROP TABLE IF EXISTS solicitud')
@@ -161,6 +195,13 @@ pool.query('DROP TABLE IF EXISTS solicitud')
 .then(r => pool.query('DROP TABLE IF EXISTS delegacion'))
 .then(rs => {
   Promise.all([
+    createTable('opcion',
+      `CREATE TABLE opcion (
+           id SERIAL PRIMARY KEY,
+           tipo VARCHAR(255),
+           valor VARCHAR(255)
+      )`
+    ),
     createCondAfip(),
     createDomicilio(),
     createInstitucion(),
