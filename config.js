@@ -1,13 +1,15 @@
+import * as configPrivate from '../config.private';
+
 module.exports = {
   entry: {
-    host: 'localhost',
+    host: configPrivate.host,
     port: 3400
   },
   db: {
-    user: 'mweingart',
-    host: 'localhost',
-    database: 'cptn',
-    password: 'mwei090',
+    user: configPrivate.user,
+    host: configPrivate.host,
+    database: configPrivate.database,
+    password: configPrivate.password,
     port: 5432,
   }
 }
