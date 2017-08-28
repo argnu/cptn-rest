@@ -144,6 +144,28 @@ function createDelegacion() {
   });
 }
 
+function createBeneficiarioCaja() {
+  return new Promise(function(resolve, reject) {
+    let create_table_beneficiario_caja = `CREATE TABLE beneficiariocaja (
+         id SERIAL PRIMARY KEY,
+         iditem INTEGER,
+         dni VARCHAR(10),
+         nombre VARCHAR(45),
+         apellido VARCHAR(45),
+         fechaNacimiento DATE,
+         vinculo VARCHAR(45),
+         invalidez BOOLEAN,
+         profesional INT references profesional(id)
+       )`;
+
+   pool.query(create_table_beneficiario_caja, (err, res) => {
+     if (err) reject(err);
+     console.info(`Tabla "beneficiario" creada`);
+     resolve();
+    });
+   });
+ }
+
 function createTable(name, query) {
   return new Promise(function(resolve, reject) {
    pool.query(query, (err, res) => {
@@ -208,7 +230,7 @@ pool.query('DROP TABLE IF EXISTS solicitud')
     createDelegacion()
   ])
   .then(rs => createProfesional())
-  .then(r => Promise.all([createContacto(), createFormacion(), createSolicitud()]))
+  .then(r => Promise.all([createContacto(), createFormacion(), createSolicitud(), createBeneficiarioCaja()]))
   .then(rs => {
     console.info('Todas las tablas han sido creadas');
 
