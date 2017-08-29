@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const db = require('../db/Profesional');
+const db = require('../db/profesional/Profesional');
 const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 

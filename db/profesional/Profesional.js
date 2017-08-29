@@ -1,8 +1,10 @@
-
-
 const { Pool } = require('pg')
-const config = require('../config');
+const config = require('../../config');
 const pool = new Pool(config.db);
+const Contacto = require('./Contacto');
+const Formacion = require('./Formacion');
+const Beneficiario = require('./BeneficiarioCaja');
+const Subsidiario = require('./Subsidiario');
 
 function addProfesional(client, nuevo_profesional) {
 
@@ -11,27 +13,22 @@ function addProfesional(client, nuevo_profesional) {
       INSERT INTO profesional (
         dni, nombre, apellido, fechaNacimiento, sexo,
         nacionalidad, estadoCivil, observaciones, cuit,
-        domicilioReal, domicilioLegal
+        domicilioReal, domicilioLegal, relacionLaboral,
+        empresa, serviciosPrestados, cajaPrevisional
       )
-      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id
+      VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9,
+             $10, $11, $12, $13, $14, $15) RETURNING id
     `;
     let values = [
       nuevo_profesional.dni, nuevo_profesional.nombre,
       nuevo_profesional.apellido, nuevo_profesional.fechaNacimiento,
       nuevo_profesional.sexo, nuevo_profesional.nacionalidad,
       nuevo_profesional.estadoCivil, nuevo_profesional.observaciones,
-      nuevo_profesional.cuit, nuevo_profesional.idDomicilioReal, nuevo_profesional.idDomicilioLegal
+      nuevo_profesional.cuit, nuevo_profesional.idDomicilioReal, nuevo_profesional.idDomicilioLegal,
+      nuevo_profesional.relacionLaboral, nuevo_profesional.empresa,
+      nuevo_profesional.serviciosPrestados, nuevo_profesional.cajaPrevisional
     ];
 
-    return client.query(query, values);
-  }
-
-  function addContacto(contacto) {
-    let query = `
-      INSERT INTO contacto (tipo, dato, profesional)
-      VALUES($1, $2, $3)
-    `;
-    let values = [ contacto.tipo, contacto.dato, contacto.profesional ];
     return client.query(query, values);
   }
 
@@ -44,19 +41,6 @@ function addProfesional(client, nuevo_profesional) {
       domicilio.calle, domicilio.numero, domicilio.localidad
     ];
     return client.query(query, values);
-  }
-
-  function addFormacion(formacion) {
-    let query = `
-      INSERT INTO formacion (titulo, tipo, fecha, institucion, profesional)
-      VALUES($1, $2, $3, $4, $5)
-    `;
-    let values = [
-      formacion.titulo, formacion.tipo, formacion.fecha,
-      formacion.institucion, formacion.profesional
-    ];
-
-    return client.query(query, values)
   }
 
   return new Promise(function(resolve, reject) {
@@ -72,17 +56,28 @@ function addProfesional(client, nuevo_profesional) {
           var id_profesional = r.rows[0].id;
           let proms_contactos = nuevo_profesional.contactos.map(c => {
             c.profesional = id_profesional;
-            return addContacto(c);
+            return Contacto.addContacto(client, c);
           });
 
           let proms_formaciones = nuevo_profesional.formaciones.map(f => {
             f.profesional = id_profesional;
-            return addFormacion(f);
+            return Formacion.addFormacion(client, f);
+          });
+
+          let proms_beneficiarios = nuevo_profesional.beneficiarios.map(b => {
+            b.profesional = id_profesional;
+            return Beneficiario.addBeneficiario(client, b);
+          });
+
+          let proms_subsidiarios = nuevo_profesional.subsidiarios.map(s => {
+            s.profesional = id_profesional;
+            return Subsidiario.addSubsidiario(client, s);
           });
 
 
           Promise.all(proms_contactos)
           .then(rs => Promise.all(proms_formaciones))
+          .then(rs => Promise.all(proms_beneficiarios))
           .then(rs => {
             resolve(id_profesional);
           })
@@ -157,24 +152,12 @@ function getDatosProfesional(profesional) {
     return pool.query(query, values);
   }
 
-  function getContactos(id) {
-    let query = 'SELECT * FROM contacto WHERE profesional=$1';
-    let values = [ id ];
-    return pool.query(query, values);
-  }
-
-  function getFormaciones(id) {
-    let query = `SELECT titulo, tipo, fecha, institucion.nombre as institucion
-                 FROM formacion INNER JOIN institucion ON formacion.institucion=institucion.id
-                 WHERE profesional=$1`;
-    let values = [ id ];
-    return pool.query(query, values);
-  }
-
   return Promise.all([
       getDomicilios(profesional.domicilioreal, profesional.domiciliolegal),
-      getContactos(profesional.id),
-      getFormaciones(profesional.id)
+      Contacto.getAll(profesional.id),
+      Formacion.getAll(profesional.id),
+      Beneficiario.getAll(profesional.id),
+      Subsidiario.getAll(profesional.id)
     ]);
 }
 
@@ -185,6 +168,8 @@ function fillDataProfesional(profesional, responses) {
   }
   profesional.contactos = responses[1].rows;
   profesional.formaciones = responses[2].rows;
+  profesional.beneficiarios = responses[3].rows;
+  profesional.subsidiarios = responses[4].rows;
 }
 
 module.exports.get = function(id) {

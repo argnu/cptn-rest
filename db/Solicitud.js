@@ -1,7 +1,7 @@
 const { Pool } = require('pg')
 const config = require('../config');
 const pool = new Pool(config.db);
-const db_profesional = require('./Profesional');
+const Profesional = require('./profesional').Profesional;
 
 
 module.exports.add = function(nueva_solicitud) {
@@ -34,7 +34,7 @@ module.exports.add = function(nueva_solicitud) {
 
       client.query('BEGIN', (err) => {
         if (err) reject(err);
-        db_profesional.addProfesional(client, nueva_solicitud.profesional)
+        Profesional.addProfesional(client, nueva_solicitud.profesional)
           .then(r => {
             nueva_solicitud.profesional = r;
             addSolicitud(nueva_solicitud)
@@ -60,7 +60,7 @@ module.exports.getAll = function() {
     pool.query('SELECT * FROM solicitud')
     .then(r => {
       solicitudes = r.rows;
-      let proms = solicitudes.map(s => db_profesional.get(s.profesional));
+      let proms = solicitudes.map(s => Profesional.get(s.profesional));
       Promise.all(proms)
              .then(rs => {
                rs.forEach((r, i) => {
@@ -81,7 +81,7 @@ module.exports.get = function(id) {
     pool.query(query, values)
     .then(r => {
       solicitud = r.rows[0];
-      return db_profesional.get(solicitud.profesional)
+      return Profesional.get(solicitud.profesional)
     })
     .then(r => {
       solicitud.profesional = r;

@@ -23,7 +23,7 @@ router.get('/:id', function(req, res) {
 
 router.post('/', function(req, res) {
   db.add(req.body)
-    .then(r => res.status(201).json(r))
+    .then(id => res.status(201).json({ id }))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });

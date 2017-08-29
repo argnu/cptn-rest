@@ -17,7 +17,11 @@ function createProfesional() {
            cuit VARCHAR(45),
            domicilioreal INT references domicilio(id),
            domiciliolegal INT references domicilio(id),
-           condafip INT references condafip(id)
+           condafip INT references condafip(id),
+           relacionlaboral VARCHAR(45),
+           empresa VARCHAR(255),
+           serviciosPrestados VARCHAR(255),
+           cajaPrevisional VARCHAR(45)
          )`;
 
      pool.query(create_table_profesional, (err, res) => {
@@ -189,7 +193,9 @@ function populateOpciones() {
     pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'fijo')`),
     pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'celular')`),
     pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'email')`),
-    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'web')`)
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('contacto', 'web')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('relacionlaboral', 'dependencia')`),
+    pool.query(`INSERT INTO opcion (tipo, valor) VALUES ('relacionlaboral', 'autonomo')`)
   ]);
 }
 
@@ -208,6 +214,8 @@ function populate() {
 }
 
 pool.query('DROP TABLE IF EXISTS solicitud')
+.then(r => pool.query('DROP TABLE IF EXISTS beneficiariocaja'))
+.then(r => pool.query('DROP TABLE IF EXISTS subsidiario'))
 .then(r => pool.query('DROP TABLE IF EXISTS contacto'))
 .then(r => pool.query('DROP TABLE IF EXISTS formacion'))
 .then(r => pool.query('DROP TABLE IF EXISTS profesional'))
@@ -215,6 +223,7 @@ pool.query('DROP TABLE IF EXISTS solicitud')
 .then(r => pool.query('DROP TABLE IF EXISTS condafip'))
 .then(r => pool.query('DROP TABLE IF EXISTS institucion'))
 .then(r => pool.query('DROP TABLE IF EXISTS delegacion'))
+.then(r => pool.query('DROP TABLE IF EXISTS opcion'))
 .then(rs => {
   Promise.all([
     createTable('opcion',
@@ -230,7 +239,22 @@ pool.query('DROP TABLE IF EXISTS solicitud')
     createDelegacion()
   ])
   .then(rs => createProfesional())
-  .then(r => Promise.all([createContacto(), createFormacion(), createSolicitud(), createBeneficiarioCaja()]))
+  .then(r => Promise.all([
+                createContacto(),
+                createFormacion(),
+                createSolicitud(),
+                createBeneficiarioCaja(),
+                createTable('subsidiario',
+                  `CREATE TABLE subsidiario (
+                       id SERIAL PRIMARY KEY,
+                       dni VARCHAR(10),
+                       apellido VARCHAR(45),
+                       nombre VARCHAR(45),
+                       porcentaje FLOAT,
+                       profesional INT references profesional(id)
+                  )`
+                ),
+              ]))
   .then(rs => {
     console.info('Todas las tablas han sido creadas');
 
