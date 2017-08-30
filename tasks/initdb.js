@@ -21,7 +21,8 @@ function createProfesional() {
            relacionlaboral VARCHAR(45),
            empresa VARCHAR(255),
            serviciosPrestados VARCHAR(255),
-           cajaPrevisional VARCHAR(45)
+           cajaPrevisional VARCHAR(45),
+           publiar BOOLEAN
          )`;
 
      pool.query(create_table_profesional, (err, res) => {
@@ -121,6 +122,8 @@ function createSolicitud() {
          id SERIAL PRIMARY KEY,
          fecha DATE,
          estado VARCHAR(45),
+         exencionArt10 BOOLEAN,
+         exencionArt6 BOOLEAN,
          delegacion INT references delegacion(id),
          profesional INT references profesional(id)
        )`;
@@ -202,7 +205,11 @@ function populateOpciones() {
 function fakeData() {
   return Promise.all([
     pool.query(`INSERT INTO institucion (nombre) VALUES ('UNCO')`),
-    pool.query(`INSERT INTO delegacion (nombre) VALUES ('Neuquen')`)
+    pool.query(`INSERT INTO delegacion (nombre) VALUES ('Neuquen')`),
+    pool.query(`INSERT INTO pais (nombre) VALUES ('Argentina')`),
+    pool.query(`INSERT INTO provincia (nombre) VALUES ('Neuquén')`),
+    pool.query(`INSERT INTO departamento (nombre) VALUES ('Confluencia')`),
+    pool.query(`INSERT INTO localidad (nombre) VALUES ('Neuquén')`),
   ]);
 }
 
@@ -211,6 +218,36 @@ function populate() {
     populateOpciones(),
     fakeData()
   ])
+}
+
+function createDatosGeograficos() {
+  return createTable('pais',
+    `CREATE TABLE pais (
+         id SERIAL PRIMARY KEY,
+         nombre VARCHAR(45)
+    )`
+  )
+  .then(r =>   createTable('provincia',
+    `CREATE TABLE provincia (
+         id SERIAL PRIMARY KEY,
+         nombre VARCHAR(45),
+         pais INT references pais(id)
+    )`
+  ))
+  .then(r => createTable('departamento',
+    `CREATE TABLE departamento (
+      id SERIAL PRIMARY KEY,
+      nombre VARCHAR(45),
+      provincia INT references provincia(id)
+    )`
+  ))
+  .then(r =>   createTable('localidad',
+      `CREATE TABLE localidad (
+        id SERIAL PRIMARY KEY,
+        nombre VARCHAR(45),
+        departamento INT references departamento(id)
+      )`
+  ));
 }
 
 pool.query('DROP TABLE IF EXISTS solicitud')
@@ -224,8 +261,14 @@ pool.query('DROP TABLE IF EXISTS solicitud')
 .then(r => pool.query('DROP TABLE IF EXISTS institucion'))
 .then(r => pool.query('DROP TABLE IF EXISTS delegacion'))
 .then(r => pool.query('DROP TABLE IF EXISTS opcion'))
+.then(r => pool.query('DROP TABLE IF EXISTS localidad'))
+.then(r => pool.query('DROP TABLE IF EXISTS departamento'))
+.then(r => pool.query('DROP TABLE IF EXISTS provincia'))
+.then(r => pool.query('DROP TABLE IF EXISTS pais'))
+
 .then(rs => {
   Promise.all([
+    createDatosGeograficos(),
     createTable('opcion',
       `CREATE TABLE opcion (
            id SERIAL PRIMARY KEY,
@@ -256,11 +299,11 @@ pool.query('DROP TABLE IF EXISTS solicitud')
                 ),
               ]))
   .then(rs => {
-    console.info('Todas las tablas han sido creadas');
+    console.info('Todas las tablas han sido creadas!');
 
     populate()
       .then(r => {
-          console.info('Tables populated!');
+          console.info('Tablas con datos falsos!');
           process.exit();
         })
       .catch(e => {
