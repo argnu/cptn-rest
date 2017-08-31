@@ -1,3 +1,11 @@
-module.exports.profesionales = require('./profesionales');
-module.exports.solicitudes = require('./solicitudes');
-module.exports.opciones = require('./opciones');
+const router = require('express').Router();
+
+router.use('/profesionales', require('./profesionales'));
+router.use('/solicitudes', require('./solicitudes'));
+router.use('/opciones', require('./opciones'));
+router.use('/paises', require('./paises'));
+router.use('/provincias', require('./provincias'));
+router.use('/departamentos', require('./departamentos'));
+router.use('/localidades', require('./localidades'));
+
+module.exports = router;

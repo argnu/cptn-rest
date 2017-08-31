@@ -206,11 +206,11 @@ function fakeData() {
   return Promise.all([
     pool.query(`INSERT INTO institucion (nombre) VALUES ('UNCO')`),
     pool.query(`INSERT INTO delegacion (nombre) VALUES ('Neuquen')`),
-    pool.query(`INSERT INTO pais (nombre) VALUES ('Argentina')`),
-    pool.query(`INSERT INTO provincia (nombre) VALUES ('Neuquén')`),
-    pool.query(`INSERT INTO departamento (nombre) VALUES ('Confluencia')`),
-    pool.query(`INSERT INTO localidad (nombre) VALUES ('Neuquén')`),
-  ]);
+  ])
+  .then(r => pool.query(`INSERT INTO pais (nombre) VALUES ('Argentina')`))
+  .then(r => pool.query(`INSERT INTO provincia (nombre, pais) VALUES ('Neuquén', 1)`))
+  .then(r => pool.query(`INSERT INTO departamento (nombre, provincia) VALUES ('Confluencia', 1)`))
+  .then(r => pool.query(`INSERT INTO localidad (nombre, departamento) VALUES ('Neuquén', 1)`))
 }
 
 function populate() {
