@@ -41,9 +41,14 @@ function consultaSql(consulta) {
 };
 
 
-function migratePais(){
-    consultaSql('select * from T_PAIS').then(res => {
-        console.log(res);
+function migrateDatosGeograficos(){
+    consultaSql('select * from T_PAIS').then(listaPais => {
+        if (listaPais){
+            listaPais.forEach(function(pais) {
+                
+            });
+        }
+        console.log(listaPais);
         //Se inserta en la tabla correspondiente
     })
     .catch(err => {
@@ -51,3 +56,5 @@ function migratePais(){
     });
 
 }
+
+migrateDatosGeograficos();
