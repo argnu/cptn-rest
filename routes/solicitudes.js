@@ -1,11 +1,11 @@
 const router = require('express').Router();
-const db = require('../db/Solicitud');
+const model = require('../model');
 const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
-  db.getAll()
-    .then(r => res.status(200).json(r))
+  model.Solicitud.getAll()
+    .then(r => res.json(r))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });
@@ -13,8 +13,8 @@ router.get('/', function(req, res) {
 });
 
 router.get('/:id', function(req, res) {
-  db.get(req.params.id)
-    .then(r => res.status(200).json(r))
+  model.Solicitud.get(req.params.id)
+    .then(r => res.json(r))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });
@@ -22,7 +22,7 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-  db.add(req.body)
+  model.Solicitud.add(req.body)
     .then(id => res.status(201).json({ id }))
     .catch(e => {
       console.error(e);
