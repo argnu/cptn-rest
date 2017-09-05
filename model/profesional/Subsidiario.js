@@ -47,26 +47,32 @@ const table = sql.define({
 
 module.exports.table = table;
 
+
 function addSubsidiario(client, subsidiario) {
   let query = table.insert(
     table.dni.value(subsidiario.dni), table.nombre.value(subsidiario.nombre),
     table.apellido.value(subsidiario.apellido), table.porcentaje.value(subsidiario.porcentaje),
     table.profesional.value(subsidiario.profesional)
-  ).toQuery();
+  ).returning(table.id).toQuery();
 
-  return connector.execQuery(query, client);
+  return connector.execQuery(query, client)
+         .then(r => {
+           subsidiario.id = r.rows[0].id;
+           return subsidiario;
+         })
 }
 
 module.exports.addSubsidiario = addSubsidiario;
 
-module.exports.add = function(subsidiario) {
-  return addSubsidiario(pool, subsidiario)
-}
-
-module.exports.getAll = function(id) {
-  let query = table.select(table.star())
-       .from(table)
-       .where(table.profesional.equals(id))
-       .toQuery();
+module.exports.getAll = function(id_profesional) {
+  let query = table.select(
+      table.id, table.nombre, table.apellido,
+      table.dni, table.porcentaje
+  )
+  .from(table)
+  .where(table.profesional.equals(id_profesional))
+  .toQuery();
+  
   return connector.execQuery(query)
+         .then(r => r.rows);
 }

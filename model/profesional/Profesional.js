@@ -1,9 +1,10 @@
 const connector = require('../../connector');
-const Contacto = require('./Contacto');
+const Contacto = require('../Contacto');
 const Formacion = require('./Formacion');
 const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
 const Domicilio = require('../Domicilio');
+const Entidad = require('../Entidad');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -13,7 +14,7 @@ const table = sql.define({
   columns: [
     {
       name: 'id',
-      dataType: 'serial',
+      dataType: 'int',
       primaryKey: true
     },
     {
@@ -38,7 +39,7 @@ const table = sql.define({
     },
     {
       name: 'sexo',
-      dataType: 'varchar(45)'
+      dataType: 'int'
     },
     {
       name: 'nacionalidad',
@@ -46,19 +47,15 @@ const table = sql.define({
     },
     {
       name: 'estadoCivil',
-      dataType: 'varchar(45)'
+      dataType: 'int'
     },
     {
       name: 'observaciones',
       dataType: 'text'
     },
     {
-      name: 'cuit',
-      dataType: 'varchar(20)'
-    },
-    {
       name: 'relacionLaboral',
-      dataType: 'varchar(45)'
+      dataType: 'int'
     },
     {
       name: 'empresa',
@@ -76,36 +73,22 @@ const table = sql.define({
       name: 'publicar',
       dataType: 'boolean'
     },
-    {
-      name: 'domicilioReal',
-      dataType: 'int',
-      notNull: true
-    },
-    {
-      name: 'domicilioLegal',
-      dataType: 'int',
-      notNull: true
-    },
-    {
-      name: 'condafip',
-      dataType: 'int'
-    }
   ],
 
   foreignKeys: [
     {
-      table: 'domicilio',
-      columns: [ 'domicilioReal' ],
+      table: 'entidad',
+      columns: [ 'id' ],
       refColumns: [ 'id' ]
     },
     {
-      table: 'domicilio',
-      columns: [ 'domicilioLegal' ],
+      table: 'opcion',
+      columns: [ 'estadoCivil' ],
       refColumns: [ 'id' ]
     },
     {
-      table: 'condafip',
-      columns: [ 'condafip' ],
+      table: 'opcion',
+      columns: [ 'relacionLaboral' ],
       refColumns: [ 'id' ]
     }
   ]
@@ -117,73 +100,60 @@ function addProfesional(client, profesional) {
 
   function addDatosBasicos(profesional) {
     let query = table.insert(
+      table.id.value(profesional.id),
       table.dni.value(profesional.dni), table.nombre.value(profesional.nombre),
-      table.apellido.value(profesional.apellido), table.fechaNacimiento.value(profesional.fechaNacimiento),
+      table.apellido.value(profesional.apellido),
+      table.fechaNacimiento.value(profesional.fechaNacimiento),
       table.sexo.value(profesional.sexo), table.estadoCivil.value(profesional.estadoCivil),
-      table.cuit.value(profesional.cuit), table.nacionalidad.value(profesional.nacionalidad),
+      table.nacionalidad.value(profesional.nacionalidad),
       table.observaciones.value(profesional.observaciones),
-      table.domicilioReal.value(profesional.idDomicilioReal),
-      table.domicilioLegal.value(profesional.idDomicilioLegal),
       table.relacionLaboral.value(profesional.relacionLaboral),
       table.empresa.value(profesional.empresa),
       table.serviciosPrestados.value(profesional.serviciosPrestados),
       table.cajaPrevisional.value(profesional.cajaPrevisional)
-    ).returning(table.id).toQuery();
+    ).toQuery();
 
     return connector.execQuery(query, client);
   }
 
-  function addDomicilio(domicilio) {
-    let query = Domicilio.table.insert(
-      Domicilio.table.calle.value(domicilio.calle),
-      Domicilio.table.numero.value(domicilio.numero),
-      Domicilio.table.localidad.value(domicilio.localidad)
-    ).returning(Domicilio.table.id).toQuery()
+  return Entidad.addEntidad(client, {
+    cuit: profesional.cui,
+    condafip: profesional.condafip,
+    domicilioReal: profesional.domicilioReal,
+    domicilioLegal: profesional.domicilioLegal
+  })
+  .then(entidad => {
+    profesional.id = entidad.id;
+    return addDatosBasicos(profesional)
+          .then(r => {
+            let proms_contactos = profesional.contactos.map(c => {
+              c.entidad = entidad.id;
+              return Contacto.addContacto(client, c);
+            });
 
-    return connector.execQuery(query, client);
-  }
+            let proms_formaciones = profesional.formaciones.map(f => {
+              f.profesional = profesional.id;
+              return Formacion.addFormacion(client, f);
+            });
 
-  return new Promise(function(resolve, reject) {
-    Promise.all([
-      addDomicilio(profesional.domicilioReal),
-      addDomicilio(profesional.domicilioLegal)
-    ])
-    .then(rs => {
-      profesional.idDomicilioReal = rs[0].rows[0].id;
-      profesional.idDomicilioLegal = rs[1].rows[0].id;
-      return addDatosBasicos(profesional)
-        .then(r => {
-          var id_profesional = r.rows[0].id;
-          let proms_contactos = profesional.contactos.map(c => {
-            c.profesional = id_profesional;
-            return Contacto.addContacto(client, c);
+            let proms_beneficiarios = profesional.beneficiarios.map(b => {
+              b.profesional = profesional.id;
+              return Beneficiario.addBeneficiario(client, b);
+            });
+
+            let proms_subsidiarios = profesional.subsidiarios.map(s => {
+              s.profesional = profesional.id;
+              return Subsidiario.addSubsidiario(client, s);
+            });
+
+
+            return Promise.all(proms_contactos)
+            .then(rs => Promise.all(proms_formaciones))
+            .then(rs => Promise.all(proms_beneficiarios))
+            .then(rs => Promise.all(proms_subsidiarios))
+            .then(rs => profesional);
           });
-
-          let proms_formaciones = profesional.formaciones.map(f => {
-            f.profesional = id_profesional;
-            return Formacion.addFormacion(client, f);
-          });
-
-          let proms_beneficiarios = profesional.beneficiarios.map(b => {
-            b.profesional = id_profesional;
-            return Beneficiario.addBeneficiario(client, b);
-          });
-
-          let proms_subsidiarios = profesional.subsidiarios.map(s => {
-            s.profesional = id_profesional;
-            return Subsidiario.addSubsidiario(client, s);
-          });
-
-
-          return Promise.all(proms_contactos)
-          .then(rs => Promise.all(proms_formaciones))
-          .then(rs => Promise.all(proms_beneficiarios))
-          .then(rs => Promise.all(proms_subsidiarios))
-          .then(rs => resolve(id_profesional));
-        })
-      })
-      .catch(e => reject(e));
-  });
+  })
 }
 
 module.exports.addProfesional = addProfesional;
@@ -194,13 +164,12 @@ module.exports.add = function(profesional) {
     .beginTransaction()
     .then(connection => {
       addProfesional(connection.client, profesional)
-        .then(r => {
-          let id_profesional = r;
+        .then(profesional_added => {
           connector
           .commit(connection.client)
           .then(r => {
             connection.done();
-            resolve(id_profesional);
+            resolve(profesional_added);
           });
         })
         .catch(e => {
@@ -216,7 +185,7 @@ module.exports.add = function(profesional) {
 module.exports.getAll = function() {
   return new Promise(function(resolve, reject) {
     let profesionales = [];
-    let query = table.select(table.star()).from(table).toQuery();
+    let query = select.toQuery();
     connector.execQuery(query)
     .then(r => {
       profesionales = r.rows;
@@ -227,7 +196,16 @@ module.exports.getAll = function() {
       return Promise.all(proms);
     })
     .then(rs => {
-      rs.forEach((value, index) => fillDataProfesional(profesionales[index], value));
+      rs.forEach((value, index) => {
+        [ domicilioReal, domicilioLegal, contactos,
+          formaciones, beneficiarios, subsidiarios ] = value;
+        profesionales[index].domicilioReal = domicilioReal;
+        profesionales[index].domicilioLegal = domicilioLegal;
+        profesionales[index].contactos = contactos;
+        profesionales[index].formaciones = formaciones;
+        profesionales[index].beneficiarios = beneficiarios;
+        profesionales[index].subsidiarios = subsidiarios;
+      });
       resolve(profesionales);
     })
   });
@@ -235,18 +213,9 @@ module.exports.getAll = function() {
 
 
 function getDatosProfesional(profesional) {
-
-  function getDomicilios(real, legal) {
-    let query = Domicilio.table.select(Domicilio.table.star())
-                               .from(Domicilio.table)
-                               .where(Domicilio.table.id.equals(real))
-                               .or(Domicilio.table.id.equals(legal))
-                               .toQuery();
-    return connector.execQuery(query);
-  }
-
   return Promise.all([
-      getDomicilios(profesional.domicilioreal, profesional.domiciliolegal),
+      Domicilio.getDomicilio(profesional.domicilioReal),
+      Domicilio.getDomicilio(profesional.domicilioLegal),
       Contacto.getAll(profesional.id),
       Formacion.getAll(profesional.id),
       Beneficiario.getAll(profesional.id),
@@ -254,34 +223,35 @@ function getDatosProfesional(profesional) {
     ]);
 }
 
-function fillDataProfesional(profesional, responses) {
-  for(let domicilio of responses[0].rows) {
-    if (domicilio.id == profesional.domiciliolegal) profesional.domiciliolegal = domicilio;
-    else if (domicilio.id == profesional.domicilioreal) profesional.domicilioreal = domicilio;
-  }
-  profesional.contactos = responses[1].rows;
-  profesional.formaciones = responses[2].rows;
-  profesional.beneficiarios = responses[3].rows;
-  profesional.subsidiarios = responses[4].rows;
-}
+const select = table.select(
+  table.id, table.nombre, table.apellido,
+  Entidad.table.domicilioReal.as('domicilioReal'),
+  Entidad.table.domicilioLegal.as('domicilioLegal')
+)
+.from(table.join(Entidad.table).on(table.id.equals(Entidad.table.id)))
 
 module.exports.get = function(id) {
   return new Promise(function(resolve, reject) {
     let profesional = {};
-    let query = table.select(table.star())
-                     .from(table)
-                     .where(table.id.equals(id))
-                     .toQuery();
+    let query = select.where(table.id.equals(id))
+                      .toQuery();
 
     connector.execQuery(query)
     .then(r => {
       profesional = r.rows[0];
       return getDatosProfesional(profesional);
     })
-    .then(rs => {
-      fillDataProfesional(profesional, rs);
-      resolve(profesional)
-    })
-    .catch(e => reject(e));
+    .then(([
+        domicilioReal, domicilioLegal, contactos,
+        formaciones, beneficiarios, subsidiarios
+      ]) => {
+        profesional.domicilioReal = domicilioReal;
+        profesional.domicilioLegal = domicilioLegal;
+        profesional.contactos = contactos;
+        profesional.formaciones = formaciones;
+        profesional.beneficiarios = beneficiarios;
+        profesional.subsidiarios = subsidiarios;
+        return profesional;
+      })
   });
 }

@@ -39,9 +39,8 @@ const table = sql.define({
       notNull: true
     },
     {
-      name: 'profesional',
-      dataType: 'int',
-      notNull: true
+      name: 'entidad',
+      dataType: 'int'
     }
   ],
 
@@ -52,10 +51,10 @@ const table = sql.define({
       refColumns: [ 'id' ]
     },
     {
-      table: 'profesional',
-      columns: [ 'profesional' ],
+      table: 'entidad',
+      columns: [ 'entidad' ],
       refColumns: [ 'id' ]
-    }
+    },
   ]
 });
 

@@ -1,7 +1,8 @@
 const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const Institucion = require('../Institucion').table;
+const Institucion = require('../Institucion');
+const Opcion = require('../Opcion');
 
 
 const table = sql.define({
@@ -19,7 +20,7 @@ const table = sql.define({
     },
     {
       name: 'tipo',
-      dataType: 'varchar(45)',
+      dataType: 'int',
       notNull: true
     },
     {
@@ -41,6 +42,11 @@ const table = sql.define({
 
   foreignKeys: [
     {
+      table: 'opcion',
+      columns: [ 'tipo' ],
+      refColumns: [ 'id' ]
+    },
+    {
       table: 'institucion',
       columns: [ 'institucion' ],
       refColumns: [ 'id' ]
@@ -61,24 +67,30 @@ function addFormacion(client, formacion) {
     table.titulo.value(formacion.titulo), table.tipo.value(formacion.tipo),
     table.fecha.value(formacion.fecha), table.institucion.value(formacion.institucion),
     table.profesional.value(formacion.profesional)
-  ).toQuery()
+  ).returning(table.id).toQuery();
 
-  return connector.execQuery(query, client);
+  return connector.execQuery(query, client)
+         .then(r => {
+           formacion.id = r.rows[0].id;
+           return formacion;
+         })
 }
 
 module.exports.addFormacion = addFormacion;
 
-module.exports.add = function(formacion) {
-  return addFormacion(pool, formacion);
-}
 
-module.exports.getAll = function(id) {
+module.exports.getAll = function(id_profesional) {
   let query = table.select(
-      table.titulo, table.tipo,
-      table.fecha, Institucion.nombre.as('institucion')
-    ).from(table.join(Institucion).on(table.institucion.equals(Institucion.id)))
-     .where(table.profesional.equals(id))
-     .toQuery();
+    table.id, table.titulo, table.tipo,
+    table.fecha, Institucion.table.nombre.as('institucion'),
+    Opcion.table.valor.as('tipoFormacion')
+  )
+  .from(
+     table.join(Institucion.table).on(table.institucion.equals(Institucion.table.id))
+          .join(Opcion.table).on(table.tipo.equals(Opcion.table.id))
+  ).where(table.profesional.equals(id_profesional))
+  .toQuery();
 
-  return connector.execQuery(query);
+  return connector.execQuery(query)
+         .then(r => r.rows);
 }

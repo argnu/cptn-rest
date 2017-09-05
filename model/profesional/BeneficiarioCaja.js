@@ -58,21 +58,25 @@ function addBeneficiario(client, beneficiario) {
     table.apellido.value(beneficiario.apellido), table.fechaNacimiento.value(beneficiario.fechaNacimiento),
     table.vinculo.value(beneficiario.vinculo), table.invalidez.value(beneficiario.invalidez),
     table.profesional.value(beneficiario.profesional)
-  ).toQuery();
+  ).returning(table.id).toQuery();
 
-  return connector.execQuery(query, client);
+  return connector.execQuery(query, client)
+         .then(r => {
+           beneficiario.id = r.rows[0].id;
+           return beneficiario;
+         });
 }
 
 module.exports.addBeneficiario = addBeneficiario;
 
-module.exports.add = function(nuevo_beneficiario) {
-  return addBeneficiario(pool, nuevo_beneficiario)
-}
-
-module.exports.getAll = function(id) {
-  let query = table.select(table.star())
-       .where(table.profesional.equals(id))
-       .toQuery();
-
-  return connector.execQuery(query);
+module.exports.getAll = function(id_profesional) {
+  let query = table.select(
+    table.id, table.dni, table.nombre, table.apellido,
+    table.fechaNacimiento, table.vinculo,
+    table.invalidez
+  ).where(table.profesional.equals(id_profesional))
+  .toQuery();
+  
+  return connector.execQuery(query)
+         .then(r => r.rows);
 }
