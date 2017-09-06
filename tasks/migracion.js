@@ -5,41 +5,8 @@ const config = require('../config.private');
 const pool = new Pool(config.db);
 const sql = require('mssql');
 
-function makeJobFormacion(i, total, page_size, consulta) {
-    if (i * page_size < total) {
-        let offset = i * page_size;
-        consultaSql(consulta, offset, page_size)
-            .then(rows => {
-                let nuevasInstituciones = [];
-                if (rows) {
-                    // rows.forEach(universidad => {
-                    //     let nuevaUniversidad = {};
-                    //     nuevaUniversidad['id'] = universidad.codigo;
-                    //     nuevaUniversidad['nombre'] = localidad.descripcion;
-                    //     nuevasInstituciones.push(addInstitucion(pool, nuevaUniversidad));
-                    // });
-                    // rows.map(function (institucion) {
-                        
-                    //   }).pop().on('end', function () {
-                    //     makeJobFormacion(i + 1, total, page_size, consulta);
-                    //   })
-                    console.log('Filas', rows);
-                    
-                    // Promise.all(nuevasInstituciones).then(function() {
-                    //     makeJobFormacion(i + 1, total, page_size, consulta)
-                    // });
-                }
-
-            })
-            .catch(error => {
-
-            })
-    }
-
-}
-
 function consultaSql(consulta, offset, limit) {
-    // consulta debe tener la sentenacia order by [any field]
+    // consulta debe tener la sentencia order by [any field] offset
     return new Promise((resolve, reject) => {
         sql.connect(config.dbMssql, function (err) {
             if (err) {
@@ -49,7 +16,7 @@ function consultaSql(consulta, offset, limit) {
             new sql.Request()
                 .input('offset', offset)
                 .input('limit', limit)
-                .query(query)
+                .query(consulta)
                 .then(listaRow => {
                     resolve(listaRow);
                 })
@@ -85,24 +52,56 @@ function countSql(table) {
 
 };
 
+function makeJobFormacion(i, total, page_size, consulta) {
+    if (i * page_size < total) {
+        let offset = i * page_size;
+        consultaSql(consulta, offset, page_size)
+            .then(rows => {
+                let nuevasInstituciones = [];
+                if (rows) {
+                    rows.forEach(universidad => {
+                        let nuevaUniversidad = {};
+                        nuevaUniversidad['id'] = universidad.codigo;
+                        nuevaUniversidad['nombre'] = localidad.descripcion;
+                        nuevasInstituciones.push(addInstitucion(pool, nuevaUniversidad));
+                    });
+                    // rows.map(function (institucion) {
 
+                    //   }).pop().on('end', function () {
+                    //     makeJobFormacion(i + 1, total, page_size, consulta);
+                    //   })
 
+                    Promise.all(nuevasInstituciones).then(function() {
+                        makeJobFormacion(i + 1, total, page_size, consulta);
+                    });
+                }
+
+            })
+            .catch(error => {
+
+            })
+    }
+
+}
+
+function addInstitucion(client, nueva_institucion) {
+    let query = `
+         "INSERT INTO institucion (
+            id, nombre)
+          VALUES($1, $2)
+        `;
+    let values = [
+        nueva_institucion.id, nueva_institucion.nombre
+    ];
+    return client.query(query, values);
+}
 
 function migrateFormacion() {
-    consultaSql('select * from T_Universidad').then(listaUniversidades => {
-            if (listaUniversidades) {
-                listaUniversidades.forEach(universidad => {
-                    let nuevaUniversidad = {};
-                    nuevaUniversidad['id'] = universidad.codigo;
-                    nuevaUniversidad['nombre'] = localidad.descripcion;
-                });
-                addInstitucion(pool, nuevaUniversidad);
-            }
-        })
-        .catch(err => {
-            console.log('Error', err);
-        });
+    let consultaSelect = 'select * from T_Universidad ORDER BY CODIGO offset @offset rows fetch next @limit rows only';
+    // migrateDatosGeograficos();
+    makeJobFormacion(0, 800, 10, consultaSelect);
 }
+
 
 
 // function migrateDatosGeograficos() {
@@ -220,23 +219,7 @@ function migrateFormacion() {
 //     return client.query(query, values);
 // }
 
-
-function addInstitucion(client, nueva_institucion) {
-    let query = `
-     "INSERT INTO institucion (
-        id, nombre)
-      VALUES($1, $2)
-    `;
-    let values = [
-        nueva_institucion.id, nueva_institucion.nombre
-    ];
-
-    return client.query(query, values);
-}
+migrateFormacion();
 
 
 
-
-let consulta = 'select * from T_Universidad ORDER BY CODIGO';
-// migrateDatosGeograficos();
-makeJobFormacion(0,800,10, consulta);

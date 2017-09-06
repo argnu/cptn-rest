@@ -6,7 +6,11 @@
     * Instituciones
     * Delegaciones.
     
-# Archivo config.private 
+## Examples
+
+### config.private
+
+```javascript
  module.exports = {
   entry: {
     host: 'localhost',
@@ -29,3 +33,5 @@
     stream: true,
   }
 }
+
+```
