@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
-  model.Opcion.getAll()
+  model.Opcion.getAll(req.query)
     .then(r => res.json(r))
     .catch(e => {
       console.error(e);

@@ -1,7 +1,8 @@
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const Profesional = require('./profesional').Profesional;
+const Profesional = require('./profesional/Profesional');
+const Empresa = require('./Empresa');
 
 const table = sql.define({
   name: 'solicitud',
@@ -41,6 +42,10 @@ const table = sql.define({
     {
       name: 'entidad',
       dataType: 'int'
+    },
+    {
+      name: 'tipoEntidad',
+      dataType: 'varchar(20)'
     }
   ],
 
@@ -62,11 +67,17 @@ module.exports.table = table;
 
 function addSolicitud(client, solicitud) {
   let query = table.insert(
-    table.fecha.value(solicitud.fecha), table.estado.value(solicitud.estado),
+    table.fecha.value(solicitud.fecha),
+    table.estado.value('pendiente'),
     table.delegacion.value(solicitud.delegacion),
-    table.profesional.value(solicitud.profesional)
-  ).toQuery()
-  return connector.execQuery(query, client);
+    table.entidad.value(solicitud.entidad.id),
+    table.tipoEntidad.value(solicitud.tipoEntidad)
+  ).returning(table.id, table.fecha, table.estado, table.delegacion, table.tipoEntidad).toQuery()
+  return connector.execQuery(query, client)
+         .then(r => {
+           let solicitud_added = r.rows[0];
+           return solicitud_added;
+         })
 }
 
 module.exports.add = function(solicitud) {
@@ -74,30 +85,51 @@ module.exports.add = function(solicitud) {
     connector
     .beginTransaction()
     .then(connection => {
-      addSolicitud(connection.client, solicitud)
-      .then(r =>
-          Profesional.addProfesional(connection.client, solicitud.profesional)
-            .then(r => {
-              solicitud.profesional = r;
-              return addSolicitud(solicitud)
-                .then(r => {
-                  let id_solicitud = r.rows[0].id;
+
+        if (solicitud.tipoEntidad == 'profesional') {
+          Profesional.addProfesional(connection.client, solicitud.entidad)
+            .then(profesional_added => {
+              solicitud.entidad = profesional_added;
+              return addSolicitud(connection.client, solicitud)
+                .then(solicitud_added => {
                   return connector
                   .commit(connection.client)
                   .then(r => {
                     connection.done();
-                    resolve(id_solicitud);
+                    solicitud_added.profesional = profesional_added;
+                    resolve(solicitud_added);
                   });
                 })
             })
-      )
-      .catch(e => {
-        connector.rollback(connection.client);
-        connection.done();
-        reject(e);
-      });
+            .catch(e => {
+              connector.rollback(connection.client);
+              connection.done();
+              reject(e);
+            });
+        }
+        else if (solicitud.tipoEntidad == 'empresa') {
+          Empresa.addEmpresa(connection.client, solicitud.entidad)
+            .then(empresa_added => {
+              solicitud.entidad = empresa_added;
+              return addSolicitud(connection.client, solicitud)
+                .then(solicitud_added => {
+                  return connector
+                  .commit(connection.client)
+                  .then(r => {
+                    connection.done();
+                    solicitud_added.empresa = empresa_added;
+                    resolve(solicitud_added);
+                  });
+                })
+            })
+            .catch(e => {
+              connector.rollback(connection.client);
+              connection.done();
+              reject(e);
+            });
+        }
+      })
     });
-  });
 }
 
 module.exports.getAll = function() {
@@ -107,11 +139,15 @@ module.exports.getAll = function() {
     connector.execQuery(query)
     .then(r => {
       solicitudes = r.rows;
-      let proms = solicitudes.map(s => Profesional.get(s.profesional));
+      let proms = solicitudes.map(s => {
+        if (s.tipoEntidad == 'profesional') return Profesional.get(s.entidad)
+        else if (s.tipoEntidad == 'empresa') return Empresa.get(s.entidad);
+      });
+
       Promise.all(proms)
              .then(rs => {
                rs.forEach((r, i) => {
-                 solicitudes[i].profesional = r;
+                 solicitudes[i].entidad = r;
                });
                resolve(solicitudes);
              })
@@ -130,10 +166,11 @@ module.exports.get = function(id) {
     connector.execQuery(query)
     .then(r => {
       solicitud = r.rows[0];
-      return Profesional.get(solicitud.profesional)
+      if (s.tipoEntidad == 'profesional') return Profesional.get(solicitud.entidad)
+      else if (s.tipoEntidad == 'empresa') return Empresa.get(solicitud.entidad);
     })
     .then(r => {
-      solicitud.profesional = r;
+      solicitud.entidad = r;
       resolve(solicitud);
     })
     .catch(e => reject(e));

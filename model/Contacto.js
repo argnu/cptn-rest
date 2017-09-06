@@ -1,7 +1,7 @@
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const Opcion = require('./Opcion');
+const TipoContacto = require('./opciones/TipoContacto');
 
 const table = sql.define({
   name: 'contacto',
@@ -26,7 +26,7 @@ const table = sql.define({
 
   foreignKeys: [
     {
-      table: 'opcion',
+      table: 'tipocontacto',
       columns: [ 'tipo' ],
       refColumns: [ 'id' ]
     },
@@ -44,12 +44,12 @@ function addContacto(client, contacto) {
   let query = table.insert(
     table.tipo.value(contacto.tipo), table.valor.value(contacto.valor),
     table.entidad.value(contacto.entidad)
-  ).returning(table.id).toQuery();
+  ).returning(table.id, table.tipo, table.valor).toQuery();
 
   return connector.execQuery(query, client)
          .then(r => {
-           contacto.id = r.rows[0].id;
-           return contacto;
+           let contacto_added = r.rows[0];
+           return contacto_added;
          })
 }
 
@@ -58,9 +58,9 @@ module.exports.addContacto = addContacto;
 module.exports.getAll = function(id_entidad) {
   let query = table.select(
     table.id, table.valor,
-    Opcion.table.valor.as('tipo')
+    TipoContacto.table.valor.as('tipo')
   ).from(
-    table.join(Opcion.table).on(table.tipo.equals(Opcion.table.id))
+    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
   ).where(table.entidad.equals(id_entidad))
   .toQuery();
 
@@ -71,9 +71,9 @@ module.exports.getAll = function(id_entidad) {
 module.exports.get = function(id) {
   let query = table.select(
     table.id, table.valor,
-    Opcion.table.valor.as('tipo')
+    TipoContacto.table.valor.as('tipo')
   ).from(
-    table.join(Opcion.table).on(table.tipo.equals(Opcion.table.id))
+    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
   ).where(table.id.equals(id))
   .toQuery();
   return connector.execQuery(query)

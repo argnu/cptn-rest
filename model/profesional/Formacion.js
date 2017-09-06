@@ -2,11 +2,10 @@ const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const Institucion = require('../Institucion');
-const Opcion = require('../Opcion');
-
+const TipoFormacion = require('../opciones/TipoFormacion');
 
 const table = sql.define({
-  name: 'formacion',
+  name: 'tipoformacion',
   columns: [
     {
       name: 'id',
@@ -42,7 +41,7 @@ const table = sql.define({
 
   foreignKeys: [
     {
-      table: 'opcion',
+      table: 'formacion',
       columns: [ 'tipo' ],
       refColumns: [ 'id' ]
     },
@@ -83,11 +82,11 @@ module.exports.getAll = function(id_profesional) {
   let query = table.select(
     table.id, table.titulo, table.tipo,
     table.fecha, Institucion.table.nombre.as('institucion'),
-    Opcion.table.valor.as('tipoFormacion')
+    TipoFormacion.table.valor.as('tipoFormacion')
   )
   .from(
      table.join(Institucion.table).on(table.institucion.equals(Institucion.table.id))
-          .join(Opcion.table).on(table.tipo.equals(Opcion.table.id))
+          .join(TipoFormacion.table).on(table.tipo.equals(TipoFormacion.table.id))
   ).where(table.profesional.equals(id_profesional))
   .toQuery();
 

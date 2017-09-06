@@ -82,12 +82,12 @@ const table = sql.define({
       refColumns: [ 'id' ]
     },
     {
-      table: 'opcion',
+      table: 'estadocivil',
       columns: [ 'estadoCivil' ],
       refColumns: [ 'id' ]
     },
     {
-      table: 'opcion',
+      table: 'relacionlaboral',
       columns: [ 'relacionLaboral' ],
       refColumns: [ 'id' ]
     }
@@ -181,34 +181,38 @@ module.exports.add = function(profesional) {
   });
 }
 
+const select_atributes = [table.id, table.nombre, table.apellido,
+Entidad.table.domicilioReal.as('domicilioReal'),
+Entidad.table.domicilioLegal.as('domicilioLegal')];
+const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id));
 
 module.exports.getAll = function() {
-  return new Promise(function(resolve, reject) {
-    let profesionales = [];
-    let query = select.toQuery();
-    connector.execQuery(query)
-    .then(r => {
-      profesionales = r.rows;
-      let proms = []
-      for(let profesional of profesionales) {
-        proms.push(getDatosProfesional(profesional));
-      }
-      return Promise.all(proms);
-    })
-    .then(rs => {
-      rs.forEach((value, index) => {
-        [ domicilioReal, domicilioLegal, contactos,
-          formaciones, beneficiarios, subsidiarios ] = value;
-        profesionales[index].domicilioReal = domicilioReal;
-        profesionales[index].domicilioLegal = domicilioLegal;
-        profesionales[index].contactos = contactos;
-        profesionales[index].formaciones = formaciones;
-        profesionales[index].beneficiarios = beneficiarios;
-        profesionales[index].subsidiarios = subsidiarios;
-      });
-      resolve(profesionales);
-    })
-  });
+  let profesionales = [];
+  let query = table.select(...select_atributes)
+  .from(select_from)
+  .toQuery();
+  connector.execQuery(query)
+  .then(r => {
+    profesionales = r.rows;
+    let proms = []
+    for(let profesional of profesionales) {
+      proms.push(getDatosProfesional(profesional));
+    }
+    return Promise.all(proms);
+  })
+  .then(rs => {
+    rs.forEach((value, index) => {
+      [ domicilioReal, domicilioLegal, contactos,
+        formaciones, beneficiarios, subsidiarios ] = value;
+      profesionales[index].domicilioReal = domicilioReal;
+      profesionales[index].domicilioLegal = domicilioLegal;
+      profesionales[index].contactos = contactos;
+      profesionales[index].formaciones = formaciones;
+      profesionales[index].beneficiarios = beneficiarios;
+      profesionales[index].subsidiarios = subsidiarios;
+    });
+    return profesionales;
+  })
 }
 
 
@@ -223,35 +227,28 @@ function getDatosProfesional(profesional) {
     ]);
 }
 
-const select = table.select(
-  table.id, table.nombre, table.apellido,
-  Entidad.table.domicilioReal.as('domicilioReal'),
-  Entidad.table.domicilioLegal.as('domicilioLegal')
-)
-.from(table.join(Entidad.table).on(table.id.equals(Entidad.table.id)))
-
 module.exports.get = function(id) {
-  return new Promise(function(resolve, reject) {
-    let profesional = {};
-    let query = select.where(table.id.equals(id))
-                      .toQuery();
+  let profesional = {};
+  let query = table.select(...select_atributes)
+  .from(select_from)
+  .where(table.id.equals(id))
+  .toQuery();
 
-    connector.execQuery(query)
-    .then(r => {
-      profesional = r.rows[0];
-      return getDatosProfesional(profesional);
-    })
-    .then(([
-        domicilioReal, domicilioLegal, contactos,
-        formaciones, beneficiarios, subsidiarios
-      ]) => {
-        profesional.domicilioReal = domicilioReal;
-        profesional.domicilioLegal = domicilioLegal;
-        profesional.contactos = contactos;
-        profesional.formaciones = formaciones;
-        profesional.beneficiarios = beneficiarios;
-        profesional.subsidiarios = subsidiarios;
-        return profesional;
-      })
-  });
+  return connector.execQuery(query)
+  .then(r => {
+    profesional = r.rows[0];
+    return getDatosProfesional(profesional);
+  })
+  .then(([
+      domicilioReal, domicilioLegal, contactos,
+      formaciones, beneficiarios, subsidiarios
+    ]) => {
+      profesional.domicilioReal = domicilioReal;
+      profesional.domicilioLegal = domicilioLegal;
+      profesional.contactos = contactos;
+      profesional.formaciones = formaciones;
+      profesional.beneficiarios = beneficiarios;
+      profesional.subsidiarios = subsidiarios;
+      return profesional;
+    });
 }

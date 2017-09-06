@@ -2,6 +2,7 @@ const connector = require('../../connector');
 const utils = require('../../utils');
 const sql = require('sql');
 sql.setDialect('postgres');
+const Pais = require('./Pais');
 
 const table = sql.define({
   name: 'provincia',
@@ -30,10 +31,12 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.getAll = function(url_query) {
-  let query = table.select(table.star()).from(table);
-  if (url_query.pais)
-    query.where(table.pais.equals(url_query.pais))
+module.exports.getAll = function(params) {
+  let query = table.select(table.id, table.nombre)
+  .from(table.join(Pais.table).on(table.pais.equals(Pais.table.id)));
+
+  if (params.pais_id) query.where(table.pais.equals(params.pais_id));
+  if (params.pais_text) query.where(Pais.table.nombre.equals(params.pais_text));
 
   return new Promise(function(resolve, reject) {
     connector.execQuery(query.toQuery())

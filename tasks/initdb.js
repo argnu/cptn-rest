@@ -15,38 +15,38 @@ function createDatosGeograficos() {
 }
 
 function populateOpciones() {
-  let opcion = model.Opcion.table;
   let querys = [];
-  querys.push(opcion.insert(opcion.tipo.value('sexo'), opcion.valor.value('Femenino')));
-  querys.push(opcion.insert(opcion.tipo.value('sexo'), opcion.valor.value('Masculino')));
-  querys.push(opcion.insert(opcion.tipo.value('estadocivil'), opcion.valor.value('Casado')));
-  querys.push(opcion.insert(opcion.tipo.value('estadocivil'), opcion.valor.value('Soltero')));
-  querys.push(opcion.insert(opcion.tipo.value('estadocivil'), opcion.valor.value('Concubino')));
-  querys.push(opcion.insert(opcion.tipo.value('estadocivil'), opcion.valor.value('Viudo')));
-  querys.push(opcion.insert(opcion.tipo.value('formacion'), opcion.valor.value('Grado')));
-  querys.push(opcion.insert(opcion.tipo.value('formacion'), opcion.valor.value('Posgrado')));
-  querys.push(opcion.insert(opcion.tipo.value('contacto'), opcion.valor.value('Fijo')));
-  querys.push(opcion.insert(opcion.tipo.value('contacto'), opcion.valor.value('Celular')));
-  querys.push(opcion.insert(opcion.tipo.value('contacto'), opcion.valor.value('Email')));
-  querys.push(opcion.insert(opcion.tipo.value('contacto'), opcion.valor.value('Web')));
-  querys.push(opcion.insert(opcion.tipo.value('relacionlaboral'), opcion.valor.value('Relación de Dependencia')));
-  querys.push(opcion.insert(opcion.tipo.value('relacionlaboral'), opcion.valor.value('Autónomo')));
-  querys.push(opcion.insert(opcion.tipo.value('tipoempresa'), opcion.valor.value('Unipersonal')));
-  querys.push(opcion.insert(opcion.tipo.value('tipoempresa'), opcion.valor.value('Societaria')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('Anónima')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('Comercial Colectiva')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('En Comandita Simple o Por Acciones')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('De Responsabilidad Limitada')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('De Capital e Industria')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('Cooperativa')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('En Formación')));
-  querys.push(opcion.insert(opcion.tipo.value('sociedad'), opcion.valor.value('De Hecho')));
-  querys.push(opcion.insert(opcion.tipo.value('condicionafip'), opcion.valor.value('Consumidor Final')));
-  querys.push(opcion.insert(opcion.tipo.value('condicionafip'), opcion.valor.value('Responsable Inscripto')));
-  querys.push(opcion.insert(opcion.tipo.value('condicionafip'), opcion.valor.value('Responsable No Inscripto')));
-  querys.push(opcion.insert(opcion.tipo.value('condicionafip'), opcion.valor.value('No Responsable')));
-  querys.push(opcion.insert(opcion.tipo.value('condicionafip'), opcion.valor.value('Exento')));
-  querys.push(opcion.insert(opcion.tipo.value('condicionafip'), opcion.valor.value('Monotributista')));
+  querys.push(model.Sexo.table.insert(model.Sexo.table.valor.value('Femenino')));
+  querys.push(model.Sexo.table.insert(model.Sexo.table.valor.value('Masculino')));
+  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Casado')));
+  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Soltero')));
+  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Concubino')));
+  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Viudo')));
+  querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Grado')));
+  querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Posgrado')));
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Fijo')));
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Celular')));
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Email')));
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Web')));
+  querys.push(model.RelacionLaboral.table.insert(model.RelacionLaboral.table.valor.value('Relación de Dependencia')));
+  querys.push(model.RelacionLaboral.table.insert(model.RelacionLaboral.table.valor.value('Autónomo')));
+  querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Unipersonal')));
+  querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Societaria')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Anónima')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Comercial Colectiva')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('En Comandita Simple o Por Acciones')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Responsabilidad Limitada')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Capital e Industria')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Cooperativa')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('En Formación')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Hecho')));
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Fideicomiso')));
+  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Consumidor Final')));
+  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Responsable Inscripto')));
+  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Responsable No Inscripto')));
+  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('No Responsable')));
+  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Exento')));
+  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Monotributista')));
 
   let proms = [];
   for(let query of querys) {
@@ -65,7 +65,7 @@ function fakeData() {
       institucion.insert(institucion.nombre.value('UNCO')).toQuery()
     ),
     connector.execQuery(
-      institucion.insert(delegacion.nombre.value('Neuquén')).toQuery()
+      delegacion.insert(delegacion.nombre.value('Neuquén')).toQuery()
     )
   ])
   .then(r =>     connector.execQuery(
@@ -123,7 +123,14 @@ dropTable()
 .then(rs => {
   Promise.all([
     createDatosGeograficos(),
-    createTable(model.Opcion.table),
+    createTable(model.Sexo.table),
+    createTable(model.CondicionAfip.table),
+    createTable(model.TipoContacto.table),
+    createTable(model.EstadoCivil.table),
+    createTable(model.TipoFormacion.table),
+    createTable(model.RelacionLaboral.table),
+    createTable(model.TipoEmpresa.table),
+    createTable(model.TipoSociedad.table),
     createTable(model.Institucion.table),
     createTable(model.Delegacion.table)
   ])

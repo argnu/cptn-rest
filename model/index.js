@@ -3,7 +3,16 @@ module.exports.Provincia = require('./geograficos/Provincia');
 module.exports.Departamento = require('./geograficos/Departamento');
 module.exports.Localidad = require('./geograficos/Localidad');
 module.exports.Domicilio = require('./Domicilio');
-module.exports.Opcion = require('./Opcion');
+
+module.exports.Sexo = require('./opciones/Sexo');
+module.exports.CondicionAfip = require('./opciones/CondicionAfip');
+module.exports.TipoContacto = require('./opciones/TipoContacto');
+module.exports.EstadoCivil = require('./opciones/EstadoCivil');
+module.exports.TipoFormacion = require('./opciones/TipoFormacion');
+module.exports.RelacionLaboral = require('./opciones/RelacionLaboral');
+module.exports.TipoEmpresa = require('./opciones/TipoEmpresa');
+module.exports.TipoSociedad = require('./opciones/TipoSociedad');
+
 module.exports.Institucion = require('./Institucion');
 module.exports.Delegacion = require('./Delegacion');
 

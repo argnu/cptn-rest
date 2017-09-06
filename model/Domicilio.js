@@ -35,17 +35,14 @@ const table = sql.define({
 });
 
 function addDomicilio(client, domicilio) {
-  if (domicilio) {
+  if (domicilio && domicilio.calle.length && domicilio.numero) {
     let query = table.insert(
       table.calle.value(domicilio.calle),
       table.numero.value(domicilio.numero),
       table.localidad.value(domicilio.localidad)
-    ).returning(table.id).toQuery()
+    ).returning(table.id, table.calle, table.numero, table.localidad).toQuery()
     return connector.execQuery(query, client)
-    .then(r => {
-      domicilio.id = r.rows[0].id;
-      return domicilio;
-    });
+    .then(r => r.rows[0]);
   }
   else Promise.resolve(null);
 }
