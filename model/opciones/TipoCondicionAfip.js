@@ -3,7 +3,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
  const table = sql.define({
-  name: 'condicionafip',
+  name: 't_condicionafip',
   columns: [{
       name: 'id',
       dataType: 'serial',

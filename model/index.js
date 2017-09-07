@@ -4,14 +4,15 @@ module.exports.Departamento = require('./geograficos/Departamento');
 module.exports.Localidad = require('./geograficos/Localidad');
 module.exports.Domicilio = require('./Domicilio');
 
-module.exports.Sexo = require('./opciones/Sexo');
-module.exports.CondicionAfip = require('./opciones/CondicionAfip');
+module.exports.TipoSexo = require('./opciones/TipoSexo');
+module.exports.TipoCondicionAfip = require('./opciones/TipoCondicionAfip');
 module.exports.TipoContacto = require('./opciones/TipoContacto');
-module.exports.EstadoCivil = require('./opciones/EstadoCivil');
+module.exports.TipoEstadoCivil = require('./opciones/TipoEstadoCivil');
 module.exports.TipoFormacion = require('./opciones/TipoFormacion');
-module.exports.RelacionLaboral = require('./opciones/RelacionLaboral');
+module.exports.TipoRelacionLaboral = require('./opciones/TipoRelacionLaboral');
 module.exports.TipoEmpresa = require('./opciones/TipoEmpresa');
 module.exports.TipoSociedad = require('./opciones/TipoSociedad');
+module.exports.TipoIncumbencia = require('./opciones/TipoIncumbencia');
 
 module.exports.Institucion = require('./Institucion');
 module.exports.Delegacion = require('./Delegacion');
@@ -27,3 +28,4 @@ module.exports.Formacion = require('./profesional/Formacion');
 module.exports.Contacto = require('./Contacto');
 
 module.exports.Solicitud = require('./Solicitud');
+module.exports.Matricula = require('./Matricula');

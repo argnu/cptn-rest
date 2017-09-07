@@ -3,16 +3,20 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
  const table = sql.define({
-  name: 'sexo',
+  name: 't_incumbencia',
   columns: [{
       name: 'id',
-      dataType: 'serial',
+      dataType: 'int',
       primaryKey: true
     },
     {
       name: 'valor',
       dataType: 'varchar(255)',
       notNull: true
+    },
+    {
+      name: 'acreditacomo',
+      dataType: 'int'
     }
   ]
 });

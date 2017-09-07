@@ -96,7 +96,7 @@ module.exports.add = function(solicitud) {
                   .commit(connection.client)
                   .then(r => {
                     connection.done();
-                    solicitud_added.profesional = profesional_added;
+                    solicitud_added.entidad = profesional_added;
                     resolve(solicitud_added);
                   });
                 })
@@ -117,7 +117,7 @@ module.exports.add = function(solicitud) {
                   .commit(connection.client)
                   .then(r => {
                     connection.done();
-                    solicitud_added.empresa = empresa_added;
+                    solicitud_added.entidad = empresa_added;
                     resolve(solicitud_added);
                   });
                 })
@@ -132,11 +132,14 @@ module.exports.add = function(solicitud) {
     });
 }
 
-module.exports.getAll = function() {
+module.exports.getAll = function(params) {
   return new Promise(function(resolve, reject) {
     let solicitudes = [];
-    let query = table.select(table.star()).from(table).toQuery();
-    connector.execQuery(query)
+    let query = table.select(table.star()).from(table);
+
+    if (params.tipoEntidad) query.where(table.tipoEntidad.equals(params.tipoEntidad));
+
+    connector.execQuery(query.toQuery())
     .then(r => {
       solicitudes = r.rows;
       let proms = solicitudes.map(s => {
@@ -157,22 +160,29 @@ module.exports.getAll = function() {
 }
 
 module.exports.get = function(id) {
-  return new Promise(function(resolve, reject) {
-    let solicitud = {};
-    let query = table.select(table.star())
-                     .from(table)
-                     .where(table.id.equals(id))
-                     .toQuery();
-    connector.execQuery(query)
-    .then(r => {
-      solicitud = r.rows[0];
-      if (s.tipoEntidad == 'profesional') return Profesional.get(solicitud.entidad)
-      else if (s.tipoEntidad == 'empresa') return Empresa.get(solicitud.entidad);
-    })
-    .then(r => {
-      solicitud.entidad = r;
-      resolve(solicitud);
-    })
-    .catch(e => reject(e));
+  let solicitud = {};
+  let query = table.select(table.star())
+                   .from(table)
+                   .where(table.id.equals(id))
+                   .toQuery();
+  return connector.execQuery(query)
+  .then(r => {
+    solicitud = r.rows[0];
+    if (solicitud.tipoEntidad == 'profesional') return Profesional.get(solicitud.entidad)
+    else if (solicitud.tipoEntidad == 'empresa') return Empresa.get(solicitud.entidad);
+  })
+  .then(r => {
+    solicitud.entidad = r;
+    return solicitud;
   });
+}
+
+module.exports.setEstado = function(client, id, estado) {
+  let query = table.update({
+                      estado: estado
+                   })
+                   .from(table)
+                   .where(table.id.equals(id))
+                   .toQuery();
+  return connector.execQuery(query, client);
 }

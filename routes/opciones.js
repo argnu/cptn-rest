@@ -4,21 +4,33 @@ const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
-  model.Opcion.getAll(req.query)
-    .then(r => res.json(r))
-    .catch(e => {
-      console.error(e);
-      res.status(500).json({ msg: 'Error en el servidor' });
-    });
-});
+  let opciones = {};
 
-router.get('/:id', function(req, res) {
-  model.Opcion.get(req.params.id)
-    .then(r => res.json(r))
-    .catch(e => {
-      console.error(e);
-      res.status(500).json({ msg: 'Error en el servidor' });
-    });
+  Promise.all([
+    model.TipoCondicionAfip.getAll(req.query),
+    model.TipoContacto.getAll(req.query),
+    model.TipoEmpresa.getAll(req.query),
+    model.TipoEstadoCivil.getAll(req.query),
+    model.TipoFormacion.getAll(req.query),
+    model.TipoRelacionLaboral.getAll(req.query),
+    model.TipoSexo.getAll(req.query),
+    model.TipoSociedad.getAll(req.query),
+    model.TipoIncumbencia.getAll(req.query),
+  ])
+  .then(([
+    condicionafip, contacto, empresa, estadocivil,
+    formacion, relacionlaboral, sexo, sociedad,
+    incumbencia
+  ]) => res.json({
+        condicionafip, contacto, empresa, estadocivil,
+        formacion, relacionlaboral, sexo, sociedad,
+        incumbencia
+      })
+  )
+  .catch(e => {
+    console.error(e);
+    res.status(500).json({ msg: 'Error en el servidor' });
+  });
 });
 
 router.post('/', function(req, res) {

@@ -16,20 +16,20 @@ function createDatosGeograficos() {
 
 function populateOpciones() {
   let querys = [];
-  querys.push(model.Sexo.table.insert(model.Sexo.table.valor.value('Femenino')));
-  querys.push(model.Sexo.table.insert(model.Sexo.table.valor.value('Masculino')));
-  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Casado')));
-  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Soltero')));
-  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Concubino')));
-  querys.push(model.EstadoCivil.table.insert(model.EstadoCivil.table.valor.value('Viudo')));
+  querys.push(model.TipoSexo.table.insert(model.TipoSexo.table.valor.value('Femenino')));
+  querys.push(model.TipoSexo.table.insert(model.TipoSexo.table.valor.value('Masculino')));
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Casado')));
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Soltero')));
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Concubino')));
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Viudo')));
   querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Grado')));
   querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Posgrado')));
   querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Fijo')));
   querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Celular')));
   querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Email')));
   querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Web')));
-  querys.push(model.RelacionLaboral.table.insert(model.RelacionLaboral.table.valor.value('Relación de Dependencia')));
-  querys.push(model.RelacionLaboral.table.insert(model.RelacionLaboral.table.valor.value('Autónomo')));
+  querys.push(model.TipoRelacionLaboral.table.insert(model.TipoRelacionLaboral.table.valor.value('Relación de Dependencia')));
+  querys.push(model.TipoRelacionLaboral.table.insert(model.TipoRelacionLaboral.table.valor.value('Autónomo')));
   querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Unipersonal')));
   querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Societaria')));
   querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Anónima')));
@@ -41,12 +41,12 @@ function populateOpciones() {
   querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('En Formación')));
   querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Hecho')));
   querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Fideicomiso')));
-  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Consumidor Final')));
-  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Responsable Inscripto')));
-  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Responsable No Inscripto')));
-  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('No Responsable')));
-  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Exento')));
-  querys.push(model.CondicionAfip.table.insert(model.CondicionAfip.table.valor.value('Monotributista')));
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Consumidor Final')));
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Responsable Inscripto')));
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Responsable No Inscripto')));
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('No Responsable')));
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Exento')));
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Monotributista')));
 
   let proms = [];
   for(let query of querys) {
@@ -66,7 +66,14 @@ function fakeData() {
     ),
     connector.execQuery(
       delegacion.insert(delegacion.nombre.value('Neuquén')).toQuery()
+    ),
+    connector.execQuery(
+      model.TipoIncumbencia.table.insert(model.TipoIncumbencia.table.id.value(1), model.TipoIncumbencia.table.valor.value('Arquitectura')).toQuery()
+    ),
+    connector.execQuery(
+      model.TipoIncumbencia.table.insert(model.TipoIncumbencia.table.id.value(2), model.TipoIncumbencia.table.valor.value('Saneamiento')).toQuery()
     )
+
   ])
   .then(r =>     connector.execQuery(
         model.Pais.table.insert(model.Pais.table.nombre.value('Argentina')).toQuery()
@@ -123,14 +130,15 @@ dropTable()
 .then(rs => {
   Promise.all([
     createDatosGeograficos(),
-    createTable(model.Sexo.table),
-    createTable(model.CondicionAfip.table),
+    createTable(model.TipoSexo.table),
+    createTable(model.TipoCondicionAfip.table),
     createTable(model.TipoContacto.table),
-    createTable(model.EstadoCivil.table),
+    createTable(model.TipoEstadoCivil.table),
     createTable(model.TipoFormacion.table),
-    createTable(model.RelacionLaboral.table),
+    createTable(model.TipoRelacionLaboral.table),
     createTable(model.TipoEmpresa.table),
     createTable(model.TipoSociedad.table),
+    createTable(model.TipoIncumbencia.table),
     createTable(model.Institucion.table),
     createTable(model.Delegacion.table)
   ])
@@ -142,9 +150,9 @@ dropTable()
                 createTable(model.BeneficiarioCaja.table),
                 createTable(model.Subsidiario.table),
               ]))
-  .then(rs => {
+  .then(rs => createTable(model.Matricula.table))
+  .then(r => {
     console.info('Todas las tablas han sido creadas!');
-
     populate()
       .then(r => {
           console.info('Tablas con datos falsos!');
