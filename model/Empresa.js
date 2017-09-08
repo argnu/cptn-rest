@@ -2,6 +2,9 @@ const connector = require('../connector');
 const Domicilio = require('./Domicilio');
 const Entidad = require('./Entidad');
 const Contacto = require('./Contacto');
+const TipoEmpresa = require('./opciones/TipoEmpresa');
+const TipoSociedad = require('./opciones/TipoSociedad');
+const TipoCondicionAfip = require('./opciones/TipoCondicionAfip');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -131,11 +134,17 @@ module.exports.add = function(empresa) {
 
 
 const select_atributes = [table.id, table.nombre, table.fechaInicio,
-table.fechaConstitucion, table.tipoEmpresa, table.tipoSociedad,
-Entidad.table.condafip, Entidad.table.cuit,
+table.fechaConstitucion,
+TipoEmpresa.table.valor.as('tipoEmpresa'),
+TipoSociedad.table.valor.as('tipoSociedad'),
+TipoCondicionAfip.table.valor.as('condafip'),
+Entidad.table.cuit,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioLegal.as('domicilioLegal')];
-const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id));
+const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
+                         .join(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
+                         .join(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
+                         .join(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
 
 module.exports.getAll = function() {
   let empresas = [];

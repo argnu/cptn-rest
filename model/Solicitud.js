@@ -4,6 +4,7 @@ sql.setDialect('postgres');
 const Profesional = require('./profesional/Profesional');
 const Empresa = require('./Empresa');
 const Entidad = require('./Entidad');
+const Delegacion = require('./Delegacion');
 
 const table = sql.define({
   name: 'solicitud',
@@ -137,9 +138,10 @@ module.exports.getAll = function(params) {
   return new Promise(function(resolve, reject) {
     let solicitudes = [];
     let query = table.select(
-      table.star()
+      table.star(), Delegacion.table.nombre.as('delegacion')
     ).from(
-      table.join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+      table.join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))
+           .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
            .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
            .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
     );
@@ -147,6 +149,8 @@ module.exports.getAll = function(params) {
     /* ----------------- FILTERS  ---------------- */
     if (params.tipoEntidad) query.where(table.tipoEntidad.equals(params.tipoEntidad));
     if (params.estado) query.where(table.estado.equals(params.estado));
+    if (params.exencionArt10) query.where(table.exencionArt10.equals(params.exencionArt10));
+
     if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
     if (params.nombreEmpresa) query.where(Empresa.table.nombre.like(`%${params.nombreEmpresa}%`));
     if (params.dni) query.where(Profesional.table.dni.like(`%${params.dni}%`));
@@ -154,7 +158,7 @@ module.exports.getAll = function(params) {
 
     /* ---------------- SORTING ------------------ */
     if (params.sort && params.sort.estado) query.order(table.valor[params.estado.valor]);
-    
+
 
     /* ---------------- LIMIT AND OFFSET ------------------ */
     if (params.limit) query.limit(+params.limit);

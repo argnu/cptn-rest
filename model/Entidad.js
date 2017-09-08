@@ -4,6 +4,7 @@ sql.setDialect('postgres');
 const Domicilio = require('./Domicilio');
 
 
+
 const table = sql.define({
   name: 'entidad',
   columns: [

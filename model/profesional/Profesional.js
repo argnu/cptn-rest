@@ -181,7 +181,7 @@ module.exports.add = function(profesional) {
   });
 }
 
-const select_atributes = [table.id, table.nombre, table.apellido,
+const select_atributes = [table.id, table.nombre, table.apellido, table.dni,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioLegal.as('domicilioLegal')];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id));
