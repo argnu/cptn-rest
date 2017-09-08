@@ -6,7 +6,7 @@ const pool = new Pool(config.db);
 const sql = require('mssql');
 
 function consultaSql(consulta, offset, limit) {
-    // consulta debe tener la sentencia order by [any field] offset
+    // consulta debe tener la sentencia order by [any field] 
     return new Promise((resolve, reject) => {
         sql.connect(config.dbMssql, function (err) {
             if (err) {
@@ -56,16 +56,16 @@ function countSql(table) {
 };
 
 function makeJobFormacion(i, total, page_size, consulta) {
-    if (i * page_size < total) {
+    if (i  < total) {
         let fin = i + page_size;
         consultaSql(consulta, i, fin)
             .then(rows => {
                 let nuevasInstituciones = [];
                 if (rows) {
-                    rows.forEach(universidad => {
+                    rows.recordset.forEach(universidad => {
                         let nuevaUniversidad = {};
-                        nuevaUniversidad['id'] = universidad.codigo;
-                        nuevaUniversidad['nombre'] = universidad.descripcion;
+                        nuevaUniversidad['id'] = universidad['CODIGO'];
+                        nuevaUniversidad['nombre'] = universidad['DESCRIPCION'];
                         nuevasInstituciones.push(addInstitucion(pool, nuevaUniversidad));
                     });
                     // rows.map(function (institucion) {
@@ -81,7 +81,7 @@ function makeJobFormacion(i, total, page_size, consulta) {
 
             })
             .catch(error => {
-                console.log('Error', error);
+                console.log('Error en makeJobFormacion', error);
             })
     }
 
