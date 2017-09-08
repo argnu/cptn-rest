@@ -100,7 +100,7 @@ function addInstitucion(client, nueva_institucion) {
 }
 
 function migrateFormacion() {
-    let consultaSelect = 'select * from T_Universidad ORDER BY CODIGO offset @offset rows fetch next @limit rows only';
+    let consultaSelect = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
     // migrateDatosGeograficos();
     makeJobFormacion(0, 800, 10, consultaSelect);
 }
