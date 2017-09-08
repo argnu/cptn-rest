@@ -65,7 +65,7 @@ function makeJobFormacion(i, total, page_size, consulta) {
                     rows.forEach(universidad => {
                         let nuevaUniversidad = {};
                         nuevaUniversidad['id'] = universidad.codigo;
-                        nuevaUniversidad['nombre'] = localidad.descripcion;
+                        nuevaUniversidad['nombre'] = universidad.descripcion;
                         nuevasInstituciones.push(addInstitucion(pool, nuevaUniversidad));
                     });
                     // rows.map(function (institucion) {
@@ -74,14 +74,14 @@ function makeJobFormacion(i, total, page_size, consulta) {
                     //     makeJobFormacion(i + 1, total, page_size, consulta);
                     //   })
 
-                    Promise.all(nuevasInstituciones).then(function() {
+                    Promise.all(nuevasInstituciones).then(function () {
                         makeJobFormacion(fin + 1, total, page_size, consulta);
                     });
                 }
 
             })
             .catch(error => {
-
+                console.log('Error', error);
             })
     }
 
@@ -89,7 +89,7 @@ function makeJobFormacion(i, total, page_size, consulta) {
 
 function addInstitucion(client, nueva_institucion) {
     let query = `
-         "INSERT INTO institucion (
+         INSERT INTO institucion (
             id, nombre)
           VALUES($1, $2)
         `;
@@ -223,6 +223,3 @@ function migrateFormacion() {
 // }
 
 migrateFormacion();
-
-
-
