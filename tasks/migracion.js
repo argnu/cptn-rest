@@ -18,9 +18,11 @@ function consultaSql(consulta, offset, limit) {
                 .input('limit', limit)
                 .query(consulta)
                 .then(listaRow => {
+                    sql.close();
                     resolve(listaRow);
                 })
                 .catch(error => {
+                    sql.close();
                     console.log('Error', error);
                     reject(error);
                 })
@@ -41,6 +43,7 @@ function countSql(table) {
                 .query(query)
                 .then(cantidadRows => {
                     resolve(cantidadRows);
+                    sql.close();
                 })
                 .catch(error => {
                     console.log('Error', error);
@@ -54,8 +57,8 @@ function countSql(table) {
 
 function makeJobFormacion(i, total, page_size, consulta) {
     if (i * page_size < total) {
-        let offset = i * page_size;
-        consultaSql(consulta, offset, page_size)
+        let fin = i + page_size;
+        consultaSql(consulta, i, fin)
             .then(rows => {
                 let nuevasInstituciones = [];
                 if (rows) {
@@ -72,7 +75,7 @@ function makeJobFormacion(i, total, page_size, consulta) {
                     //   })
 
                     Promise.all(nuevasInstituciones).then(function() {
-                        makeJobFormacion(i + 1, total, page_size, consulta);
+                        makeJobFormacion(fin + 1, total, page_size, consulta);
                     });
                 }
 
