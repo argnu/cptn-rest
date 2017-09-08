@@ -41,7 +41,7 @@ const table = sql.define({
 
   foreignKeys: [
     {
-      table: 'formacion',
+      table: 't_formacion',
       columns: [ 'tipo' ],
       refColumns: [ 'id' ]
     },

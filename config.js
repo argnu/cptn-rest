@@ -1,6 +1,6 @@
 module.exports = {
   entry: {
-    host: '10.1.38.88',
+    host: 'localhost',
     port: 3400
   },
   db: {

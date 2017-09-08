@@ -82,12 +82,12 @@ const table = sql.define({
       refColumns: [ 'id' ]
     },
     {
-      table: 'estadocivil',
+      table: 't_estadocivil',
       columns: [ 'estadoCivil' ],
       refColumns: [ 'id' ]
     },
     {
-      table: 'relacionlaboral',
+      table: 't_relacionlaboral',
       columns: [ 'relacionLaboral' ],
       refColumns: [ 'id' ]
     }

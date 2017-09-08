@@ -26,7 +26,7 @@ const table = sql.define({
 
   foreignKeys: [
     {
-      table: 'tipocontacto',
+      table: 't_contacto',
       columns: [ 'tipo' ],
       refColumns: [ 'id' ]
     },

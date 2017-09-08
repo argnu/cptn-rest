@@ -32,7 +32,7 @@ const table = sql.define({
 
   foreignKeys: [
     {
-      table: 'condicionafip',
+      table: 't_condicionafip',
       columns: [ 'condafip' ],
       refColumns: [ 'id' ]
     },
@@ -58,7 +58,7 @@ function addEntidad(client, entidad) {
   ])
   .then(([domicilioReal, domicilioLegal]) => {
     let query = table.insert(
-      table.cuit.value(entidad.cuit), table.condafip.value(entidad.nacionalidad),
+      table.cuit.value(entidad.cuit), table.condafip.value(entidad.condafip),
       table.domicilioReal.value(domicilioReal ? domicilioReal.id : null),
       table.domicilioLegal.value(domicilioLegal ? domicilioLegal.id : null)
     ).returning(table.id, table.cuit, table.condafip).toQuery();

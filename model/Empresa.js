@@ -44,12 +44,12 @@ const table = sql.define({
       refColumns: [ 'id' ]
     },
     {
-      table: 'tipoempresa',
+      table: 't_empresa',
       columns: [ 'tipoEmpresa' ],
       refColumns: [ 'id' ]
     },
     {
-      table: 'tiposociedad',
+      table: 't_sociedad',
       columns: [ 'tipoSociedad' ],
       refColumns: [ 'id' ]
     }
@@ -80,7 +80,7 @@ function addEmpresa(client, empresa) {
   }
 
   return Entidad.addEntidad(client, {
-    cuit: empresa.cui,
+    cuit: empresa.cuit,
     condafip: empresa.condafip,
     domicilioReal: empresa.domicilioReal,
     domicilioLegal: empresa.domicilioLegal
@@ -111,7 +111,7 @@ module.exports.add = function(empresa) {
     connector
     .beginTransaction()
     .then(connection => {
-      addempresa(connection.client, empresa)
+      addEmpresa(connection.client, empresa)
         .then(empresa_added => {
           connector
           .commit(connection.client)
