@@ -1,6 +1,6 @@
 const express = require('express');
 const pg = require('pg');
-const config = require('./config');
+const config = require('./config.private');
 const routes = require('./routes');
 
 const app = express();

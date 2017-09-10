@@ -1,5 +1,5 @@
 const { Pool, Client } = require('pg')
-const config = require('../config');
+const config = require('../config.private');
 const pool = new Pool(config.db);
 
 module.exports.execQuery = function(query, client) {

@@ -3,109 +3,7 @@ const {
 } = require('pg');
 const config = require('../config.private');
 const pool = new Pool(config.db);
-const sql = require('mssql');
-
-function consultaSql(consulta, offset, limit) {
-    // consulta debe tener la sentencia order by [any field] 
-    return new Promise((resolve, reject) => {
-        sql.connect(config.dbMssql, function (err) {
-            if (err) {
-                console.log("Error de Conexión", err);
-                reject(err);
-            }
-            new sql.Request()
-                .input('offset', offset)
-                .input('limit', limit)
-                .query(consulta)
-                .then(listaRow => {
-                    sql.close();
-                    resolve(listaRow);
-                })
-                .catch(error => {
-                    sql.close();
-                    console.log('Error', error);
-                    reject(error);
-                })
-        })
-
-    }); //Fin Promise
-
-};
-
-function countSql(table) {
-    return new Promise((resolve, reject) => {
-        sql.connect(config.dbMssql, function (err) {
-            if (err) {
-                console.log("Error de Conexión", err);
-                reject(err);
-            }
-            new sql.Request()
-                .query(query)
-                .then(cantidadRows => {
-                    resolve(cantidadRows);
-                    sql.close();
-                })
-                .catch(error => {
-                    console.log('Error', error);
-                    reject(error);
-                })
-        })
-
-    }); //Fin Promise
-
-};
-
-function makeJobFormacion(i, total, page_size, consulta) {
-    if (i  < total) {
-        let fin = i + page_size;
-        consultaSql(consulta, i, fin)
-            .then(rows => {
-                let nuevasInstituciones = [];
-                if (rows) {
-                    rows.recordset.forEach(universidad => {
-                        let nuevaUniversidad = {};
-                        nuevaUniversidad['id'] = universidad['CODIGO'];
-                        nuevaUniversidad['nombre'] = universidad['DESCRIPCION'];
-                        nuevasInstituciones.push(addInstitucion(pool, nuevaUniversidad));
-                    });
-                    // rows.map(function (institucion) {
-
-                    //   }).pop().on('end', function () {
-                    //     makeJobFormacion(i + 1, total, page_size, consulta);
-                    //   })
-
-                    Promise.all(nuevasInstituciones).then(function () {
-                        makeJobFormacion(fin + 1, total, page_size, consulta);
-                    });
-                }
-
-            })
-            .catch(error => {
-                console.log('Error en makeJobFormacion', error);
-            })
-    }
-
-}
-
-function addInstitucion(client, nueva_institucion) {
-    let query = `
-         INSERT INTO institucion (
-            id, nombre)
-          VALUES($1, $2)
-        `;
-    let values = [
-        nueva_institucion.id, nueva_institucion.nombre
-    ];
-    return client.query(query, values);
-}
-
-function migrateFormacion() {
-    let consultaSelect = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
-    // migrateDatosGeograficos();
-    makeJobFormacion(0, 800, 10, consultaSelect);
-}
-
-
+const migracionInstitucion = req('./migracionInstitucion');
 
 // function migrateDatosGeograficos() {
 //     consultaSql('select * from T_PAIS').then(listaPais => {
@@ -222,4 +120,4 @@ function migrateFormacion() {
 //     return client.query(query, values);
 // }
 
-migrateFormacion();
+migracionInstitucion.makeJobInstitucion();

@@ -5,7 +5,7 @@ module.exports.table = sql.define({
   name: 'institucion',
   columns: [{
       name: 'id',
-      dataType: 'serial',
+      //dataType: 'serial',
       primaryKey: true
     },
     {
@@ -15,3 +15,15 @@ module.exports.table = sql.define({
     }
   ]
 });
+
+function addInstitucion(client, institucion) {
+  if (institucion && institucion.nombre) {
+    let query = table.insert(
+      table.nombre.value(domicilio.nombre),
+    ).returning(table.id, table.nombre).toQuery()
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0]);
+  }
+  else Promise.resolve(null);
+}
+
