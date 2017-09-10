@@ -120,4 +120,4 @@ const migracionInstitucion = require('./migracionInstitucion');
 //     return client.query(query, values);
 // }
 
-migracionInstitucion.migrarInstitucion;
+migracionInstitucion.migrarInstitucion();

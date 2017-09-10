@@ -1,4 +1,6 @@
-const { Pool} = require('pg');
+const {
+    Pool
+} = require('pg');
 const config = require('../config.private');
 const pool = new Pool(config.db);
 const connectSql = require('./connectSql');
@@ -10,15 +12,14 @@ function makeJobInstitucion(i, total, page_size, consulta) {
         connectSql.consultaSql(consulta, i, offset)
             .then(rows => {
                 let nuevasInstituciones = [];
-                if (rows) {
-                    rows.forEach(universidad => {
+                if (rows && rows.recordset) {
+                    rows.recordset.forEach(universidad => {
                         let nuevaUniversidad = {};
                         nuevaUniversidad['id'] = universidad['CODIGO'];
-                        nuevaUniversidad['nombre'] = localidad['DESCRIPCION'];
+                        nuevaUniversidad['nombre'] = universidad['DESCRIPCION'];
                         nuevasInstituciones.push(addInstitucion(pool, nuevaUniversidad));
                     });
-                    Promise.all(nuevasInstituciones).then(function () {
-                    });
+                    Promise.all(nuevasInstituciones).then(function () {});
                 }
                 return makeJobInstitucion(offset + 1, total, page_size, consulta);
             })
@@ -31,7 +32,7 @@ function makeJobInstitucion(i, total, page_size, consulta) {
 
 function addInstitucion(client, nueva_institucion) {
     let query = `
-         "INSERT INTO institucion (
+         INSERT INTO institucion (
             id, nombre)
           VALUES($1, $2)
         `;
@@ -41,10 +42,18 @@ function addInstitucion(client, nueva_institucion) {
     return client.query(query, values);
 }
 
-function migrarInstitucion() {
+module.exports.migrarInstitucion = function () {
     let consultaInstitucion = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
-    makeJobInstitucion(0, 800, 100, consultaInstitucion);
+    let countInstituciones = 'select COUNT(*) as cantUniversidades from T_Universidad';
+    connectSql.countSql(countInstituciones)
+        .then(res => {
+            if (res && res !== []) {
+                let resultado = res[0];
+                let cantInstitucion = res['cant'];  
+                console.log('Cantidad', cantInstitucion);
+                makeJobInstitucion(0, cantInstitucion, 100, consultaInstitucion);
+            }
+        })
+        .catch(err => console.log('No se pudo importar Institucion', err))
     return;
 }
-
-module.exports.migrarInstitucion = migrarInstitucion();

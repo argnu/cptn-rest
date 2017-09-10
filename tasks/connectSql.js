@@ -27,7 +27,7 @@ module.exports.consultaSql = function (consulta, offset, limit) {
 
 };
 
-module.exports.countSql = function (table) {
+module.exports.countSql = function (query) {
     return new Promise((resolve, reject) => {
         sql.connect(config.dbMssql, function (err) {
             if (err) {
@@ -36,8 +36,12 @@ module.exports.countSql = function (table) {
             }
             new sql.Request()
                 .query(query)
-                .then(cantidadRows => {
-                    resolve(cantidadRows);
+                .then(res => {
+                    if (res && res.recordset) {
+                        resolve(res.recordset);
+                    } else {
+                        resolve([]);
+                    }
                 })
                 .catch(error => {
                     console.log('Error', error);
