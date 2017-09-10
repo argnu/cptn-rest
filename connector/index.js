@@ -3,7 +3,6 @@ const config = require('../config.private');
 const pool = new Pool(config.db);
 
 module.exports.execQuery = function(query, client) {
-  console.log('Entro aca', query.text);
   client = (client instanceof Client) ? client : pool;
   return client.query(query.text, query.values);
 }
