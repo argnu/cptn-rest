@@ -49,7 +49,7 @@ module.exports.migrarInstitucion = function () {
         .then(res => {
             if (res && res !== []) {
                 let resultado = res[0];
-                let cantInstitucion = res['cant'];  
+                let cantInstitucion = resultado['cantUniversidades'];  
                 console.log('Cantidad', cantInstitucion);
                 makeJobInstitucion(0, cantInstitucion, 100, consultaInstitucion);
             }

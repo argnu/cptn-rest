@@ -37,6 +37,7 @@ module.exports.countSql = function (query) {
             new sql.Request()
                 .query(query)
                 .then(res => {
+                    sql.close();
                     if (res && res.recordset) {
                         resolve(res.recordset);
                     } else {
@@ -45,6 +46,7 @@ module.exports.countSql = function (query) {
                 })
                 .catch(error => {
                     console.log('Error', error);
+                    sql.close();
                     reject(error);
                 })
         })
