@@ -3,7 +3,7 @@ const {
 } = require('pg');
 const config = require('../config.private');
 const pool = new Pool(config.db);
-const migracionInstitucion = req('./migracionInstitucion');
+const migracionInstitucion = require('./migracionInstitucion');
 
 // function migrateDatosGeograficos() {
 //     consultaSql('select * from T_PAIS').then(listaPais => {
@@ -120,4 +120,4 @@ const migracionInstitucion = req('./migracionInstitucion');
 //     return client.query(query, values);
 // }
 
-migracionInstitucion.makeJobInstitucion();
+migracionInstitucion.migrarInstitucion;

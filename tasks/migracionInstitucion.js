@@ -1,7 +1,7 @@
 const { Pool} = require('pg');
 const config = require('../config.private');
 const pool = new Pool(config.db);
-const connectSql = require('../connectSql');
+const connectSql = require('./connectSql');
 
 
 function makeJobInstitucion(i, total, page_size, consulta) {
@@ -20,7 +20,7 @@ function makeJobInstitucion(i, total, page_size, consulta) {
                     Promise.all(nuevasInstituciones).then(function () {
                     });
                 }
-                return makeJobFormacion(offset + 1, total, page_size, consulta);
+                return makeJobInstitucion(offset + 1, total, page_size, consulta);
             })
             .catch(error => {
                 console.log('ERROR', error);
@@ -41,7 +41,10 @@ function addInstitucion(client, nueva_institucion) {
     return client.query(query, values);
 }
 
-function makeJobInstitucion() {
+function migrarInstitucion() {
     let consultaInstitucion = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
-    makeJobFormacion(0, 800, 100, consultaInstitucion);
+    makeJobInstitucion(0, 800, 100, consultaInstitucion);
+    return;
 }
+
+module.exports.migrarInstitucion = migrarInstitucion();

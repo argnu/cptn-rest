@@ -1,7 +1,7 @@
 const config = require('../config.private');
 const sql = require('mssql');
 
-function consultaSql(consulta, offset, limit) {
+module.exports.consultaSql = function (consulta, offset, limit) {
     // consulta debe tener la sentencia order by [any field] offset
     return new Promise((resolve, reject) => {
         sql.connect(config.dbMssql, function (err) {
@@ -27,7 +27,7 @@ function consultaSql(consulta, offset, limit) {
 
 };
 
-function countSql(table) {
+module.exports.countSql = function (table) {
     return new Promise((resolve, reject) => {
         sql.connect(config.dbMssql, function (err) {
             if (err) {
