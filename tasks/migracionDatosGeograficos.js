@@ -219,7 +219,7 @@ function addLocalidad(client, nueva_Localidad) {
 migrarPaises = function () {
     let consultaPaises = 'select * from T_PAIS WHERE CODIGO BETWEEN @offset AND @limit';
     let countPaises = 'select COUNT(*) as cantPaises from T_PAIS';
-    let sizePaises = 100;
+    let size = 100;
 
     return connectSql.countSql(countPaises)
         .then(res => {
