@@ -55,5 +55,4 @@ module.exports.migrarInstitucion = function () {
             }
         })
         .catch(err => console.log('No se pudo importar Institucion', err))
-    return;
 }
