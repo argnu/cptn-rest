@@ -1,8 +1,8 @@
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-
 const Solicitud = require('./Solicitud');
+const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 
 const table = sql.define({
   name: 'matricula',
@@ -16,13 +16,8 @@ const table = sql.define({
       dataType: 'int',
     },
     {
-      name: 'numMatricula',
+      name: 'numeroMatricula',
       dataType: 'varchar(20)'
-    },
-    {
-      name: 'fecha',
-      dataType: 'date',
-      notNull: true
     },
     {
       name: 'entidad',
@@ -42,13 +37,8 @@ const table = sql.define({
       notNull: true
     },
     {
-      name: 'numActa',
+      name: 'numeroActa',
       dataType: 'varchar(50)'
-    },
-    {
-      name: 'fechaAprobacion',
-      dataType: 'date',
-      notNull: true
     },
     {
       name: 'fechaBaja',
@@ -72,10 +62,6 @@ const table = sql.define({
       dataType: 'varchar(20)'
     },
     {
-      name: 'actualizoDatos',
-      dataType: 'int',
-    },
-    {
       name: 'nombreArchivoFoto',
       dataType: 'varchar(254)',
     },
@@ -83,8 +69,10 @@ const table = sql.define({
       name: 'nombreArchivoFirma',
       dataType: 'varchar(254)',
     },
-
-
+    {
+      name: 'estado',
+      dataType: 'int'
+    }
   ],
 
   foreignKeys: [{
@@ -97,39 +85,51 @@ const table = sql.define({
       columns: ['solicitud'],
       refColumns: ['id']
     },
+    {
+      table: 't_estadomatricula',
+      columns: ['estado'],
+      refColumns: ['id']
+    },
   ]
 });
 
 module.exports.table = table;
 
-function addMatricula(client, matricula) {
+function addMatricula(matricula, client) {
   let query = table.insert(
-    table.fecha.value(matricula.legajo),
-    table.fecha.value(matricula.numMatricula),
-    table.fecha.value(matricula.fecha),
     table.entidad.value(matricula.entidad.id),
     table.tipoEntidad.value(matricula.tipoEntidad),
     table.solicitud.value(matricula.solicitud),
     table.fechaResolucion.value(matricula.fechaResolucion),
-    table.numActa.value(matricula.numActa),
-    table.fechaAprobacion.value(matricula.fecha)
-  ).returning(table.id, table.legajo, table.numMatricula, table.fecha, table.tipoEntidad, table.entidad,
-    table.solicitud, table.fechaResolucion, table.numActa, table.fechaAprobacion).toQuery()
+    table.numeroActa.value(matricula.numeroActa),
+    table.estado.value(matricula.estado)
+  ).returning(table.id, table.tipoEntidad, table.entidad,
+    table.solicitud, table.fechaResolucion, table.numeroActa).toQuery()
+
   return connector.execQuery(query, client)
-    .then(r => {
-      let matricula_added = r.rows[0];
-      return matricula_added;
-    })
+    .then(r => r.rows[0]);
 }
 
-module.exports.add = function (matricula) {
-  return new Promise(function (resolve, reject) {
-    connector
-      .beginTransaction()
-      .then(connection => {
-        return Solicitud.setEstado(connection.client, matricula.solicitud, 'Aprobada')
-          .then(r => addMatricula(connection.client, matricula));
-      })
+function getEstadoHabilitada() {
+  let query = TipoEstadoMatricula.table.select(
+    TipoEstadoMatricula.table.id
+  ).where(TipoEstadoMatricula.table.valor.equals('habilitado'))
+  .toQuery();
+
+  return connector.execQuery(query)
+  .then(r => r.rows[0]);
+}
+
+module.exports.add = function(matricula) {
+  return Promise.all([
+    Solicitud.get(matricula.solicitud),
+    getEstadoHabilitada()
+  ])
+  .then(([solicitud, estado]) => {
+    matricula.entidad = solictiud.entidad.id;
+    matricula.tipoEntidad = solicitud.tipoEntidad;
+    matricula.estado = estado.id;
+    return addMatricula(matricula);
   });
 }
 

@@ -5,7 +5,7 @@ router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
   model.Matricula.getAll(req.query)
-    .then(r => res.json(r))
+    .then(matriculas => res.json(matriculas))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });
@@ -14,7 +14,7 @@ router.get('/', function(req, res) {
 
 router.get('/:id', function(req, res) {
   model.Matricula.get(req.params.id)
-    .then(r => res.json(r))
+    .then(matricula => res.json(matricula))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });
@@ -23,7 +23,7 @@ router.get('/:id', function(req, res) {
 
 router.post('/', function(req, res) {
   model.Matricula.add(req.body)
-    .then(id => res.status(201).json({ id }))
+    .then(matricula => res.status(201).json(matricula))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });

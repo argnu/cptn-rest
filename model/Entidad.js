@@ -52,7 +52,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addEntidad(client, entidad) {
+function addEntidad(entidad, client) {
   return Promise.all([
     Domicilio.addDomicilio(client, entidad.domicilioReal),
     Domicilio.addDomicilio(client, entidad.domicilioLegal)

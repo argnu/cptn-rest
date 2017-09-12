@@ -2,9 +2,9 @@ const connector = require('../connector');
 const Domicilio = require('./Domicilio');
 const Entidad = require('./Entidad');
 const Contacto = require('./Contacto');
-const TipoEmpresa = require('./opciones/TipoEmpresa');
-const TipoSociedad = require('./opciones/TipoSociedad');
-const TipoCondicionAfip = require('./opciones/TipoCondicionAfip');
+const TipoEmpresa = require('./tipos/TipoEmpresa');
+const TipoSociedad = require('./tipos/TipoSociedad');
+const TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -82,12 +82,12 @@ function addEmpresa(client, empresa) {
     return connector.execQuery(query, client);
   }
 
-  return Entidad.addEntidad(client, {
+  return Entidad.addEntidad({
     cuit: empresa.cuit,
     condafip: empresa.condafip,
     domicilioReal: empresa.domicilioReal,
     domicilioLegal: empresa.domicilioLegal
-  })
+  }, client)
   .then(entidad => {
     empresa.id = entidad.id;
     return addDatosBasicos(empresa)
