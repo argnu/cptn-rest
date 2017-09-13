@@ -278,34 +278,9 @@ migrarLocalidad = function () {
 
 module.exports.migrarDatosGeograficos = function () {
     migrarPaises()
-        .then(res => {
-            console.log('Datos', res);
-            migrarProvincias()
-                .then(resProvincias => {
-                    migrarDepartamentos()
-                        .then(resDptos => {
-                            migrarDepartamentos()
-                                .then(resDptos => {
-                                    migrarDepartamentos()
-                                        .then(resLoca => {
-                                            console.log('Importacion', 'Se importaron los datos geograficos');
-                                        })
-                                        .catch(errLoc => {
-                                            console.log('No se pudo importar Localidades', errLoca);
-                                        })
-
-                                })
-                                .catch(errDptos => {
-                                    console.log('No se pudo importar Departamentos', errDptos);
-                                })
-                        })
-                        .catch(errDptos => {
-                            console.log('No se pudo importar Departamentos', errDptos);
-                        })
-                })
-                .catch(errProv => {
-                    console.log('No se pudo importar DatosGeograficos', errProv);
-                })
-        })
+        .then(r => migrarProvincias())
+        .then(r => migrarDepartamentos())
+        .then(r => migrarLocalidad())
+        .then(r => console.log('Migrado!'))
         .catch(err => console.log('No se pudo importar DatosGeograficos', err))
 }
