@@ -19,11 +19,10 @@ function makeJobPaises(i, total, page_size, consulta) {
                         nuevosPaises.push(addPais(pool, nuevoPais));
                     });
                     return Promise.all(nuevosPaises).then(res =>
-                      makeJobPaises(offset + 1, total, page_size, consulta);
+                      makeJobPaises(offset + 1, total, page_size, consulta)
                     );
-                } else {
-                    return makeJobPaises(offset + 1, total, page_size, consulta);
                 }
+                else return makeJobPaises(offset + 1, total, page_size, consulta);
             });
     }
 }
@@ -39,15 +38,14 @@ function makeJobProvincia(i, total, page_size, consulta) {
                         let nuevaProvincia = {};
                         nuevaProvincia['id'] = provincia['CODPROVINCIA'];
                         nuevaProvincia['nombre'] = provincia['DESCRIPCION'];
-                        nuevaProvincia['idPais'] = provincia['CODPAIS'];
+                        nuevaProvincia['pais'] = provincia['CODPAIS'];
                         listaProvincias.push(addProvincia(pool, nuevaProvincia));
                     });
-                    return Promise.all(listaProvincias).then(res => {
-                        return makeJobProvincia(offset + 1, total, page_size, consulta);
-                    });
-                } else {
-                    return makeJobProvincia(offset + 1, total, page_size, consulta);
+                    return Promise.all(listaProvincias).then(res =>
+                        makeJobProvincia(offset + 1, total, page_size, consulta)
+                    );
                 }
+                else return makeJobProvincia(offset + 1, total, page_size, consulta);
             });
     }
 }
@@ -55,7 +53,7 @@ function makeJobProvincia(i, total, page_size, consulta) {
 function makeJobDepartamento(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        connectSql.consultaSql(consulta, i, offset)
+        return connectSql.consultaSql(consulta, i, offset)
             .then(rows => {
                 let listaDepartamentos = [];
                 if (rows && rows.recordset) {
@@ -63,26 +61,22 @@ function makeJobDepartamento(i, total, page_size, consulta) {
                         let nuevoDepartamento = {};
                         nuevoDepartamento['id'] = dpto['CODPROVINCIA'];
                         nuevoDepartamento['nombre'] = dpto['DESCRIPCION'];
-                        nuevoDepartamento['idProvincia'] = dpto['CODPROVINCIA'];
+                        nuevoDepartamento['provincia'] = dpto['CODPROVINCIA'];
                         listaDepartamentos.push(addDepartamento(pool, nuevoDepartamento));
                     });
-                    Promise.all(listaDepartamentos).then(res => {
-                        return makeJobDepartamento(offset + 1, total, page_size, consulta);
-                    });
-                } else {
-                    return makeJobDepartamento(offset + 1, total, page_size, consulta);
+                    return Promise.all(listaDepartamentos).then(res =>
+                        makeJobDepartamento(offset + 1, total, page_size, consulta)
+                    );
                 }
-            })
-            .catch(error => {
-                console.log('ERROR', error);
-            })
+                else return makeJobDepartamento(offset + 1, total, page_size, consulta);
+            });
     }
 }
 
 function makeJobLocalidad(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        connectSql.consultaSql(consulta, i, offset)
+        return connectSql.consultaSql(consulta, i, offset)
             .then(rows => {
                 let listaLocalidades = [];
                 if (rows && rows.recordset) {
@@ -90,19 +84,15 @@ function makeJobLocalidad(i, total, page_size, consulta) {
                         let nuevaLocalidad = {};
                         nuevaLocalidad['id'] = localidad['CODIGO'];
                         nuevaLocalidad['nombre'] = localidad['DESCRIPCION'];
-                        nuevaLocalidad['idDepartamento'] = localidad['CODDEPARTAMENTO'];
+                        nuevaLocalidad['departamento'] = localidad['CODDEPARTAMENTO'];
                         listaLocalidades.push(addLocalidad(pool, nuevaLocalidad));
                     });
-                    Promise.all(listaLocalidades).then(res => {
-                        return makeJobLocalidad(offset + 1, total, page_size, consulta);
-                    });
-                } else {
-                    return makeJobLocalidad(offset + 1, total, page_size, consulta);
+                    return Promise.all(listaLocalidades).then(res =>
+                      makeJobLocalidad(offset + 1, total, page_size, consulta)
+                    );
                 }
-            })
-            .catch(error => {
-                console.log('ERROR', error);
-            })
+                else return makeJobLocalidad(offset + 1, total, page_size, consulta);
+            });
     }
 }
 
@@ -123,11 +113,11 @@ function addPais(client, nuevo_pais) {
 function addProvincia(client, nueva_provincia) {
     let query = `
       INSERT INTO provincia (
-        id, nombre, idPais)
+        id, nombre, pais)
       VALUES($1, $2, $3)
     `;
     let values = [
-        nueva_provincia.id, nueva_provincia.nombre, nueva_provincia.idPais
+        nueva_provincia.id, nueva_provincia.nombre, nueva_provincia.pais
     ];
 
     return client.query(query, values);
@@ -136,11 +126,11 @@ function addProvincia(client, nueva_provincia) {
 function addDepartamento(client, nuevo_Departamento) {
     let query = `
       INSERT INTO departamento (
-        id, nombre, idProvincia)
+        id, nombre, provincia)
       VALUES($1, $2, $3)
     `;
     let values = [
-        nuevo_Departamento.id, nuevo_Departamento.nombre, nuevo_Departamento.idProvincia
+        nuevo_Departamento.id, nuevo_Departamento.nombre, nuevo_Departamento.provincia
     ];
 
     return client.query(query, values);
@@ -149,11 +139,11 @@ function addDepartamento(client, nuevo_Departamento) {
 function addLocalidad(client, nueva_Localidad) {
     let query = `
       INSERT INTO localidad (
-        id, nombre, idDepartamento)
+        id, nombre, departamento)
       VALUES($1, $2, $3)
     `;
     let values = [
-        nueva_Localidad.id, nueva_Localidad.nombre, nueva_Localidad.idDepartamento
+        nueva_Localidad.id, nueva_Localidad.nombre, nueva_Localidad.departamento
     ];
 
     return client.query(query, values);
@@ -175,9 +165,8 @@ function migrarPaises() {
                         size = cantPaises;
                     }
                     return makeJobPaises(0, cantPaises, size, consultaPaises);
-                } else {
-                    return;
                 }
+                else return;
             })
             .catch(err => {
                 console.log('No se pudo importar Paises', err);
@@ -189,8 +178,7 @@ migrarProvincias = function () {
     let consultaProvincias = 'select * from T_PCIAS WHERE CODPROVINCIA BETWEEN @offset AND @limit';
     let countProvincia = 'select COUNT(*) as cantProvincias from T_PCIAS';
     let size = 100;
-    return new Promise(function (resolve, reject) {
-        connectSql.countSql(countProvincia)
+    return connectSql.countSql(countProvincia)
             .then(res => {
                 if (res && res !== []) {
                     let resultado = res[0];
@@ -200,9 +188,8 @@ migrarProvincias = function () {
                         size = cantProvincias;
                     }
                     return makeJobProvincia(0, cantProvincias, size, consultaProvincias);
-                } else {
-                    return;
                 }
+                else return;
             })
             .catch(err => {
                 console.log('No se pudo importar Provincias', err);
@@ -214,8 +201,7 @@ migrarDepartamentos = function () {
     let consultaDepartamentos = 'select * from T_DEPTOS WHERE CODDEPARTAMENTO BETWEEN @offset AND @limit';
     let countDepartamentos = 'select COUNT(*) as cantDepartamentos from T_DEPTOS';
     let sizeDptos = 100;
-    return new Promise(function (resolve, reject) {
-        connectSql.countSql(countDepartamentos)
+    return connectSql.countSql(countDepartamentos)
             .then(res => {
                 if (res && res !== []) {
                     let resultado = res[0];
@@ -223,27 +209,21 @@ migrarDepartamentos = function () {
                     if (cantDptos < sizeDptos) {
                         sizeDptos = cantDptos;
                     }
-                    makeJobDepartamento(0, cantDptos, sizeDptos, consultaDepartamentos);
-                    resolve(cantDptos);
-                } else {
-                    resolve(0);
+                    return makeJobDepartamento(0, cantDptos, sizeDptos, consultaDepartamentos);
                 }
-
+                else return;
             })
             .catch(err => {
-                reject(err);
                 console.log('No se pudo importar Departamentos', err);
-
-            })
-    })
+                throw Error(err);
+            });
 }
 
 migrarLocalidad = function () {
     let consultaLocalidad = 'select * from T_LOCALIDAD WHERE CODIGO BETWEEN @offset AND @limit';
     let countLocalidad = 'select COUNT(*) as cantLocalidades from T_LOCALIDAD';
     let size = 100;
-    return new Promise(function (resolve, reject) {
-        connectSql.countSql(countLocalidad)
+    return connectSql.countSql(countLocalidad)
             .then(res => {
                 if (res && res !== []) {
                     let resultado = res[0];
@@ -252,24 +232,21 @@ migrarLocalidad = function () {
                     if (cantLocalidad < size) {
                         size = cantLocalidad;
                     }
-                    makeJobLocalidad(0, cantLocalidad, size, consultaLocalidad);
-                    resolve(cantLocalidad);
-                } else {
-                    resolve(0);
+                    return makeJobLocalidad(0, cantLocalidad, size, consultaLocalidad);
                 }
+                else return;
             })
             .catch(err => {
-                reject(err);
                 console.log('No se pudo importar Localidades', err);
+                throw Error(err);
             });
-    })
 }
 
 module.exports.migrarDatosGeograficos = function () {
     migrarPaises()
         .then(r => migrarProvincias())
-        // .then(r => migrarDepartamentos())
-        // .then(r => migrarLocalidad())
-        // .then(r => console.log('Migrado!'))
+        .then(r => migrarDepartamentos())
+        .then(r => migrarLocalidad())
+        .then(r => console.log('Migrado!'))
         .catch(err => console.log('No se pudo importar DatosGeograficos', err))
 }
