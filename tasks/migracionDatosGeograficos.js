@@ -18,23 +18,20 @@ function makeJobPaises(i, total, page_size, consulta) {
                         nuevoPais['nombre'] = pais['DESCRIPCION'];
                         nuevosPaises.push(addPais(pool, nuevoPais));
                     });
-                    Promise.all(nuevosPaises).then(res => {
-                        return makeJobPaises(offset + 1, total, page_size, consulta);
-                    });
+                    return Promise.all(nuevosPaises).then(res =>
+                      makeJobPaises(offset + 1, total, page_size, consulta);
+                    );
                 } else {
                     return makeJobPaises(offset + 1, total, page_size, consulta);
                 }
-            })
-            .catch(error => {
-                console.log('ERROR en Paises', error);
-            })
+            });
     }
 }
 
 function makeJobProvincia(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        connectSql.consultaSql(consulta, i, offset)
+        return connectSql.consultaSql(consulta, i, offset)
             .then(rows => {
                 let listaProvincias = [];
                 if (rows && rows.recordset) {
@@ -45,16 +42,13 @@ function makeJobProvincia(i, total, page_size, consulta) {
                         nuevaProvincia['idPais'] = provincia['CODPAIS'];
                         listaProvincias.push(addProvincia(pool, nuevaProvincia));
                     });
-                    Promise.all(listaProvincias).then(res => {
+                    return Promise.all(listaProvincias).then(res => {
                         return makeJobProvincia(offset + 1, total, page_size, consulta);
                     });
                 } else {
                     return makeJobProvincia(offset + 1, total, page_size, consulta);
                 }
-            })
-            .catch(error => {
-                console.log('ERROR', error);
-            })
+            });
     }
 }
 
@@ -166,13 +160,12 @@ function addLocalidad(client, nueva_Localidad) {
 }
 
 
-migrarPaises = function () {
+function migrarPaises() {
     let consultaPaises = 'select * from T_PAIS WHERE CODIGO BETWEEN @offset AND @limit';
     let countPaises = 'select COUNT(*) as cantPaises from T_PAIS';
     let size = 100;
 
-    return new Promise(function (resolve, reject) {
-        connectSql.countSql(countPaises)
+    return connectSql.countSql(countPaises)
             .then(res => {
                 if (res && res !== []) {
                     let resultado = res[0];
@@ -181,17 +174,15 @@ migrarPaises = function () {
                     if (cantPaises < size) {
                         size = cantPaises;
                     }
-                    makeJobPaises(0, cantPaises, size, consultaPaises);
-                    resolve(cantPaises);
+                    return makeJobPaises(0, cantPaises, size, consultaPaises);
                 } else {
-                    resolve(0);
+                    return;
                 }
             })
             .catch(err => {
                 console.log('No se pudo importar Paises', err);
-                reject(err);
+                throw Error(err);
             })
-    })
 }
 
 migrarProvincias = function () {
@@ -208,17 +199,15 @@ migrarProvincias = function () {
                     if (cantProvincias < size) {
                         size = cantProvincias;
                     }
-                    makeJobProvincia(0, cantProvincias, size, consultaProvincias);
-                    resolve(cantProvincias);
+                    return makeJobProvincia(0, cantProvincias, size, consultaProvincias);
                 } else {
-                    resolve(0);
+                    return;
                 }
             })
             .catch(err => {
                 console.log('No se pudo importar Provincias', err);
-                reject(err);
+                throw Error(err);
             })
-    })
 }
 
 migrarDepartamentos = function () {
@@ -279,8 +268,8 @@ migrarLocalidad = function () {
 module.exports.migrarDatosGeograficos = function () {
     migrarPaises()
         .then(r => migrarProvincias())
-        .then(r => migrarDepartamentos())
-        .then(r => migrarLocalidad())
-        .then(r => console.log('Migrado!'))
+        // .then(r => migrarDepartamentos())
+        // .then(r => migrarLocalidad())
+        // .then(r => console.log('Migrado!'))
         .catch(err => console.log('No se pudo importar DatosGeograficos', err))
 }
