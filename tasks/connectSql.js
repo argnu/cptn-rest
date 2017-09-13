@@ -10,7 +10,7 @@ module.exports.consultaSql = function (consulta, offset, limit) {
                  .query(consulta)
                  .then(listaRow => {
                      sql.close();
-                     return listaRow;
+                     return listaRow.recordset;
                  })
                  .catch(error => {
                      sql.close();

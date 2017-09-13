@@ -9,10 +9,10 @@ function makeJobPaises(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
         return connectSql.consultaSql(consulta, i, offset)
-            .then(rows => {
+            .then(paises => {
                 let nuevosPaises = [];
-                if (rows && rows.recordset) {
-                    rows.recordset.forEach(pais => {
+                if (paises) {
+                    paises.forEach(pais => {
                         let nuevoPais = {};
                         nuevoPais['id'] = pais['CODIGO'];
                         nuevoPais['nombre'] = pais['DESCRIPCION'];
@@ -31,10 +31,10 @@ function makeJobProvincia(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
         return connectSql.consultaSql(consulta, i, offset)
-            .then(rows => {
+            .then(provincias => {
                 let listaProvincias = [];
-                if (rows && rows.recordset) {
-                    rows.recordset.forEach(provincia => {
+                if (provincias) {
+                    provincias.forEach(provincia => {
                         let nuevaProvincia = {};
                         nuevaProvincia['id'] = provincia['CODPROVINCIA'];
                         nuevaProvincia['nombre'] = provincia['DESCRIPCION'];
@@ -54,10 +54,10 @@ function makeJobDepartamento(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
         return connectSql.consultaSql(consulta, i, offset)
-            .then(rows => {
+            .then(departamentos => {
                 let listaDepartamentos = [];
-                if (rows && rows.recordset) {
-                    rows.recordset.forEach(dpto => {
+                if (departamentos) {
+                    departamentos.forEach(dpto => {
                         let nuevoDepartamento = {};
                         nuevoDepartamento['id'] = dpto['CODPROVINCIA'];
                         nuevoDepartamento['nombre'] = dpto['DESCRIPCION'];
@@ -77,10 +77,10 @@ function makeJobLocalidad(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
         return connectSql.consultaSql(consulta, i, offset)
-            .then(rows => {
+            .then(localidades => {
                 let listaLocalidades = [];
-                if (rows && rows.recordset) {
-                    rows.recordset.forEach(localidad => {
+                if (localidades) {
+                    localidades.forEach(localidad => {
                         let nuevaLocalidad = {};
                         nuevaLocalidad['id'] = localidad['CODIGO'];
                         nuevaLocalidad['nombre'] = localidad['DESCRIPCION'];
@@ -156,9 +156,8 @@ function migrarPaises() {
     let size = 100;
 
     return connectSql.countSql(countPaises)
-            .then(res => {
-                if (res && res !== []) {
-                    let resultado = res[0];
+            .then(resultado => {
+                if (resultado) {
                     let cantPaises = resultado['cantPaises'];
                     console.log('Cantidad Paises', cantPaises);
                     if (cantPaises < size) {
@@ -179,9 +178,8 @@ migrarProvincias = function () {
     let countProvincia = 'select COUNT(*) as cantProvincias from T_PCIAS';
     let size = 100;
     return connectSql.countSql(countProvincia)
-            .then(res => {
-                if (res && res !== []) {
-                    let resultado = res[0];
+            .then(resultado => {
+                if (resultado) {
                     let cantProvincias = resultado['cantProvincias'];
                     console.log('Cantidad Provincias', cantProvincias);
                     if (cantProvincias < size) {
@@ -202,9 +200,8 @@ migrarDepartamentos = function () {
     let countDepartamentos = 'select COUNT(*) as cantDepartamentos from T_DEPTOS';
     let sizeDptos = 100;
     return connectSql.countSql(countDepartamentos)
-            .then(res => {
-                if (res && res !== []) {
-                    let resultado = res[0];
+            .then(resultado => {
+                if (resultado) {
                     let cantDptos = resultado['cantDepartamentos'];
                     if (cantDptos < sizeDptos) {
                         sizeDptos = cantDptos;
@@ -224,9 +221,8 @@ migrarLocalidad = function () {
     let countLocalidad = 'select COUNT(*) as cantLocalidades from T_LOCALIDAD';
     let size = 100;
     return connectSql.countSql(countLocalidad)
-            .then(res => {
-                if (res && res !== []) {
-                    let resultado = res[0];
+            .then(resultado => {
+                if (resultado) {
                     let cantLocalidad = resultado['cantLocalidad'];
                     console.log('Cantidad Localidad', cantLocalidad);
                     if (cantLocalidad < size) {
