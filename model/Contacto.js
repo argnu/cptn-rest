@@ -1,7 +1,7 @@
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const TipoContacto = require('./opciones/TipoContacto');
+const TipoContacto = require('./tipos/TipoContacto');
 
 const table = sql.define({
   name: 'contacto',

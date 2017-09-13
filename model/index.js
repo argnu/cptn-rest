@@ -4,19 +4,19 @@ module.exports.Departamento = require('./geograficos/Departamento');
 module.exports.Localidad = require('./geograficos/Localidad');
 module.exports.Domicilio = require('./Domicilio');
 
-module.exports.TipoSexo = require('./opciones/TipoSexo');
-module.exports.TipoCondicionAfip = require('./opciones/TipoCondicionAfip');
-module.exports.TipoContacto = require('./opciones/TipoContacto');
-module.exports.TipoEstadoCivil = require('./opciones/TipoEstadoCivil');
-module.exports.TipoFormacion = require('./opciones/TipoFormacion');
-module.exports.TipoRelacionLaboral = require('./opciones/TipoRelacionLaboral');
-module.exports.TipoEmpresa = require('./opciones/TipoEmpresa');
-module.exports.TipoSociedad = require('./opciones/TipoSociedad');
-module.exports.TipoIncumbencia = require('./opciones/TipoIncumbencia');
+module.exports.TipoSexo = require('./tipos/TipoSexo');
+module.exports.TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
+module.exports.TipoContacto = require('./tipos/TipoContacto');
+module.exports.TipoEstadoCivil = require('./tipos/TipoEstadoCivil');
+module.exports.TipoFormacion = require('./tipos/TipoFormacion');
+module.exports.TipoRelacionLaboral = require('./tipos/TipoRelacionLaboral');
+module.exports.TipoEmpresa = require('./tipos/TipoEmpresa');
+module.exports.TipoSociedad = require('./tipos/TipoSociedad');
+module.exports.TipoIncumbencia = require('./tipos/TipoIncumbencia');
+module.exports.TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 
 module.exports.Institucion = require('./Institucion');
 module.exports.Delegacion = require('./Delegacion');
-module.exports.TipoEstadoMatricula = require('./TipoEstadoMatricula');
 
 
 module.exports.Entidad = require('./Entidad');

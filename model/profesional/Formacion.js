@@ -2,7 +2,7 @@ const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const Institucion = require('../Institucion');
-const TipoFormacion = require('../opciones/TipoFormacion');
+const TipoFormacion = require('../tipos/TipoFormacion');
 
 const table = sql.define({
   name: 'tipoformacion',

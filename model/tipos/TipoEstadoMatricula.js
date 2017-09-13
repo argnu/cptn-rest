@@ -1,9 +1,9 @@
-const connector = require('../connector');
+const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
  const table = sql.define({
-  name: 't_estadoMatricula',
+  name: 't_estadomatricula',
   columns: [{
       name: 'id',
       dataType: 'serial',

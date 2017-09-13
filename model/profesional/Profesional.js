@@ -116,12 +116,12 @@ function addProfesional(client, profesional) {
     return connector.execQuery(query, client);
   }
 
-  return Entidad.addEntidad(client, {
+  return Entidad.addEntidad({
     cuit: profesional.cui,
     condafip: profesional.condafip,
     domicilioReal: profesional.domicilioReal,
     domicilioLegal: profesional.domicilioLegal
-  })
+  }, client)
   .then(entidad => {
     profesional.id = entidad.id;
     return addDatosBasicos(profesional)
