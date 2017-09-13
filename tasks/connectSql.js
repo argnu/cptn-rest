@@ -28,16 +28,16 @@ module.exports.countSql = function (query) {
                 .query(query)
                 .then(res => {
                     sql.close();
-                    if (res && res.recordset) {
-                        resolve(res.recordset);
+                    if (res && res.recordset && res.recordset.length) {
+                        return res.recordset;
                     } else {
-                        resolve([]);
+                        return [];
                     }
                 })
                 .catch(error => {
                     console.log('Error', error);
                     sql.close();
-                    reject(error);
+                    throw Error(error);
                 })
         });
 };
