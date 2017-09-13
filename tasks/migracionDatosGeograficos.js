@@ -59,7 +59,7 @@ function makeJobDepartamento(i, total, page_size, consulta) {
                 if (departamentos) {
                     departamentos.forEach(dpto => {
                         let nuevoDepartamento = {};
-                        nuevoDepartamento['id'] = dpto['CODPROVINCIA'];
+                        nuevoDepartamento['id'] = dpto['CODDEPARTAMENTO'];
                         nuevoDepartamento['nombre'] = dpto['DESCRIPCION'];
                         nuevoDepartamento['provincia'] = dpto['CODPROVINCIA'];
                         listaDepartamentos.push(addDepartamento(pool, nuevoDepartamento));
