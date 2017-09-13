@@ -34,7 +34,7 @@ function makeJobPaises(i, total, page_size, consulta) {
 function makeJobProvincia(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        return connectSql.consultaSql(consulta, i, offset)
+        connectSql.consultaSql(consulta, i, offset)
             .then(rows => {
                 let listaProvincias = [];
                 if (rows && rows.recordset) {
@@ -61,7 +61,7 @@ function makeJobProvincia(i, total, page_size, consulta) {
 function makeJobDepartamento(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        return connectSql.consultaSql(consulta, i, offset)
+        connectSql.consultaSql(consulta, i, offset)
             .then(rows => {
                 let listaDepartamentos = [];
                 if (rows && rows.recordset) {
@@ -88,7 +88,7 @@ function makeJobDepartamento(i, total, page_size, consulta) {
 function makeJobLocalidad(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        return connectSql.consultaSql(consulta, i, offset)
+        connectSql.consultaSql(consulta, i, offset)
             .then(rows => {
                 let listaLocalidades = [];
                 if (rows && rows.recordset) {
@@ -171,78 +171,109 @@ migrarPaises = function () {
     let countPaises = 'select COUNT(*) as cantPaises from T_PAIS';
     let size = 100;
 
-    connectSql.countSql(countPaises)
-        .then(res => {
-            if (res && res !== []) {
-                let resultado = res[0];
-                let cantPaises = resultado['cantPaises'];
-                console.log('Cantidad Paises', cantPaises);
-                if (cantPaises < size) {
-                    size = cantPaises;
+    return new Promise(function (resolve, reject) {
+        connectSql.countSql(countPaises)
+            .then(res => {
+                if (res && res !== []) {
+                    let resultado = res[0];
+                    let cantPaises = resultado['cantPaises'];
+                    console.log('Cantidad Paises', cantPaises);
+                    if (cantPaises < size) {
+                        size = cantPaises;
+                    }
+                    makeJobPaises(0, cantPaises, size, consultaPaises);
+                    resolve(cantPaises);
+                } else {
+                    resolve(0);
                 }
-                makeJobPaises(0, cantPaises, size, consultaPaises);
-            }
-        })
-        .catch(err => console.log('No se pudo importar Paises', err))
+            })
+            .catch(err => {
+                console.log('No se pudo importar Paises', err);
+                reject(err);
+            })
+    })
 }
 
 migrarProvincias = function () {
     let consultaProvincias = 'select * from T_PCIAS WHERE CODPROVINCIA BETWEEN @offset AND @limit';
     let countProvincia = 'select COUNT(*) as cantProvincias from T_PCIAS';
     let size = 100;
-
-    connectSql.countSql(countPaises)
-        .then(res => {
-            if (res && res !== []) {
-                let resultado = res[0];
-                let cantProvincias = resultado['cantProvincias'];
-                console.log('Cantidad Provincias', cantProvincias);
-                if (cantProvincias < size) {
-                    size = cantProvincias;
+    return new Promise(function (resolve, reject) {
+        connectSql.countSql(countProvincia)
+            .then(res => {
+                if (res && res !== []) {
+                    let resultado = res[0];
+                    let cantProvincias = resultado['cantProvincias'];
+                    console.log('Cantidad Provincias', cantProvincias);
+                    if (cantProvincias < size) {
+                        size = cantProvincias;
+                    }
+                    makeJobProvincia(0, cantProvincias, size, consultaProvincias);
+                    resolve(cantProvincias);
+                } else {
+                    resolve(0);
                 }
-                makeJobProvincia(0, cantProvincias, size, consultaProvincias);
-            }
-        })
-        .catch(err => console.log('No se pudo importar Provincias', err))
+            })
+            .catch(err => {
+                console.log('No se pudo importar Provincias', err);
+                reject(err);
+            })
+    })
 }
 
 migrarDepartamentos = function () {
     let consultaDepartamentos = 'select * from T_DEPTOS WHERE CODDEPARTAMENTO BETWEEN @offset AND @limit';
     let countDepartamentos = 'select COUNT(*) as cantDepartamentos from T_DEPTOS';
     let sizeDptos = 100;
-
-    connectSql.countSql(countDepartamentos)
-        .then(res => {
-            if (res && res !== []) {
-                let resultado = res[0];
-                let cantDptos = resultado['cantDepartamentos'];
-                console.log('Cantidad Departamentos', cantDptos);
-                if (cantDptos < sizeDptos) {
-                    sizeDptos = cantDptos;
+    return new Promise(function (resolve, reject) {
+        connectSql.countSql(countDepartamentos)
+            .then(res => {
+                if (res && res !== []) {
+                    let resultado = res[0];
+                    let cantDptos = resultado['cantDepartamentos'];
+                    if (cantDptos < sizeDptos) {
+                        sizeDptos = cantDptos;
+                    }
+                    makeJobDepartamento(0, cantDptos, sizeDptos, consultaDepartamentos);
+                    resolve(cantDptos);
+                } else {
+                    resolve(0);
                 }
-                makeJobDepartamento(0, cantDptos, sizeDptos, consultaDepartamentos);
-            }
-        })
-        .catch(err => console.log('No se pudo importar Departamentos', err))
+
+            })
+            .catch(err => {
+                reject(err);
+                console.log('No se pudo importar Departamentos', err);
+
+            })
+    })
 }
 
 migrarLocalidad = function () {
     let consultaLocalidad = 'select * from T_LOCALIDAD WHERE CODIGO BETWEEN @offset AND @limit';
     let countLocalidad = 'select COUNT(*) as cantLocalidades from T_LOCALIDAD';
     let size = 100;
-    return connectSql.countSql(countLocalidad)
-        .then(res => {
-            if (res && res !== []) {
-                let resultado = res[0];
-                let cantLocalidad = resultado['cantLocalidad'];
-                console.log('Cantidad Localidad', cantLocalidad);
-                if (cantLocalidad < size) {
-                    size = cantLocalidad;
+    return new Promise(function (resolve, reject) {
+        connectSql.countSql(countLocalidad)
+            .then(res => {
+                if (res && res !== []) {
+                    let resultado = res[0];
+                    let cantLocalidad = resultado['cantLocalidad'];
+                    console.log('Cantidad Localidad', cantLocalidad);
+                    if (cantLocalidad < size) {
+                        size = cantLocalidad;
+                    }
+                    makeJobLocalidad(0, cantLocalidad, size, consultaLocalidad);
+                    resolve(cantLocalidad);
+                } else {
+                    resolve(0);
                 }
-                makeJobLocalidad(0, cantLocalidad, size, consultaLocalidad);
-            }
-        })
-        .catch(err => console.log('No se pudo importar Localidades', err));
+            })
+            .catch(err => {
+                reject(err);
+                console.log('No se pudo importar Localidades', err);
+            });
+    })
 }
 
 module.exports.migrarDatosGeograficos = function () {

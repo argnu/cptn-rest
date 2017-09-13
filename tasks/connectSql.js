@@ -6,6 +6,7 @@ module.exports.consultaSql = function (consulta, offset, limit) {
     return new Promise((resolve, reject) => {
         sql.connect(config.dbMssql, function (err) {
             if (err) {
+                sql.close();
                 console.log("Error de Conexión", err);
                 reject(err);
             }
@@ -18,6 +19,7 @@ module.exports.consultaSql = function (consulta, offset, limit) {
                     resolve(listaRow);
                 })
                 .catch(error => {
+                    sql.close();
                     console.log('Error en sql server', error);
                     reject(error);
                 })
