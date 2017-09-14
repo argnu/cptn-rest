@@ -1,34 +1,36 @@
 {
-  "fecha": "06/09/2017",
+  "fecha": "14/09/2017",
   "delegacion": 1,
-  "empresa": {
+  "entidad": {
+  	"tipo": "empresa",
     "nombre": "Super",
-    "cuit": "123",
-    "fechaInicio": "15/09/2017",
-    "fechaConstitucion": "13/09/2017",
-    "tipoEmpresa": 16,
-    "tipoSociedad": 18,
+    "cuit": "2500000",
+    "condafip": 5,
+    "fechaInicio": "08/09/2017",
+    "fechaConstitucion": "18/09/2017",
+    "tipoEmpresa": 2,
+    "tipoSociedad": 1,
     "domicilioReal": {
-      "calle": "Alderete",
-      "numero": "123",
+      "calle": "Leloir",
+      "numero": "985",
       "localidad": 1,
       "pais": 1,
       "provincia": 1,
       "departamento": 1
     },
     "domicilioLegal": {
-      "calle": "Elordi",
-      "numero": "231",
+      "calle": "Alderete",
+      "numero": "200",
       "localidad": 1,
       "pais": 1,
       "provincia": 1,
       "departamento": 1
     },
     "contactos": [{
-      "tipo": 7,
-      "valor": "4489633"
+      "tipo": 3,
+      "valor": "mweingart@neuquen.gov.ar"
     }],
-    "incumbencias": []
+    "incumbencias": [1]
   },
   "exencionArt10": false,
   "exencionArt6": false

@@ -117,7 +117,8 @@ function addProfesional(client, profesional) {
   }
 
   return Entidad.addEntidad({
-    cuit: profesional.cui,
+    tipo: profesional.tipo,
+    cuit: profesional.cuit,
     condafip: profesional.condafip,
     domicilioReal: profesional.domicilioReal,
     domicilioLegal: profesional.domicilioLegal
@@ -181,7 +182,9 @@ module.exports.add = function(profesional) {
   });
 }
 
-const select_atributes = [table.id, table.nombre, table.apellido, table.dni,
+const select_atributes = [table.id,
+Entidad.table.tipo,
+table.nombre, table.apellido, table.dni,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioLegal.as('domicilioLegal')];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id));

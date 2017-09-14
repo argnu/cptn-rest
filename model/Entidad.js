@@ -14,6 +14,11 @@ const table = sql.define({
       primaryKey: true
     },
     {
+      name: 'tipo',
+      dataType: 'varchar(20)',
+      notNull: true
+    },
+    {
       name: 'domicilioReal',
       dataType: 'int'
     },
@@ -59,6 +64,7 @@ function addEntidad(entidad, client) {
   ])
   .then(([domicilioReal, domicilioLegal]) => {
     let query = table.insert(
+      table.tipo.value(entidad.tipo),
       table.cuit.value(entidad.cuit), table.condafip.value(entidad.condafip),
       table.domicilioReal.value(domicilioReal ? domicilioReal.id : null),
       table.domicilioLegal.value(domicilioLegal ? domicilioLegal.id : null)

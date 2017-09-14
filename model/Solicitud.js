@@ -44,10 +44,6 @@ const table = sql.define({
     {
       name: 'entidad',
       dataType: 'int'
-    },
-    {
-      name: 'tipoEntidad',
-      dataType: 'varchar(20)'
     }
   ],
 
@@ -67,14 +63,13 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addSolicitud(client, solicitud) {
+function addSolicitud(solicitud, client) {
   let query = table.insert(
     table.fecha.value(solicitud.fecha),
     table.estado.value('pendiente'),
     table.delegacion.value(solicitud.delegacion),
-    table.entidad.value(solicitud.entidad.id),
-    table.tipoEntidad.value(solicitud.tipoEntidad)
-  ).returning(table.id, table.fecha, table.estado, table.delegacion, table.tipoEntidad).toQuery()
+    table.entidad.value(solicitud.entidad.id)
+  ).returning(table.id, table.fecha, table.estado, table.delegacion, table.entidad).toQuery()
   return connector.execQuery(query, client)
          .then(r => {
            let solicitud_added = r.rows[0];
@@ -83,71 +78,72 @@ function addSolicitud(client, solicitud) {
 }
 
 module.exports.add = function(solicitud) {
-  return new Promise(function(resolve, reject) {
-    connector
+    return connector
     .beginTransaction()
     .then(connection => {
 
-        if (solicitud.tipoEntidad == 'profesional') {
-          Profesional.addProfesional(connection.client, solicitud.entidad)
+        if (solicitud.entidad.tipo == 'profesional') {
+          return Profesional.addProfesional(connection.client, solicitud.entidad)
             .then(profesional_added => {
               solicitud.entidad = profesional_added;
-              return addSolicitud(connection.client, solicitud)
+              return addSolicitud(solicitud, connection.client)
                 .then(solicitud_added => {
                   return connector
                   .commit(connection.client)
                   .then(r => {
                     connection.done();
                     solicitud_added.entidad = profesional_added;
-                    resolve(solicitud_added);
+                    return solicitud_added;
                   });
                 })
             })
             .catch(e => {
               connector.rollback(connection.client);
               connection.done();
-              reject(e);
+              throw e;
             });
         }
-        else if (solicitud.tipoEntidad == 'empresa') {
-          Empresa.addEmpresa(connection.client, solicitud.entidad)
+        else if (solicitud.entidad.tipo == 'empresa') {
+          return Empresa.addEmpresa(connection.client, solicitud.entidad)
             .then(empresa_added => {
               solicitud.entidad = empresa_added;
-              return addSolicitud(connection.client, solicitud)
+              return addSolicitud(solicitud, connection.client)
                 .then(solicitud_added => {
                   return connector
                   .commit(connection.client)
                   .then(r => {
                     connection.done();
                     solicitud_added.entidad = empresa_added;
-                    resolve(solicitud_added);
+                    return solicitud_added;
                   });
                 })
             })
             .catch(e => {
               connector.rollback(connection.client);
               connection.done();
-              reject(e);
+              throw e;
             });
         }
-      })
-    });
+      });
+}
+
+const select = {
+  atributes: [
+    table.star(), Delegacion.table.nombre.as('delegacion'),
+    Entidad.table.tipo.as('tipoEntidad')
+  ],
+  from: table.join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))
+             .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+             .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+             .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
 }
 
 module.exports.getAll = function(params) {
-  return new Promise(function(resolve, reject) {
     let solicitudes = [];
-    let query = table.select(
-      table.star(), Delegacion.table.nombre.as('delegacion')
-    ).from(
-      table.join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))
-           .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-           .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-           .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-    );
+    let query = table.select(...select.atributes).from(select.from);
 
     /* ----------------- FILTERS  ---------------- */
-    if (params.tipoEntidad) query.where(table.tipoEntidad.equals(params.tipoEntidad));
+    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
     if (params.estado) query.where(table.estado.equals(params.estado));
     if (params.exencionArt10) query.where(table.exencionArt10.equals(params.exencionArt10));
 
@@ -165,7 +161,7 @@ module.exports.getAll = function(params) {
     if (params.limit && params.offset) query.offset(+params.offset);
 
 
-    connector.execQuery(query.toQuery())
+    return connector.execQuery(query.toQuery())
     .then(r => {
       solicitudes = r.rows;
       let proms = solicitudes.map(s => {
@@ -173,24 +169,24 @@ module.exports.getAll = function(params) {
         else if (s.tipoEntidad == 'empresa') return Empresa.get(s.entidad);
       });
 
-      Promise.all(proms)
+      return Promise.all(proms)
              .then(rs => {
                rs.forEach((r, i) => {
                  solicitudes[i].entidad = r;
+                 delete(solicitudes[i].tipoEntidad);
                });
-               resolve(solicitudes);
+               return solicitudes;
              })
-    })
-    .catch(e => reject(e));
-  });
+    });
 }
 
 module.exports.get = function(id) {
   let solicitud = {};
-  let query = table.select(table.star())
-                   .from(table)
+  let query = table.select(...select.atributes)
+                   .from(select.from)
                    .where(table.id.equals(id))
                    .toQuery();
+
   return connector.execQuery(query)
   .then(r => {
     solicitud = r.rows[0];
@@ -203,11 +199,10 @@ module.exports.get = function(id) {
   });
 }
 
-module.exports.setEstado = function(client, id, estado) {
+module.exports.setEstado = function(id, estado, client) {
   let query = table.update({
                       estado: estado
                    })
-                   .from(table)
                    .where(table.id.equals(id))
                    .toQuery();
   return connector.execQuery(query, client);

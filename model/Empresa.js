@@ -83,6 +83,7 @@ function addEmpresa(client, empresa) {
   }
 
   return Entidad.addEntidad({
+    tipo: empresa.tipo,
     cuit: empresa.cuit,
     condafip: empresa.condafip,
     domicilioReal: empresa.domicilioReal,
@@ -133,7 +134,9 @@ module.exports.add = function(empresa) {
 }
 
 
-const select_atributes = [table.id, table.nombre, table.fechaInicio,
+const select_atributes = [table.id,
+Entidad.table.tipo,
+table.nombre, table.fechaInicio,
 table.fechaConstitucion,
 TipoEmpresa.table.valor.as('tipoEmpresa'),
 TipoSociedad.table.valor.as('tipoSociedad'),
