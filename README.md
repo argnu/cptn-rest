@@ -1,11 +1,12 @@
 ## TODO
+* El tipo de entidad debería guardarse en Entidad.
 * Ver cómo guardar imagenes en postgres:
   - Profesional: fotoarchivo, firma.
   - Importar datos:
     * Localidades.
     * Instituciones
     * Delegaciones.
-    
+
 ## Examples
 
 ### config.private

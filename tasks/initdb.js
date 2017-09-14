@@ -72,6 +72,9 @@ function fakeData() {
     ),
     connector.execQuery(
       model.TipoIncumbencia.table.insert(model.TipoIncumbencia.table.id.value(2), model.TipoIncumbencia.table.valor.value('Saneamiento')).toQuery()
+    ),
+    connector.execQuery(
+      model.TipoEstadoMatricula.table.insert(model.TipoEstadoMatricula.table.valor.value('habilitado')).toQuery()
     )
 
   ])
@@ -139,9 +142,9 @@ dropTable()
     createTable(model.TipoEmpresa.table),
     createTable(model.TipoSociedad.table),
     createTable(model.TipoIncumbencia.table),
+    createTable(model.TipoEstadoMatricula.table),
     createTable(model.Institucion.table),
-    createTable(model.Delegacion.table),
-    createTable(model.TipoEstadoMatricula.table)
+    createTable(model.Delegacion.table)
   ])
   .then(rs => createEntidades())
   .then(r => Promise.all([
