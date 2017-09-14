@@ -173,7 +173,7 @@ function migrarPaises() {
             })
 }
 
-migrarProvincias = function () {
+function migrarProvincias() {
     let consultaProvincias = 'select * from T_PCIAS WHERE CODPROVINCIA BETWEEN @offset AND @limit';
     let countProvincia = 'select COUNT(*) as cantProvincias from T_PCIAS';
     let size = 100;
@@ -195,7 +195,7 @@ migrarProvincias = function () {
             })
 }
 
-migrarDepartamentos = function () {
+function migrarDepartamentos() {
     let consultaDepartamentos = 'select * from T_DEPTOS WHERE CODDEPARTAMENTO BETWEEN @offset AND @limit';
     let countDepartamentos = 'select COUNT(*) as cantDepartamentos from T_DEPTOS';
     let sizeDptos = 100;
@@ -203,6 +203,7 @@ migrarDepartamentos = function () {
             .then(resultado => {
                 if (resultado) {
                     let cantDptos = resultado['cantDepartamentos'];
+                    console.log('Cantidad Departamentos', cantDptos);
                     if (cantDptos < sizeDptos) {
                         sizeDptos = cantDptos;
                     }
@@ -216,14 +217,14 @@ migrarDepartamentos = function () {
             });
 }
 
-migrarLocalidad = function () {
+function migrarLocalidad() {
     let consultaLocalidad = 'select * from T_LOCALIDAD WHERE CODIGO BETWEEN @offset AND @limit';
     let countLocalidad = 'select COUNT(*) as cantLocalidades from T_LOCALIDAD';
     let size = 100;
     return connectSql.countSql(countLocalidad)
             .then(resultado => {
                 if (resultado) {
-                    let cantLocalidad = resultado['cantLocalidad'];
+                    let cantLocalidad = resultado['cantLocalidades'];
                     console.log('Cantidad Localidad', cantLocalidad);
                     if (cantLocalidad < size) {
                         size = cantLocalidad;
