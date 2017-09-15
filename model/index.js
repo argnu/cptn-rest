@@ -18,7 +18,6 @@ module.exports.TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 module.exports.Institucion = require('./Institucion');
 module.exports.Delegacion = require('./Delegacion');
 
-
 module.exports.Entidad = require('./Entidad');
 module.exports.Empresa = require('./Empresa');
 module.exports.Profesional = require('./profesional/Profesional');
@@ -30,3 +29,5 @@ module.exports.Contacto = require('./Contacto');
 
 module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
+
+module.exports.tareas = require('./tareas');

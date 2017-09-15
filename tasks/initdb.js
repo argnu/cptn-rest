@@ -14,6 +14,14 @@ function createDatosGeograficos() {
   .then(r => createTable(model.Domicilio.table))
 }
 
+function createDatosTareas() {
+  return createTable(model.tareas.Categoria.table)
+  .then(r => createTable(model.tareas.Subcategoria.table))
+  .then(r => createTable(model.tareas.Item.table))
+  .then(r => createTable(model.tareas.ItemsPredeterminados.table))
+  .then(r => createTable(model.tareas.ItemValorPredeterminado.table))
+}
+
 function populateOpciones() {
   let querys = [];
   querys.push(model.TipoSexo.table.insert(model.TipoSexo.table.valor.value('Femenino')));
@@ -110,7 +118,12 @@ function populate() {
 
 function* dropQuery() {
   for(let entidad in model) {
-    yield connector.execQuery(model[entidad].table.drop().cascade().ifExists().toQuery());
+    if (!model[entidad].table) {
+      for(let subentidad in model[entidad]) {
+        yield connector.execQuery(model[entidad][subentidad].table.drop().cascade().ifExists().toQuery());
+      }
+    }
+    else yield connector.execQuery(model[entidad].table.drop().cascade().ifExists().toQuery());
   }
   yield null;
 }
@@ -133,6 +146,7 @@ dropTable()
 .then(rs => {
   Promise.all([
     createDatosGeograficos(),
+    createDatosTareas(),
     createTable(model.TipoSexo.table),
     createTable(model.TipoCondicionAfip.table),
     createTable(model.TipoContacto.table),
