@@ -222,6 +222,7 @@ module.exports.get = function (id) {
   return connector.execQuery(query)
     .then(r => {
       matricula = r.rows[0];
+      if (!matricula) throw new errors.CustomError(404, "No existe el recurso solicitado");
       if (matricula.tipoEntidad == 'profesional') return Profesional.get(matricula.entidad)
       else if (matricula.tipoEntidad == 'empresa') return Empresa.get(matricula.entidad);
     })
