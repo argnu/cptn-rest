@@ -46,7 +46,7 @@ function addInstitucion(client, nueva_institucion) {
 module.exports.migrarInstitucion = function () {
     let consultaInstitucion = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
     let countInstituciones = 'select COUNT(*) as cantUniversidades from T_Universidad';
-    connectSql.countSql(countInstituciones)
+    return connectSql.countSql(countInstituciones)
         .then(res => {
             console.log(res);
             if (res && res !== []) {
