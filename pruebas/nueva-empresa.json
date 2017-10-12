@@ -1,36 +1,33 @@
 {
-  "fecha": "14/09/2017",
-  "delegacion": 1,
+  "fecha": "04/10/2017",
+  "delegacion": "Campo de Deportes",
   "entidad": {
-  	"tipo": "empresa",
-    "nombre": "Super",
-    "cuit": "2500000",
-    "condafip": 5,
-    "fechaInicio": "08/09/2017",
-    "fechaConstitucion": "18/09/2017",
+    "tipo": "empresa",
+    "nombre": "Super Mega",
+    "cuit": "123",
+    "condafip": 1,
+    "fechaInicio": "06/10/2017",
+    "fechaConstitucion": "16/10/2017",
     "tipoEmpresa": 2,
-    "tipoSociedad": 1,
+    "tipoSociedad": 2,
     "domicilioReal": {
       "calle": "Leloir",
       "numero": "985",
-      "localidad": 1,
-      "pais": 1,
-      "provincia": 1,
-      "departamento": 1
+      "localidad": "NEUQUEN",
+      "pais": "Argentina",
+      "provincia": "Neuquen",
+      "departamento": "CONFLUENCIA"
     },
     "domicilioLegal": {
-      "calle": "Alderete",
-      "numero": "200",
-      "localidad": 1,
-      "pais": 1,
-      "provincia": 1,
-      "departamento": 1
+      "calle": "Lala",
+      "numero": "90",
+      "localidad": "ASUNCION",
+      "pais": "Paraguay",
+      "provincia": "PARAGUAY",
+      "departamento": "ENCARNACION"
     },
-    "contactos": [{
-      "tipo": 3,
-      "valor": "mweingart@neuquen.gov.ar"
-    }],
-    "incumbencias": [1]
+    "contactos": [],
+    "incumbencias": []
   },
   "exencionArt10": false,
   "exencionArt6": false
