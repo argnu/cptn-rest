@@ -27,5 +27,7 @@ router.use('/paises', require('./paises'));
 router.use('/provincias', require('./provincias'));
 router.use('/departamentos', require('./departamentos'));
 router.use('/localidades', require('./localidades'));
+router.use('/delegaciones', require('./delegaciones'));
+router.use('/instituciones', require('./instituciones'));
 
 module.exports = router;
