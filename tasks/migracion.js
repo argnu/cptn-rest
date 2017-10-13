@@ -5,9 +5,10 @@ const tablas = ['institucion', 'delegacion', 'pais', 'provincia', 'departamento'
 
 function migracion() {
         return migracionInstitucion.migrarInstitucion()
-          .then(r => migracionDelegacion.migrarDelegacion()
-          .then(r => migracionDatos.migrarDatosGeograficos()))
-    
+          .then(r => migracionDelegacion.migrarDelegacion())
+          .then(r => migracionDatos.migrarDatosGeograficos())
+          .catch(e => console.error(e));
+
   }
 
 migracion();
