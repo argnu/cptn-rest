@@ -5,6 +5,9 @@ const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
 const Domicilio = require('../Domicilio');
 const Entidad = require('../Entidad');
+const TipoSexo = require('../tipos/TipoSexo');
+const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
+const TipoRelacionLaboral = require('../tipos/TipoRelacionLaboral');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -66,7 +69,11 @@ const table = sql.define({
       dataType: 'varchar(255)'
     },
     {
-      name: 'cajaPrevisional',
+      name: 'poseeCajaPrevisional',
+      dataType: 'boolean'
+    },
+    {
+      name: 'nombreCajaPrevisional',
       dataType: 'varchar(45)'
     },
     {
@@ -110,7 +117,8 @@ function addProfesional(client, profesional) {
       table.relacionLaboral.value(profesional.relacionLaboral),
       table.empresa.value(profesional.empresa),
       table.serviciosPrestados.value(profesional.serviciosPrestados),
-      table.cajaPrevisional.value(profesional.cajaPrevisional)
+      table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
+      table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional)
     ).toQuery();
 
     return connector.execQuery(query, client);
@@ -185,9 +193,19 @@ module.exports.add = function(profesional) {
 const select_atributes = [table.id,
 Entidad.table.tipo,
 table.nombre, table.apellido, table.dni,
+table.fechaNacimiento, table.nacionalidad,
+TipoSexo.table.valor.as('sexo'),
+TipoEstadoCivil.table.valor.as('estadoCivil'),
+TipoRelacionLaboral.table.valor.as('relacionLaboral'),
+table.observaciones, table.empresa,
+table.serviciosPrestados, table.poseeCajaPrevisional,
+table.nombreCajaPrevisional, table.publicar,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioLegal.as('domicilioLegal')];
-const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id));
+const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
+                         .join(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
+                         .join(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id))
+                         .join(TipoRelacionLaboral.table).on(table.relacionLaboral.equals(TipoRelacionLaboral.table.id));
 
 module.exports.getAll = function() {
   let profesionales = [];

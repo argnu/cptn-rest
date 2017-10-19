@@ -1,11 +1,7 @@
 ## TODO
-* El tipo de entidad debería guardarse en Entidad.
+* Ajustar correctamente los id's en table condafip.
 * Ver cómo guardar imagenes en postgres:
   - Profesional: fotoarchivo, firma.
-  - Importar datos:
-    * Localidades.
-    * Instituciones
-    * Delegaciones.
 
 ## Examples
 

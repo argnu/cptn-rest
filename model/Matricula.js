@@ -2,6 +2,7 @@ const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const Solicitud = require('./Solicitud');
+const Profesional = require('./profesional/Profesional');
 const Empresa = require('./Empresa');
 const Entidad = require('./Entidad');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
