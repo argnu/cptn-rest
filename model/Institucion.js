@@ -1,7 +1,8 @@
+const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
-module.exports.table = sql.define({
+const table = sql.define({
   name: 'institucion',
   columns: [{
       name: 'id',
@@ -27,3 +28,26 @@ function addInstitucion(client, institucion) {
   else Promise.resolve(null);
 }
 
+module.exports.table = table;
+
+module.exports.getAll = function() {
+  let query = table.select(
+    table.id, table.nombre
+  ).from(
+    table
+  ).toQuery();
+
+  return connector.execQuery(query)
+         .then(r => r.rows);
+}
+
+module.exports.get = function(id) {
+  let query = table.select(
+    table.id, table.nombre
+  ).from(
+    table
+  ).where(table.id.equals(id))
+  .toQuery();
+  return connector.execQuery(query)
+         .then(r => r.rows[0]);
+}

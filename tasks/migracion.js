@@ -1,5 +1,14 @@
 const migracionInstitucion = require('./migracionInstitucion');
 const migracionDatos = require('./migracionDatosGeograficos');
+const migracionDelegacion = require('./migracionDelegacion');
+const tablas = ['institucion', 'delegacion', 'pais', 'provincia', 'departamento', 'localidad'];
 
-migracionInstitucion.migrarInstitucion();
-migracionDatos.migrarDatosGeograficos();
+function migracion() {
+        return migracionInstitucion.migrarInstitucion()
+          .then(r => migracionDelegacion.migrarDelegacion())
+          .then(r => migracionDatos.migrarDatosGeograficos())
+          .catch(e => console.error(e));
+
+  }
+
+migracion();
