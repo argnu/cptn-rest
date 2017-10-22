@@ -80,7 +80,7 @@ function createMatricula(matricula) {
            nuevaMatricula.nombreArchivoFoto = matricula['NOMBREARCHIVOFOTO'];
            nuevaMatricula.nombreArchivoFirma = matricula['NombreArchivoFirma'];
            nuevaMatricula.estado = matricula['ESTADO'];
-           return Matricula.addMatricula(nuevaMatricula);
+           return Matricula.addMatriculaMigracion(nuevaMatricula);
          })
 }
 
