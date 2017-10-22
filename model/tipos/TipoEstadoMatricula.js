@@ -6,7 +6,7 @@ sql.setDialect('postgres');
   name: 't_estadomatricula',
   columns: [{
       name: 'id',
-      dataType: 'serial',
+      dataType: 'int',
       primaryKey: true
     },
     {
