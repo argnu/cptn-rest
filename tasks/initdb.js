@@ -80,11 +80,7 @@ function fakeData() {
     ),
     connector.execQuery(
       model.TipoIncumbencia.table.insert(model.TipoIncumbencia.table.id.value(2), model.TipoIncumbencia.table.valor.value('Saneamiento')).toQuery()
-    ),
-    connector.execQuery(
-      model.TipoEstadoMatricula.table.insert(model.TipoEstadoMatricula.table.valor.value('habilitado')).toQuery()
     )
-
   ])
   .then(r =>     connector.execQuery(
         model.Pais.table.insert(model.Pais.table.nombre.value('Argentina')).toQuery()
