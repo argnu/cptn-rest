@@ -30,8 +30,7 @@ const table = sql.define({
     },
     {
       name: 'solicitud',
-      dataType: 'int',
-      notNull: true
+      dataType: 'int'
     },
     {
       name: 'fechaResolucion',
@@ -75,6 +74,10 @@ const table = sql.define({
       name: 'estado',
       dataType: 'int',
       notNull: true
+    },
+    {
+      name: 'idMigracion',
+      dataType: 'int'
     }
   ],
 
@@ -97,6 +100,31 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+function addMatriculaMigracion(matricula, client) {
+  let query = table.insert(
+    table.entidad.value(matricula.entidad),
+    table.solicitud.value(matricula.solicitud),
+    table.fechaResolucion.value(matricula.fechaResolucion),
+    table.numeroActa.value(matricula.numeroActa),
+    table.estado.value(matricula.numeroMatricula),
+    table.estado.value(matricula.fechaBaja),
+    table.estado.value(matricula.observaciones),
+    table.estado.value(matricula.notasPrivadas),
+    table.estado.value(matricula.asientoBajaF),
+    table.estado.value(matricula.codBajaF),
+    table.estado.value(matricula.estado),
+    table.estado.value(matricula.nombreArchivoFoto),
+    table.estado.value(matricula.nombreArchivoFirma),
+    table.estado.value(matricula.estado),
+  ).returning(table.id).toQuery()
+
+  return connector.execQuery(query, client)
+    .then(r => r.rows[0]);
+}
+
+module.exports.addMatriculaMigracion = addMatriculaMigracion;
+
 
 function addMatricula(matricula, client) {
   let query = table.insert(
