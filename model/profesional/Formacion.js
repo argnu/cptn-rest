@@ -3,6 +3,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 const Institucion = require('../Institucion');
 const TipoFormacion = require('../tipos/TipoFormacion');
+const Titulo = require('../Titulo');
 
 const table = sql.define({
   name: 'tipoformacion',
@@ -14,11 +15,6 @@ const table = sql.define({
     },
     {
       name: 'titulo',
-      dataType: 'varchar(255)',
-      notNull: true
-    },
-    {
-      name: 'tipo',
       dataType: 'int',
       notNull: true
     },
@@ -41,11 +37,6 @@ const table = sql.define({
 
   foreignKeys: [
     {
-      table: 't_formacion',
-      columns: [ 'tipo' ],
-      refColumns: [ 'id' ]
-    },
-    {
       table: 'institucion',
       columns: [ 'institucion' ],
       refColumns: [ 'id' ]
@@ -53,6 +44,11 @@ const table = sql.define({
     {
       table: 'profesional',
       columns: [ 'profesional' ],
+      refColumns: [ 'id' ]
+    },
+    {
+      table: 'titulo',
+      columns: [ 'titulo' ],
       refColumns: [ 'id' ]
     }
   ]
@@ -63,16 +59,14 @@ module.exports.table = table;
 
 function addFormacion(formacion, client) {
   let query = table.insert(
-    table.titulo.value(formacion.titulo), table.tipo.value(formacion.tipo),
-    table.fecha.value(formacion.fecha), table.institucion.value(formacion.institucion),
+    table.titulo.value(formacion.titulo),
+    table.fecha.value(formacion.fecha),
+    table.institucion.value(formacion.institucion),
     table.profesional.value(formacion.profesional)
-  ).returning(table.id).toQuery();
+  ).returning(table.id, table.titulo, table.fecha, table.institucion, table.profesional).toQuery();
 
   return connector.execQuery(query, client)
-         .then(r => {
-           formacion.id = r.rows[0].id;
-           return formacion;
-         })
+         .then(r => r.rows[0]);
 }
 
 module.exports.addFormacion = addFormacion;
@@ -80,13 +74,16 @@ module.exports.addFormacion = addFormacion;
 
 module.exports.getAll = function(id_profesional) {
   let query = table.select(
-    table.id, table.titulo, table.tipo,
+    table.id,
+    Titulo.nombre.as('titulo'),
+    Titulo.tipo.as('tipo'),
     table.fecha, Institucion.table.nombre.as('institucion'),
     TipoFormacion.table.valor.as('tipoFormacion')
   )
   .from(
      table.join(Institucion.table).on(table.institucion.equals(Institucion.table.id))
-          .join(TipoFormacion.table).on(table.tipo.equals(TipoFormacion.table.id))
+          .join(Titulo.table).on(table.titulo.equals(Titulo.table.id))
+          .join(TipoFormacion.table).on(Titulo.table.tipo.equals(TipoFormacion.table.id))
   ).where(table.profesional.equals(id_profesional))
   .toQuery();
 

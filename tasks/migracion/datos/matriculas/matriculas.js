@@ -1,9 +1,9 @@
-const config = require('../../config.private');
-const connector = require('../../connector');
+const config = require('../../../config.private');
+const connector = require('../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const model = require('../../model');
-const sqlserver = require('../sqlserver');
+const model = require('../../../model');
+const sqlserver = require('../../sqlserver');
 
 function makeJobMatriculas(i, total, page_size, consulta) {
     if (i < total) {
@@ -108,13 +108,14 @@ function createMatricula(matricula) {
            nuevaMatricula.nombreArchivoFoto = matricula['NOMBREARCHIVOFOTO'];
            nuevaMatricula.nombreArchivoFirma = matricula['NombreArchivoFirma'];
            nuevaMatricula.estado = matricula['ESTADO'];
+           nuevaMatricula.idMigracion = matricula['ID'];
            return Matricula.addMatriculaMigracion(nuevaMatricula);
          })
 }
 
 
 module.exports.migrar = function () {
-    let consultaMatriculas = 'select M.SITAFIP, M.CUIT, ' +
+    let consultaMatriculas = 'select M.ID, M.SITAFIP, M.CUIT, ' +
     'M.DOMICREALCALLE, M.DOMICREALCODPOSTAL, ' +
     'M.DOMICREALDEPARTAMENTO, M.DOMICREALLOCALIDAD, ' +
     'M.DOMICREALPROV, M.DOMICREALPAIS, ' +
