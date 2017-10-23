@@ -52,9 +52,18 @@ function createProfesional(matricula) {
     nuevoProfesional['apellido'] = matricula['APELLIDO'];
     nuevoProfesional['nombre'] = matricula['NOMBRE'];
     nuevoProfesional['fechaNacimiento'] = matricula['FECNAC_DATE'];
-    //nuevoProfesional['sexo']
     nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] == 0 ? null : matricula['ESTADOCIVIL'];
     nuevoProfesional['observaciones'] = matricula['OBSERVACIONES'];
+
+    nuevoProfesional.contactos = [];
+    ['TELFIJO', 'TELCEL', 'EMAIL', 'PAGWEB'].forEach((tipo, i) => {
+        if (matricula[tipo] && matricula[tipo].length) {
+            nuevoProfesional.contactos.push({
+                tipo: i + 1, valor: matricula[tipo]
+            });
+        }
+    });
+
     nuevoProfesional['relacionDependencia'] = matricula['RELACIONLABORAL'];
     nuevoProfesional['empresa'] = matricula['EMPRESA'];
     nuevoProfesional['serviciosPrestados'] = matricula['SERVICIOSPRESTADOS'];
@@ -77,7 +86,7 @@ function createProfesional(matricula) {
 
     nuevoProfesional['condafip'] = condafip;
     // Se crean los contactos del profesional
-    
+
     nuevoProfesional['domicilioReal'] = createDomicilioReal(matricula);
     nuevoProfesional['domicilioLegal'] = createDomicilioLegal(matricula);
     return Profesional.addProfesional(nuevoProfesional);
@@ -86,7 +95,6 @@ function createProfesional(matricula) {
 function createMatricula(matricula) {
   return createProfesional(matricula)
          .then(profesional => {
-        console.log(profesional.id)
            let nuevaMatricula = {};
            nuevaMatricula.entidad = profesional.entidad;
            nuevaMatricula.solicitud = null;
@@ -117,6 +125,7 @@ module.exports.migrarMatriculas = function () {
     'M.NOMBRE, M.APELLIDO, M.FECNAC_DATE ,M.NUMDOCU, ' +
     'M.ESTADOCIVIL, M.LUGNACCIUDAD as LocalidadNacimiento,' +
     'M.OBSERVACIONES, M.RELACIONLABORAL, M.EMPRESA, M.SERVICIOSPRESTADOS, ' +
+    'M.TELFIJO, M.TELCEL, M.EMAIL, M.PAGWEB' +
     'M.PUBLICARDATOS, M.CODESTADOCAJA, ' +
     'M.LEGAJO, M.NROMATRICULA,M.FECHARESOLUCION_DATE, ' +
     'M.NUMACTA, M.FECHABAJA_DATE, M.OBSERVACIONES, M.NOTASPRIVADAS,'  +
