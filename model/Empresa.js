@@ -61,7 +61,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addEmpresa(client, empresa) {
+function addEmpresa(empresa, client) {
 
   function addDatosBasicos(empresa) {
     let query = table.insert(
@@ -96,7 +96,7 @@ function addEmpresa(client, empresa) {
             let empresa_added = r.rows[0];
             let proms_contactos = empresa.contactos.map(c => {
               c.entidad = empresa_added.id;
-              return Contacto.addContacto(client, c);
+              return Contacto.addContacto(c, client);
             });
 
             return Promise.all(proms_contactos)
@@ -115,7 +115,7 @@ module.exports.add = function(empresa) {
     connector
     .beginTransaction()
     .then(connection => {
-      addEmpresa(connection.client, empresa)
+      addEmpresa(empresa, connection.client)
         .then(empresa_added => {
           connector
           .commit(connection.client)

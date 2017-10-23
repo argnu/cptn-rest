@@ -52,7 +52,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addBeneficiario(client, beneficiario) {
+function addBeneficiario(beneficiario, client) {
   let query = table.insert(
     table.dni.value(beneficiario.dni), table.nombre.value(beneficiario.nombre),
     table.apellido.value(beneficiario.apellido), table.fechaNacimiento.value(beneficiario.fechaNacimiento),
@@ -76,7 +76,7 @@ module.exports.getAll = function(id_profesional) {
     table.invalidez
   ).where(table.profesional.equals(id_profesional))
   .toQuery();
-  
+
   return connector.execQuery(query)
          .then(r => r.rows);
 }

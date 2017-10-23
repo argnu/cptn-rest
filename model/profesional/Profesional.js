@@ -137,22 +137,22 @@ function addProfesional(profesional, client) {
           .then(r => {
             let proms_contactos = profesional.contactos.map(c => {
               c.entidad = entidad.id;
-              return Contacto.addContacto(client, c);
+              return Contacto.addContacto(c, client);
             });
 
             let proms_formaciones = profesional.formaciones.map(f => {
               f.profesional = profesional.id;
-              return Formacion.addFormacion(client, f);
+              return Formacion.addFormacion(f, client);
             });
 
             let proms_beneficiarios = profesional.beneficiarios.map(b => {
               b.profesional = profesional.id;
-              return Beneficiario.addBeneficiario(client, b);
+              return Beneficiario.addBeneficiario(b, client);
             });
 
             let proms_subsidiarios = profesional.subsidiarios.map(s => {
               s.profesional = profesional.id;
-              return Subsidiario.addSubsidiario(client, s);
+              return Subsidiario.addSubsidiario(s, client);
             });
 
 

@@ -1,14 +1,14 @@
-const {
-    Pool
-} = require('pg');
-const config = require('../config.private');
-const pool = new Pool(config.db);
-const connectSql = require('./connectSql');
+const config = require('../../config.private');
+const connector = require('../../connector');
+const sql = require('sql');
+sql.setDialect('postgres');
+const model = require('../../model');
+const sqlserver = require('../sqlserver');
 
 function makeJobEstadoMatricula(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        return connectSql.consultaSql(consulta, i, offset)
+        return sqlserver.query(consulta, i, offset)
             .then(estados => {
                 if (estados) {
                     nuevosEstados = estados.map(estado => {
@@ -30,26 +30,24 @@ function makeJobEstadoMatricula(i, total, page_size, consulta) {
 
 }
 
-function addEstadoMatricula(client, nuevo) {
-    let query = `
-         INSERT INTO t_estadomatricula (
-            id, valor)
-          VALUES($1, $2)
-        `;
-    let values = [
-        nuevo.id, nuevo.valor
-    ];
-    return client.query(query, values);
+function addEstadoMatricula(nuevo) {
+    let table = model.TipoEstadoMatricula.table;
+    let query = table.insert(
+                  table.id.value(nuevo.id),
+                  table.valor.value(nuevo.valor)
+                ).toQuery();
+
+    return connector.execQuery(query);
 }
 
-module.exports.migrarEstadoMatricula = function () {
-    console.log('Migrando estados de matrícula...');    
+module.exports.migrar = function () {
+    console.log('Migrando estados de matrícula...');
     let consulta = 'select * from T_ESTADO_MAT WHERE CODIGO BETWEEN @offset AND @limit';
     let countEstados = 'select COUNT(*) as cantEstados from T_ESTADO_MAT';
-    return connectSql.countSql(countEstados)
-        .then(res => {
-            if (res && res !== []) {
-                let cantEstados = res['cantEstados'];  
+    return sqlserver.query(countEstados)
+        .then(resultado => {
+            if (resultado[0]) {
+                let cantEstados = resultado[0]['cantEstados'];
                 return makeJobEstadoMatricula(0, cantEstados, 100, consulta);
             }
             else return;

@@ -61,7 +61,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addFormacion(client, formacion) {
+function addFormacion(formacion, client) {
   let query = table.insert(
     table.titulo.value(formacion.titulo), table.tipo.value(formacion.tipo),
     table.fecha.value(formacion.fecha), table.institucion.value(formacion.institucion),

@@ -1,15 +1,14 @@
-const {
-    Pool
-} = require('pg');
-const config = require('../config.private');
-const pool = new Pool(config.db);
-const connectSql = require('./connectSql');
-const { Matricula, Profesional } = require('../model');
+const config = require('../../config.private');
+const connector = require('../../connector');
+const sql = require('sql');
+sql.setDialect('postgres');
+const model = require('../../model');
+const sqlserver = require('../sqlserver');
 
 function makeJobMatriculas(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        return connectSql.consultaSql(consulta, i, offset)
+        return sqlserver.query(consulta, i, offset)
             .then(matriculas => {
                 if (matriculas) {
                    nuevasMatriculas = matriculas.map(matricula => createMatricula(matricula));
@@ -28,7 +27,7 @@ function makeJobMatriculas(i, total, page_size, consulta) {
 
 function createDomicilioReal (matricula){
     if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
-        let nuevoDomicilio = {};    
+        let nuevoDomicilio = {};
         nuevoDomicilio['calle'] = matricula['DOMICREALCALLE'];
         nuevoDomicilio['localidad'] = matricula['DOMICREALLOCALIDAD'];
         return nuevoDomicilio;
@@ -41,8 +40,8 @@ function createDomicilioLegal (matricula){
         let nuevoDomicilio = {};
         nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'];
         nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
-        return nuevoDomicilio;        
-    }        
+        return nuevoDomicilio;
+    }
     else return null;
 }
 
@@ -77,7 +76,7 @@ function createProfesional(matricula) {
 
     nuevoProfesional['condafip'] = condafip;
     // Se crean los contactos del profesional
-    
+
     nuevoProfesional['domicilioReal'] = createDomicilioReal(matricula);
     nuevoProfesional['domicilioLegal'] = createDomicilioLegal(matricula);
     return Profesional.addProfesional(nuevoProfesional);
@@ -106,7 +105,7 @@ function createMatricula(matricula) {
 }
 
 
-module.exports.migrarMatriculas = function () {
+module.exports.migrar = function () {
     let consultaMatriculas = 'select M.SITAFIP, M.CUIT, ' +
     'M.DOMICREALCALLE, M.DOMICREALCODPOSTAL, ' +
     'M.DOMICREALDEPARTAMENTO, M.DOMICREALLOCALIDAD, ' +
@@ -124,11 +123,11 @@ module.exports.migrarMatriculas = function () {
     'M.NombreArchivoFirma, M.ESTADO ' +
     'from MATRICULAS M WHERE ID BETWEEN @offset AND @limit';
     let limitesMatriculas = 'select MIN(ID) as minMatriculas, MAX(ID) as maxMatriculas from MATRICULAS';
-    return connectSql.countSql(limitesMatriculas)
-        .then(res => {
-            if (res && res !== []) {
-                let min = res['minMatriculas'];
-                let max = res['maxMatriculas'];
+    return sqlserver.query(limitesMatriculas)
+        .then(resultado => {
+            if (resultado[0]) {
+                let min = resultado[0]['minMatriculas'];
+                let max = resultado[0]['maxMatriculas'];
                 return makeJobMatriculas(min, max, 100, consultaMatriculas);
             }
             else return;
