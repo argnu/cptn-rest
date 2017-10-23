@@ -202,7 +202,8 @@ dropTable()
     createTable(model.TipoIncumbencia.table),
     createTable(model.TipoEstadoMatricula.table),
     createTable(model.Institucion.table),
-    createTable(model.Delegacion.table)
+    createTable(model.Delegacion.table),
+    createTable(model.Titulo.table)
   ])
   .then(rs => createEntidades())
   .then(r => Promise.all([

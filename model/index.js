@@ -16,6 +16,7 @@ module.exports.TipoIncumbencia = require('./tipos/TipoIncumbencia');
 module.exports.TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 
 module.exports.Institucion = require('./Institucion');
+module.exports.Titulo = require('./Titulo');
 module.exports.Delegacion = require('./Delegacion');
 
 module.exports.Entidad = require('./Entidad');

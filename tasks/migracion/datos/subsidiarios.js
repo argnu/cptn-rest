@@ -1,8 +1,8 @@
-const config = require('../../config.private');
-const connector = require('../../connector');
+const config = require('../../../config.private');
+const connector = require('../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const model = require('../../model');
+const model = require('../../../model');
 const sqlserver = require('../sqlserver');
 
 const consulta = `select ID, APELLIDO,
