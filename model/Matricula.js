@@ -103,6 +103,7 @@ module.exports.table = table;
 
 function addMatriculaMigracion(matricula, client) {
   let query = table.insert(
+    table.idMigracion.value(matricula.idMigracion),
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
     table.fechaResolucion.value(matricula.fechaResolucion),
