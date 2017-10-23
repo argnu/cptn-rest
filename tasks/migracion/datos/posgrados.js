@@ -30,9 +30,9 @@ function makeJob(i, total, page_size) {
 function createTitulo(posgrado) {
   let table = model.Titulo.table;
   let query = table.insert(
-                table.idMigracion.value(titulo['CODIGO']),
+                table.idMigracion.value(posgrado['CODIGO']),
                 table.tipo.value(2),  // 1 es 'Posgrado'
-                table.nombre.value(titulo['DESCRIPCION'])
+                table.nombre.value(posgrado['DESCRIPCION'])
               ).toQuery();
 
   return connector.execQuery(query);

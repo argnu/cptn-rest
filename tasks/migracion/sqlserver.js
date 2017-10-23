@@ -5,8 +5,8 @@ module.exports.query = function (consulta, offset, limit) {
     return sql.connect(config.dbMssql)
            .then(r => {
              let msql_req = new sql.Request();
-             if (offset) msql_req.input('offset', offset);
-             if (limit) msql_req.input('limit', limit)
+             if (offset != undefined) msql_req.input('offset', offset);
+             if (limit != undefined) msql_req.input('limit', limit)
              return msql_req.query(consulta)
                  .then(listaRow => {
                      sql.close();

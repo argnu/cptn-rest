@@ -11,11 +11,16 @@ function migracion() {
        return instituciones.migrar()
          .then(r => geograficos.migrar())
          .then(r => delegaciones.migrar())
-         .then(r => estadosMatricula.migrar())
-         .then(r => matriculas.migrar())
+         .then(r => titulos.migrar())
+         .then(r => posgrados.migrar())
+         .then(r => matriculas.estados.migrar())
+         //.then(r => matriculas.migrar())
          .catch(e => console.error(e));
  }
 
-titulos.migrar()
-.then(e => console.log('listo'))
+migracion()
+.then(e => { 
+  console.log('listo');
+  process.exit();
+})
 .catch(e => console.error(e));

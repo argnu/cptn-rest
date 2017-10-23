@@ -16,7 +16,7 @@ function makeJobPaises(i, total, page_size, consulta) {
                         let nuevoPais = {};
                         nuevoPais['id'] = pais['CODIGO'];
                         nuevoPais['nombre'] = pais['DESCRIPCION'];
-                        nuevosPaises.push(addPais(pool, nuevoPais));
+                        nuevosPaises.push(addPais(nuevoPais));
                     });
                     return Promise.all(nuevosPaises).then(res =>
                       makeJobPaises(offset + 1, total, page_size, consulta)
@@ -39,7 +39,7 @@ function makeJobProvincia(i, total, page_size, consulta) {
                         nuevaProvincia['id'] = provincia['CODPROVINCIA'];
                         nuevaProvincia['nombre'] = provincia['DESCRIPCION'];
                         nuevaProvincia['pais'] = provincia['CODPAIS'];
-                        listaProvincias.push(addProvincia(pool, nuevaProvincia));
+                        listaProvincias.push(addProvincia( nuevaProvincia));
                     });
                     return Promise.all(listaProvincias).then(res =>
                         makeJobProvincia(offset + 1, total, page_size, consulta)
@@ -62,7 +62,7 @@ function makeJobDepartamento(i, total, page_size, consulta) {
                         nuevoDepartamento['id'] = dpto['CODDEPARTAMENTO'];
                         nuevoDepartamento['nombre'] = dpto['DESCRIPCION'];
                         nuevoDepartamento['provincia'] = dpto['CODPROVINCIA'];
-                        listaDepartamentos.push(addDepartamento(pool, nuevoDepartamento));
+                        listaDepartamentos.push(addDepartamento(nuevoDepartamento));
                     });
                     return Promise.all(listaDepartamentos).then(res =>
                         makeJobDepartamento(offset + 1, total, page_size, consulta)
@@ -85,7 +85,7 @@ function makeJobLocalidad(i, total, page_size, consulta) {
                         nuevaLocalidad['id'] = localidad['CODIGO'];
                         nuevaLocalidad['nombre'] = localidad['DESCRIPCION'];
                         nuevaLocalidad['departamento'] = localidad['CODDEPARTAMENTO'];
-                        listaLocalidades.push(addLocalidad(pool, nuevaLocalidad));
+                        listaLocalidades.push(addLocalidad(nuevaLocalidad));
                     });
                     return Promise.all(listaLocalidades).then(res =>
                       makeJobLocalidad(offset + 1, total, page_size, consulta)
@@ -97,7 +97,7 @@ function makeJobLocalidad(i, total, page_size, consulta) {
 }
 
 
-function addPais(client, nuevo_pais) {
+function addPais(nuevo_pais) {
     let table = model.Pais.table;
     let query = table.insert(
                   table.id.value(nuevo_pais.id),
@@ -107,7 +107,7 @@ function addPais(client, nuevo_pais) {
     return connector.execQuery(query);
 }
 
-function addProvincia(client, nueva_provincia) {
+function addProvincia(nueva_provincia) {
     let table = model.Provincia.table;
     let query = table.insert(
                   table.id.value(nueva_provincia.id),
@@ -118,7 +118,7 @@ function addProvincia(client, nueva_provincia) {
     return connector.execQuery(query);
 }
 
-function addDepartamento(client, nuevo_departamento) {
+function addDepartamento(nuevo_departamento) {
     let table = model.Departamento.table;
     let query = table.insert(
                   table.id.value(nuevo_departamento.id),
@@ -129,7 +129,7 @@ function addDepartamento(client, nuevo_departamento) {
     return connector.execQuery(query);
 }
 
-function addLocalidad(client, nueva_localidad) {
+function addLocalidad(nueva_localidad) {
     let table = model.Localidad.table;
     let query = table.insert(
                   table.id.value(nueva_localidad.id),
@@ -148,8 +148,8 @@ function migrarPaises() {
 
     return sqlserver.query(countPaises)
             .then(resultado => {
-                if (resultado) {
-                    let cantPaises = resultado['cantPaises'];
+                if (resultado[0]) {
+                    let cantPaises = resultado[0]['cantPaises'];
                     console.log('Cantidad Paises', cantPaises);
                     if (cantPaises < size) {
                         size = cantPaises;

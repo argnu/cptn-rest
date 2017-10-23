@@ -16,7 +16,7 @@ function makeJobDelegacion(i, total, page_size, consulta) {
                         let nueva = {};
                         nueva['id'] = delegacion['CODIGO'];
                         nueva['nombre'] = delegacion['DESCRIPCION'];
-                        nuevasDelegaciones.push(addDelegacion(pool, nueva));
+                        nuevasDelegaciones.push(addDelegacion(nueva));
                     });
                    return Promise.all(nuevasDelegaciones).then(res =>
                     makeJobDelegacion(offset + 1, total, page_size, consulta)
@@ -31,7 +31,7 @@ function makeJobDelegacion(i, total, page_size, consulta) {
 
 }
 
-function addDelegacion(client, nueva_delegacion) {
+function addDelegacion(nueva_delegacion) {
     let table = model.Delegacion.table;
     let query = table.insert(
                   table.id.value(nueva_delegacion.id),
@@ -49,6 +49,7 @@ module.exports.migrar = function () {
         .then(resultado => {
             if (resultado[0]) {
                 let cantDelegaciones = resultado[0]['cant'];
+                console.log(`Cantidad de Delegaciones: ${cantDelegaciones}`);
                 return makeJobDelegacion(0, cantDelegaciones, 100, consulta);
             }
             else {

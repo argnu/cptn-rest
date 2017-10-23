@@ -49,6 +49,7 @@ module.exports.migrar = function () {
         .then(resultado => {
             if (resultado[0]) {
                 let cantInstitucion = resultado[0]['cantUniversidades'];
+                console.log(`Cantidad de Instituciones: ${cantInstitucion}`);
                 return makeJobInstitucion(0, cantInstitucion, 100, consultaInstitucion);
             }
             else return;

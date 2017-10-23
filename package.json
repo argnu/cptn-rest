@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node_modules/nodemon/bin/nodemon.js index.js",
-    "initdb": "node ./tasks/initdb.js"
+    "initdb": "node ./tasks/initdb.js",
+    "premigrate": "node ./tasks/initdb.js & node ./tasks/migracion/dropSequences.js",
+    "migrate": "node ./tasks/migracion"
   },
   "keywords": [
     "rest",

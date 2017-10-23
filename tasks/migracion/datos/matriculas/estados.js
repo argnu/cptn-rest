@@ -15,7 +15,7 @@ function makeJobEstadoMatricula(i, total, page_size, consulta) {
                         let nuevoEstado = {};
                         nuevoEstado['id'] = estado['CODIGO'];
                         nuevoEstado['valor'] = estado['DESCRIPCION'];
-                        return addEstadoMatricula(pool, nuevoEstado);
+                        return addEstadoMatricula(nuevoEstado);
                     });
                    return Promise.all(nuevosEstados).then(res =>
                     makeJobEstadoMatricula(offset + 1, total, page_size, consulta)

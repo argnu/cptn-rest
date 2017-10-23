@@ -41,6 +41,7 @@ function createTitulo(titulo) {
 
 
 module.exports.migrar = function () {
+    console.log('Migrando titulos...');
     let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_TITULOS';
     return sqlserver.query(limites)
         .then(resultado => {
