@@ -240,10 +240,9 @@ function migrarLocalidad() {
 }
 
 module.exports.migrarDatosGeograficos = function () {
-    migrarPaises()
+    console.log('Migrando Datos Geográficos...');    
+    return migrarPaises()
         .then(r => migrarProvincias())
         .then(r => migrarDepartamentos())
         .then(r => migrarLocalidad())
-        .then(r => console.log('Migrado!'))
-        .catch(err => console.log('No se pudo importar DatosGeograficos', err))
 }

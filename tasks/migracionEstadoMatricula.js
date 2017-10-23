@@ -10,15 +10,14 @@ function makeJobEstadoMatricula(i, total, page_size, consulta) {
         let offset = i + page_size;
         return connectSql.consultaSql(consulta, i, offset)
             .then(estados => {
-                let nuevosEstados = [];
                 if (estados) {
-                    estados.forEach(estado => {
+                    nuevosEstados = estados.map(estado => {
                         let nuevoEstado = {};
                         nuevoEstado['id'] = estado['CODIGO'];
-                        nuevoEstado['nombre'] = estado['DESCRIPCION'];
-                        nuevosEstados.push(addEstadoMatricula(pool, nuevoEstado));
+                        nuevoEstado['valor'] = estado['DESCRIPCION'];
+                        return addEstadoMatricula(pool, nuevoEstado);
                     });
-                   return Promise.all(nuevoEstado).then(res =>
+                   return Promise.all(nuevosEstados).then(res =>
                     makeJobEstadoMatricula(offset + 1, total, page_size, consulta)
                   );
                 }
@@ -34,25 +33,25 @@ function makeJobEstadoMatricula(i, total, page_size, consulta) {
 function addEstadoMatricula(client, nuevo) {
     let query = `
          INSERT INTO t_estadomatricula (
-            id, nombre)
+            id, valor)
           VALUES($1, $2)
         `;
     let values = [
-        nuevo.id, nuevo.nombre
+        nuevo.id, nuevo.valor
     ];
     return client.query(query, values);
 }
 
 module.exports.migrarEstadoMatricula = function () {
+    console.log('Migrando estados de matrícula...');    
     let consulta = 'select * from T_ESTADO_MAT WHERE CODIGO BETWEEN @offset AND @limit';
     let countEstados = 'select COUNT(*) as cantEstados from T_ESTADO_MAT';
     return connectSql.countSql(countEstados)
         .then(res => {
-            console.log(res);
             if (res && res !== []) {
                 let cantEstados = res['cantEstados'];  
-                makeJobEstadoMatricula(0, cantEstados, 100, consulta);
+                return makeJobEstadoMatricula(0, cantEstados, 100, consulta);
             }
+            else return;
         })
-        .catch(err => console.log('No se pudo importar los estados de las matriculas', err))
 }

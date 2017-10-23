@@ -83,7 +83,7 @@ module.exports.add = function(solicitud) {
     .then(connection => {
 
         if (solicitud.entidad.tipo == 'profesional') {
-          return Profesional.addProfesional(connection.client, solicitud.entidad)
+          return Profesional.addProfesional(solicitud.entidad, connection.client)
             .then(profesional_added => {
               solicitud.entidad = profesional_added;
               return addSolicitud(solicitud, connection.client)

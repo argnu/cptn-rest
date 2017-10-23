@@ -57,8 +57,12 @@ const table = sql.define({
       dataType: 'text'
     },
     {
-      name: 'relacionLaboral',
-      dataType: 'int'
+      name: 'relacionDependencia',
+      dataType: 'boolean'
+    },
+    {
+      name: 'independiente',
+      dataType: 'boolean'
     },
     {
       name: 'empresa',
@@ -92,18 +96,13 @@ const table = sql.define({
       table: 't_estadocivil',
       columns: [ 'estadoCivil' ],
       refColumns: [ 'id' ]
-    },
-    {
-      table: 't_relacionlaboral',
-      columns: [ 'relacionLaboral' ],
-      refColumns: [ 'id' ]
     }
   ]
 });
 
 module.exports.table = table;
 
-function addProfesional(client, profesional) {
+function addProfesional(profesional, client) {
 
   function addDatosBasicos(profesional) {
     let query = table.insert(
@@ -114,7 +113,8 @@ function addProfesional(client, profesional) {
       table.sexo.value(profesional.sexo), table.estadoCivil.value(profesional.estadoCivil),
       table.nacionalidad.value(profesional.nacionalidad),
       table.observaciones.value(profesional.observaciones),
-      table.relacionLaboral.value(profesional.relacionLaboral),
+      table.relacionDependencia.value(profesional.relacionDependencia),
+      table.independiente.value(profesional.independiente),
       table.empresa.value(profesional.empresa),
       table.serviciosPrestados.value(profesional.serviciosPrestados),
       table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
@@ -172,7 +172,7 @@ module.exports.add = function(profesional) {
     connector
     .beginTransaction()
     .then(connection => {
-      addProfesional(connection.client, profesional)
+      addProfesional(profesional, connection.client)
         .then(profesional_added => {
           connector
           .commit(connection.client)
@@ -196,7 +196,7 @@ table.nombre, table.apellido, table.dni,
 table.fechaNacimiento, table.nacionalidad,
 TipoSexo.table.valor.as('sexo'),
 TipoEstadoCivil.table.valor.as('estadoCivil'),
-TipoRelacionLaboral.table.valor.as('relacionLaboral'),
+// TipoRelacionLaboral.table.valor.as('relacionLaboral'),
 table.observaciones, table.empresa,
 table.serviciosPrestados, table.poseeCajaPrevisional,
 table.nombreCajaPrevisional, table.publicar,
@@ -204,8 +204,8 @@ Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioLegal.as('domicilioLegal')];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .join(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
-                         .join(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id))
-                         .join(TipoRelacionLaboral.table).on(table.relacionLaboral.equals(TipoRelacionLaboral.table.id));
+                         .join(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
+                         //.join(TipoRelacionLaboral.table).on(table.relacionLaboral.equals(TipoRelacionLaboral.table.id));
 
 module.exports.getAll = function() {
   let profesionales = [];

@@ -44,15 +44,15 @@ function addInstitucion(client, nueva_institucion) {
 }
 
 module.exports.migrarInstitucion = function () {
+    console.log('Migrando instituciones...');
     let consultaInstitucion = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
     let countInstituciones = 'select COUNT(*) as cantUniversidades from T_Universidad';
     return connectSql.countSql(countInstituciones)
         .then(res => {
-            console.log(res);
             if (res && res !== []) {
                 let cantInstitucion = res['cantUniversidades'];  
-                makeJobInstitucion(0, cantInstitucion, 100, consultaInstitucion);
+                return makeJobInstitucion(0, cantInstitucion, 100, consultaInstitucion);
             }
+            else return;
         })
-        .catch(err => console.log('No se pudo importar Institucion', err))
 }

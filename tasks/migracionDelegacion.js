@@ -44,15 +44,18 @@ function addDelegacion(client, nueva_delegacion) {
 }
 
 module.exports.migrarDelegacion = function () {
+    console.log('Migrando delegaciones...');    
     let consulta = 'select * from T_SUCURSAL WHERE CODIGO BETWEEN @offset AND @limit';
     let countDelegaciones = 'select COUNT(*) as cant from T_SUCURSAL';
     return connectSql.countSql(countDelegaciones)
         .then(res => {
             if (res && res !== []) {
                 let cantDelegaciones = res['cant'];  
-                makeJobDelegacion(0, cantDelegaciones, 100, consulta);
+                return makeJobDelegacion(0, cantDelegaciones, 100, consulta);
             }
-            sql.close();
-        })
-        .catch(err => console.log('No se pudo importar Delegaciones', err))
+            else {
+                sql.close();                
+                return;
+            }
+        });
 }

@@ -108,7 +108,7 @@ function fakeData() {
 function populate() {
   return Promise.all([
     populateOpciones(),
-    fakeData()
+    // fakeData()
   ])
 }
 

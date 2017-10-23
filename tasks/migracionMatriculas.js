@@ -27,37 +27,57 @@ function makeJobMatriculas(i, total, page_size, consulta) {
 }
 
 function createDomicilioReal (matricula){
-    let nuevoDomicilio = {};
-    nuevoDomicilio['calle'] = matricula['DOMICREALCALLE'];
-    nuevoDomicilio['localidad'] = matricula['DOMICREALLOCALIDAD'];
-    return nuevoDomicilio;
+    if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
+        let nuevoDomicilio = {};    
+        nuevoDomicilio['calle'] = matricula['DOMICREALCALLE'];
+        nuevoDomicilio['localidad'] = matricula['DOMICREALLOCALIDAD'];
+        return nuevoDomicilio;
+    }
+    else return null;
 }
 
 function createDomicilioLegal (matricula){
-    let nuevoDomicilio = {};
-    nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'];
-    nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
-    return nuevoDomicilio;
+    if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
+        let nuevoDomicilio = {};
+        nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'];
+        nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
+        return nuevoDomicilio;        
+    }        
+    else return null;
 }
 
 function createProfesional(matricula) {
     let nuevoProfesional = {};
-    nuevoProfesional['dni'] = matricula['NUMDOC'];
+    nuevoProfesional['dni'] = matricula['NUMDOCU'];
     nuevoProfesional['apellido'] = matricula['APELLIDO'];
     nuevoProfesional['nombre'] = matricula['NOMBRE'];
     nuevoProfesional['fechaNacimiento'] = matricula['FECNAC_DATE'];
     //nuevoProfesional['sexo']
-    nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'];
+    nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] == 0 ? null : matricula['ESTADOCIVIL'];
     nuevoProfesional['observaciones'] = matricula['OBSERVACIONES'];
-    nuevoProfesional['relacionLaboral'] = matricula['RELACIONLABORAL'];
+    nuevoProfesional['relacionDependencia'] = matricula['RELACIONLABORAL'];
     nuevoProfesional['empresa'] = matricula['EMPRESA'];
     nuevoProfesional['serviciosPrestados'] = matricula['SERVICIOSPRESTADOS'];
+    if (matricula['SERVICIOSPRESTADOS']) {
+        nuevoProfesional['independiente'] = 1;
+    } else {
+        nuevoProfesional['independiente'] = 0;
+    }
     nuevoProfesional['poseeCajaPrevisional'] = matricula['CODESTADOCAJA'];
     nuevoProfesional['publicar'] = matricula['PUBLICARDATOS'];
     //Datos para crear la entidad
     nuevoProfesional['tipo'] = 'profesional';
     nuevoProfesional['cuit'] = matricula['CUIT'];
-    nuevoProfesional['condafip'] = matricula['SITAFIP'];
+
+    let condafip = matricula['SITAFIP'];
+    if (condafip != null) {
+        if (condafip == 9) condafip = null;
+        else condafip++
+    }
+
+    nuevoProfesional['condafip'] = condafip;
+    // Se crean los contactos del profesional
+    
     nuevoProfesional['domicilioReal'] = createDomicilioReal(matricula);
     nuevoProfesional['domicilioLegal'] = createDomicilioLegal(matricula);
     return Profesional.addProfesional(nuevoProfesional);
@@ -66,6 +86,7 @@ function createProfesional(matricula) {
 function createMatricula(matricula) {
   return createProfesional(matricula)
          .then(profesional => {
+        console.log(profesional.id)
            let nuevaMatricula = {};
            nuevaMatricula.entidad = profesional.entidad;
            nuevaMatricula.solicitud = null;
@@ -96,20 +117,20 @@ module.exports.migrarMatriculas = function () {
     'M.NOMBRE, M.APELLIDO, M.FECNAC_DATE ,M.NUMDOCU, ' +
     'M.ESTADOCIVIL, M.LUGNACCIUDAD as LocalidadNacimiento,' +
     'M.OBSERVACIONES, M.RELACIONLABORAL, M.EMPRESA, M.SERVICIOSPRESTADOS, ' +
-    'M.PUBLICARDATOS, M.CODESTADOCAJA' +
+    'M.PUBLICARDATOS, M.CODESTADOCAJA, ' +
     'M.LEGAJO, M.NROMATRICULA,M.FECHARESOLUCION_DATE, ' +
     'M.NUMACTA, M.FECHABAJA_DATE, M.OBSERVACIONES, M.NOTASPRIVADAS,'  +
     'M.ASIENTOBAJAF, M.CODBAJAF, M.NOMBREARCHIVOFOTO, ' +
     'M.NombreArchivoFirma, M.ESTADO ' +
     'from MATRICULAS M WHERE ID BETWEEN @offset AND @limit';
-    let countMatriculas = 'select COUNT(*) as cantMatriculas from MATRICULAS';
-    return connectSql.countSql(countMatriculas)
+    let limitesMatriculas = 'select MIN(ID) as minMatriculas, MAX(ID) as maxMatriculas from MATRICULAS';
+    return connectSql.countSql(limitesMatriculas)
         .then(res => {
-            console.log(res);
             if (res && res !== []) {
-                let cantMatriculas = res['cantMatriculas'];
-                makeJobMatriculas(0, cantMatriculas, 100, consultaMatriculas);
+                let min = res['minMatriculas'];
+                let max = res['maxMatriculas'];
+                return makeJobMatriculas(min, max, 100, consultaMatriculas);
             }
+            else return;
         })
-        .catch(err => console.log('Error al importar Matriculas', err))
 }

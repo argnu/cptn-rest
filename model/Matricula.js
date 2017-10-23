@@ -116,7 +116,7 @@ function addMatriculaMigracion(matricula, client) {
     table.estado.value(matricula.estado),
     table.estado.value(matricula.nombreArchivoFoto),
     table.estado.value(matricula.nombreArchivoFirma),
-    table.estado.value(matricula.estado),
+    table.estado.value(matricula.estado)
   ).returning(table.id).toQuery()
 
   return connector.execQuery(query, client)
