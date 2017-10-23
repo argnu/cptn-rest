@@ -162,7 +162,7 @@ function migrarPaises() {
 
 function migrarProvincias() {
     let consultaProvincias = 'select * from T_PCIAS WHERE CODPROVINCIA BETWEEN @offset AND @limit';
-    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_PCIAS';
+    let limites = 'select MIN(CODPROVINCIA) as min, MAX(CODPROVINCIA) as max from T_PCIAS';
 
     return sqlserver.query(limites)
             .then(resultado => {
@@ -181,7 +181,7 @@ function migrarProvincias() {
 
 function migrarDepartamentos() {
     let consultaDepartamentos = 'select * from T_DEPTOS WHERE CODDEPARTAMENTO BETWEEN @offset AND @limit';
-    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_DEPTOS';
+    let limites = 'select MIN(CODDEPARTAMENTO) as min, MAX(CODDEPARTAMENTO) as max from T_DEPTOS';
 
 
     return sqlserver.query(limites)
@@ -202,7 +202,7 @@ function migrarDepartamentos() {
 function migrarLocalidad() {
     let consultaLocalidad = 'select * from T_LOCALIDAD WHERE CODIGO BETWEEN @offset AND @limit';
     let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_LOCALIDAD';
-    
+
     return sqlserver.query(limites)
             .then(resultado => {
                 if (resultado[0]) {
