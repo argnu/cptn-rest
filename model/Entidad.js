@@ -59,8 +59,8 @@ module.exports.table = table;
 
 function addEntidad(entidad, client) {
   return Promise.all([
-    Domicilio.addDomicilio(client, entidad.domicilioReal),
-    Domicilio.addDomicilio(client, entidad.domicilioLegal)
+    Domicilio.addDomicilio(entidad.domicilioReal, client),
+    Domicilio.addDomicilio(entidad.domicilioLegal, client)
   ])
   .then(([domicilioReal, domicilioLegal]) => {
     let query = table.insert(

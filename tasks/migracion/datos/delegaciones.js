@@ -1,14 +1,14 @@
-const {
-    Pool
-} = require('pg');
-const config = require('../config.private');
-const pool = new Pool(config.db);
-const connectSql = require('./connectSql');
+const config = require('../../config.private');
+const connector = require('../../connector');
+const sql = require('sql');
+sql.setDialect('postgres');
+const model = require('../../model');
+const sqlserver = require('../sqlserver');
 
 function makeJobDelegacion(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        return connectSql.consultaSql(consulta, i, offset)
+        return sqlserver.query(consulta, i, offset)
             .then(delegaciones => {
                 let nuevasDelegaciones = [];
                 if (delegaciones) {
@@ -32,29 +32,27 @@ function makeJobDelegacion(i, total, page_size, consulta) {
 }
 
 function addDelegacion(client, nueva_delegacion) {
-    let query = `
-         INSERT INTO delegacion (
-            id, nombre)
-          VALUES($1, $2)
-        `;
-    let values = [
-        nueva_delegacion.id, nueva_delegacion.nombre
-    ];
-    return client.query(query, values);
+    let table = model.Delegacion.table;
+    let query = table.insert(
+                  table.id.value(nueva_delegacion.id),
+                  table.nombre.value(nueva_delegacion.nombre)
+                ).toQuery();
+
+    return connector.execQuery(query);
 }
 
-module.exports.migrarDelegacion = function () {
-    console.log('Migrando delegaciones...');    
+module.exports.migrar = function () {
+    console.log('Migrando delegaciones...');
     let consulta = 'select * from T_SUCURSAL WHERE CODIGO BETWEEN @offset AND @limit';
     let countDelegaciones = 'select COUNT(*) as cant from T_SUCURSAL';
-    return connectSql.countSql(countDelegaciones)
-        .then(res => {
-            if (res && res !== []) {
-                let cantDelegaciones = res['cant'];  
+    return sqlserver.query(countDelegaciones)
+        .then(resultado => {
+            if (resultado[0]) {
+                let cantDelegaciones = resultado[0]['cant'];
                 return makeJobDelegacion(0, cantDelegaciones, 100, consulta);
             }
             else {
-                sql.close();                
+                sql.close();
                 return;
             }
         });

@@ -17,7 +17,7 @@ const table = sql.define({
   ]
 });
 
-function addInstitucion(client, institucion) {
+function addInstitucion(institucion, client) {
   if (institucion && institucion.nombre) {
     let query = table.insert(
       table.nombre.value(domicilio.nombre)
@@ -25,7 +25,7 @@ function addInstitucion(client, institucion) {
     return connector.execQuery(query, client)
     .then(r => r.rows[0]);
   }
-  else Promise.resolve(null);
+  else return;
 }
 
 module.exports.table = table;

@@ -1,14 +1,14 @@
-const {
-    Pool
-} = require('pg');
-const config = require('../config.private');
-const pool = new Pool(config.db);
-const connectSql = require('./connectSql');
+const config = require('../../config.private');
+const connector = require('../../connector');
+const sql = require('sql');
+sql.setDialect('postgres');
+const model = require('../../model');
+const sqlserver = require('../sqlserver');
 
 function makeJobInstitucion(i, total, page_size, consulta) {
     if (i < total) {
         let offset = i + page_size;
-        return connectSql.consultaSql(consulta, i, offset)
+        return sqlserver.query(consulta, i, offset)
             .then(instituciones => {
                 let nuevasInstituciones = [];
                 if (instituciones) {
@@ -16,7 +16,7 @@ function makeJobInstitucion(i, total, page_size, consulta) {
                         let nuevaUniversidad = {};
                         nuevaUniversidad['id'] = universidad['CODIGO'];
                         nuevaUniversidad['nombre'] = universidad['DESCRIPCION'];
-                        nuevasInstituciones.push(addInstitucion(pool, nuevaUniversidad));
+                        nuevasInstituciones.push(addInstitucion(nuevaUniversidad));
                     });
                    return Promise.all(nuevasInstituciones).then(res =>
                     makeJobInstitucion(offset + 1, total, page_size, consulta)
@@ -31,26 +31,24 @@ function makeJobInstitucion(i, total, page_size, consulta) {
 
 }
 
-function addInstitucion(client, nueva_institucion) {
-    let query = `
-         INSERT INTO institucion (
-            id, nombre)
-          VALUES($1, $2)
-        `;
-    let values = [
-        nueva_institucion.id, nueva_institucion.nombre
-    ];
-    return client.query(query, values);
+function addInstitucion(nueva_institucion) {
+    let table = model.Institucion.table;
+    let query = table.insert(
+                  table.id.value(nueva_institucion.id),
+                  table.nombre.value(nueva_institucion.nombre)
+                ).toQuery();
+
+    return connector.execQuery(query);
 }
 
-module.exports.migrarInstitucion = function () {
+module.exports.migrar = function () {
     console.log('Migrando instituciones...');
     let consultaInstitucion = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
     let countInstituciones = 'select COUNT(*) as cantUniversidades from T_Universidad';
-    return connectSql.countSql(countInstituciones)
-        .then(res => {
-            if (res && res !== []) {
-                let cantInstitucion = res['cantUniversidades'];  
+    return sqlserver.query(countInstituciones)
+        .then(resultado => {
+            if (resultado[0]) {
+                let cantInstitucion = resultado[0]['cantUniversidades'];
                 return makeJobInstitucion(0, cantInstitucion, 100, consultaInstitucion);
             }
             else return;

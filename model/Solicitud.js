@@ -104,7 +104,7 @@ module.exports.add = function(solicitud) {
             });
         }
         else if (solicitud.entidad.tipo == 'empresa') {
-          return Empresa.addEmpresa(connection.client, solicitud.entidad)
+          return Empresa.addEmpresa(solicitud.entidad, connection.client)
             .then(empresa_added => {
               solicitud.entidad = empresa_added;
               return addSolicitud(solicitud, connection.client)

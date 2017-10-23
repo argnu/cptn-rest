@@ -40,7 +40,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addContacto(client, contacto) {
+function addContacto(contacto, client) {
   let query = table.insert(
     table.tipo.value(contacto.tipo), table.valor.value(contacto.valor),
     table.entidad.value(contacto.entidad)

@@ -7,6 +7,11 @@ module.exports.execQuery = function(query, client) {
   return client.query(query.text, query.values);
 }
 
+module.exports.execRawQuery = function(query, client) {
+  client = (client instanceof Client) ? client : pool;
+  return client.query(query);
+}
+
 module.exports.beginTransaction = function() {
   return new Promise(function(resolve, reject) {
     pool.connect((err, client, done) => {

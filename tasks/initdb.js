@@ -1,6 +1,21 @@
 const connector = require('../connector');
 const model = require('../model');
 
+function querysSecuencial(querys) {
+  function* getQuery() {
+      for(let q of querys) yield connector.execQuery(q);
+  }
+
+  var it = getQuery();
+  function execQuerys() {
+    let q = it.next().value;
+    if (q) return q.then(r => execQuerys());
+    else return Promise.resolve();
+  }
+
+  return execQuerys();
+}
+
 function createTable(table) {
    return connector.execQuery(table.create().toQuery())
     .then(r => console.info(`Tabla "${table._name}" creada`));
@@ -22,47 +37,80 @@ function createDatosTareas() {
   .then(r => createTable(model.tareas.ItemValorPredeterminado.table))
 }
 
-function populateOpciones() {
+function populateEstadoCivil() {
   let querys = [];
-  querys.push(model.TipoSexo.table.insert(model.TipoSexo.table.valor.value('Femenino')));
-  querys.push(model.TipoSexo.table.insert(model.TipoSexo.table.valor.value('Masculino')));
-  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Casado')));
-  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Soltero')));
-  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Concubino')));
-  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Viudo')));
-  querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Grado')));
-  querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Posgrado')));
-  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Fijo')));
-  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Celular')));
-  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Email')));
-  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Web')));
-  querys.push(model.TipoRelacionLaboral.table.insert(model.TipoRelacionLaboral.table.valor.value('Relación de Dependencia')));
-  querys.push(model.TipoRelacionLaboral.table.insert(model.TipoRelacionLaboral.table.valor.value('Autónomo')));
-  querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Unipersonal')));
-  querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Societaria')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Anónima')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Comercial Colectiva')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('En Comandita Simple o Por Acciones')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Responsabilidad Limitada')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Capital e Industria')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Cooperativa')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('En Formación')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Hecho')));
-  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Fideicomiso')));
-  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Consumidor Final')));
-  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Responsable Inscripto')));
-  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Responsable No Inscripto')));
-  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('No Responsable')));
-  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Exento')));
-  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Monotributista')));
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Casado')).toQuery());
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Soltero')).toQuery());
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Divorciado')).toQuery());
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Viudo')).toQuery());
+  querys.push(model.TipoEstadoCivil.table.insert(model.TipoEstadoCivil.table.valor.value('Concubino')).toQuery());
+  return querysSecuencial(querys);
+}
 
-  let proms = [];
-  for(let query of querys) {
-    let q = query.toQuery();
-    proms.push(connector.execQuery(q));
-  }
+function populateSexo() {
+  let querys = [];
+  querys.push(model.TipoSexo.table.insert(model.TipoSexo.table.valor.value('Femenino')).toQuery());
+  querys.push(model.TipoSexo.table.insert(model.TipoSexo.table.valor.value('Masculino')).toQuery());
+  return querysSecuencial(querys);
+}
 
-  return Promise.all(proms);
+function populateFormacion() {
+  let querys = [];
+  querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Grado')).toQuery());
+  querys.push(model.TipoFormacion.table.insert(model.TipoFormacion.table.valor.value('Posgrado')).toQuery());
+  return querysSecuencial(querys);
+}
+
+function populateContacto() {
+  let querys = [];
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Fijo')).toQuery());
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Celular')).toQuery());
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Email')).toQuery());
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Web')).toQuery());
+  return querysSecuencial(querys);
+}
+
+function populateEmpresa() {
+  let querys = [];
+  querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Unipersonal')).toQuery());
+  querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Societaria')).toQuery());
+  return querysSecuencial(querys);
+}
+
+function populateSociedad() {
+  let querys = [];
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Anónima')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Comercial Colectiva')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('En Comandita Simple o Por Acciones')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Responsabilidad Limitada')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Capital e Industria')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Cooperativa')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('En Formación')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('De Hecho')).toQuery());
+  querys.push(model.TipoSociedad.table.insert(model.TipoSociedad.table.valor.value('Fideicomiso')).toQuery());
+  return querysSecuencial(querys);
+}
+
+function populateAfip() {
+  let querys = [];
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Consumidor Final')).toQuery());
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Responsable Inscripto')).toQuery());
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Responsable No Inscripto')).toQuery());
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('No Responsable')).toQuery());
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Exento')).toQuery());
+  querys.push(model.TipoCondicionAfip.table.insert(model.TipoCondicionAfip.table.valor.value('Monotributista')).toQuery());
+  return querysSecuencial(querys);
+}
+
+function populateOpciones() {
+  return populateEstadoCivil()
+  .then(r => populateSexo())
+  .then(r => populateFormacion())
+  .then(r => populateContacto())
+  .then(r => populateEmpresa())
+  .then(r => populateEmpresa())
+  .then(r => populateAfip())
+  .catch(e => console.error(e));
 }
 
 function fakeData() {
