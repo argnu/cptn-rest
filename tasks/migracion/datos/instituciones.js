@@ -44,13 +44,13 @@ function addInstitucion(nueva_institucion) {
 module.exports.migrar = function () {
     console.log('Migrando instituciones...');
     let consultaInstitucion = 'select * from T_Universidad WHERE CODIGO BETWEEN @offset AND @limit';
-    let countInstituciones = 'select COUNT(*) as cantUniversidades from T_Universidad';
-    return sqlserver.query(countInstituciones)
+    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_Universidad';
+    return sqlserver.query(limites)
         .then(resultado => {
             if (resultado[0]) {
-                let cantInstitucion = resultado[0]['cantUniversidades'];
-                console.log(`Cantidad de Instituciones: ${cantInstitucion}`);
-                return makeJobInstitucion(0, cantInstitucion, 100, consultaInstitucion);
+                let min = resultado[0]['min'];
+                let max = resultado[0]['max'];
+                return makeJobInstitucion(min, max, 100, consultaInstitucion);
             }
             else return;
         })

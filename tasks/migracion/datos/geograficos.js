@@ -5,9 +5,9 @@ const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../model');
 
-function makeJobPaises(i, total, page_size, consulta) {
+function makeJobPaises(i, total, page_100, consulta) {
     if (i < total) {
-        let offset = i + page_size;
+        let offset = i + page_100;
         return sqlserver.query(consulta, i, offset)
             .then(paises => {
                 let nuevosPaises = [];
@@ -19,17 +19,17 @@ function makeJobPaises(i, total, page_size, consulta) {
                         nuevosPaises.push(addPais(nuevoPais));
                     });
                     return Promise.all(nuevosPaises).then(res =>
-                      makeJobPaises(offset + 1, total, page_size, consulta)
+                      makeJobPaises(offset + 1, total, page_100, consulta)
                     );
                 }
-                else return makeJobPaises(offset + 1, total, page_size, consulta);
+                else return makeJobPaises(offset + 1, total, page_100, consulta);
             });
     }
 }
 
-function makeJobProvincia(i, total, page_size, consulta) {
+function makeJobProvincia(i, total, page_100, consulta) {
     if (i < total) {
-        let offset = i + page_size;
+        let offset = i + page_100;
         return sqlserver.query(consulta, i, offset)
             .then(provincias => {
                 let listaProvincias = [];
@@ -42,17 +42,17 @@ function makeJobProvincia(i, total, page_size, consulta) {
                         listaProvincias.push(addProvincia( nuevaProvincia));
                     });
                     return Promise.all(listaProvincias).then(res =>
-                        makeJobProvincia(offset + 1, total, page_size, consulta)
+                        makeJobProvincia(offset + 1, total, page_100, consulta)
                     );
                 }
-                else return makeJobProvincia(offset + 1, total, page_size, consulta);
+                else return makeJobProvincia(offset + 1, total, page_100, consulta);
             });
     }
 }
 
-function makeJobDepartamento(i, total, page_size, consulta) {
+function makeJobDepartamento(i, total, page_100, consulta) {
     if (i < total) {
-        let offset = i + page_size;
+        let offset = i + page_100;
         return sqlserver.query(consulta, i, offset)
             .then(departamentos => {
                 let listaDepartamentos = [];
@@ -65,17 +65,17 @@ function makeJobDepartamento(i, total, page_size, consulta) {
                         listaDepartamentos.push(addDepartamento(nuevoDepartamento));
                     });
                     return Promise.all(listaDepartamentos).then(res =>
-                        makeJobDepartamento(offset + 1, total, page_size, consulta)
+                        makeJobDepartamento(offset + 1, total, page_100, consulta)
                     );
                 }
-                else return makeJobDepartamento(offset + 1, total, page_size, consulta);
+                else return makeJobDepartamento(offset + 1, total, page_100, consulta);
             });
     }
 }
 
-function makeJobLocalidad(i, total, page_size, consulta) {
+function makeJobLocalidad(i, total, page_100, consulta) {
     if (i < total) {
-        let offset = i + page_size;
+        let offset = i + page_100;
         return sqlserver.query(consulta, i, offset)
             .then(localidades => {
                 let listaLocalidades = [];
@@ -88,10 +88,10 @@ function makeJobLocalidad(i, total, page_size, consulta) {
                         listaLocalidades.push(addLocalidad(nuevaLocalidad));
                     });
                     return Promise.all(listaLocalidades).then(res =>
-                      makeJobLocalidad(offset + 1, total, page_size, consulta)
+                      makeJobLocalidad(offset + 1, total, page_100, consulta)
                     );
                 }
-                else return makeJobLocalidad(offset + 1, total, page_size, consulta);
+                else return makeJobLocalidad(offset + 1, total, page_100, consulta);
             });
     }
 }
@@ -143,18 +143,14 @@ function addLocalidad(nueva_localidad) {
 
 function migrarPaises() {
     let consultaPaises = 'select * from T_PAIS WHERE CODIGO BETWEEN @offset AND @limit';
-    let countPaises = 'select COUNT(*) as cantPaises from T_PAIS';
-    let size = 100;
+    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_PAIS';
 
-    return sqlserver.query(countPaises)
+    return sqlserver.query(limites)
             .then(resultado => {
                 if (resultado[0]) {
-                    let cantPaises = resultado[0]['cantPaises'];
-                    console.log('Cantidad Paises', cantPaises);
-                    if (cantPaises < size) {
-                        size = cantPaises;
-                    }
-                    return makeJobPaises(0, cantPaises, size, consultaPaises);
+                    let min = resultado[0]['min'];
+                    let max = resultado[0]['max'];
+                    return makeJobPaises(min, max, 100, consultaPaises);
                 }
                 else return;
             })
@@ -166,17 +162,14 @@ function migrarPaises() {
 
 function migrarProvincias() {
     let consultaProvincias = 'select * from T_PCIAS WHERE CODPROVINCIA BETWEEN @offset AND @limit';
-    let countProvincia = 'select COUNT(*) as cantProvincias from T_PCIAS';
-    let size = 100;
-    return sqlserver.query(countProvincia)
+    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_PCIAS';
+
+    return sqlserver.query(limites)
             .then(resultado => {
                 if (resultado[0]) {
-                    let cantProvincias = resultado[0]['cantProvincias'];
-                    console.log('Cantidad Provincias', cantProvincias);
-                    if (cantProvincias < size) {
-                        size = cantProvincias;
-                    }
-                    return makeJobProvincia(0, cantProvincias, size, consultaProvincias);
+                    let min = resultado[0]['min'];
+                    let max = resultado[0]['max'];
+                    return makeJobProvincia(min, max, 100, consultaProvincias);
                 }
                 else return;
             })
@@ -188,17 +181,15 @@ function migrarProvincias() {
 
 function migrarDepartamentos() {
     let consultaDepartamentos = 'select * from T_DEPTOS WHERE CODDEPARTAMENTO BETWEEN @offset AND @limit';
-    let countDepartamentos = 'select COUNT(*) as cantDepartamentos from T_DEPTOS';
-    let sizeDptos = 100;
-    return sqlserver.query(countDepartamentos)
+    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_DEPTOS';
+
+
+    return sqlserver.query(limites)
             .then(resultado => {
                 if (resultado[0]) {
-                    let cantDptos = resultado[0]['cantDepartamentos'];
-                    console.log('Cantidad Departamentos', cantDptos);
-                    if (cantDptos < sizeDptos) {
-                        sizeDptos = cantDptos;
-                    }
-                    return makeJobDepartamento(0, cantDptos, sizeDptos, consultaDepartamentos);
+                    let min = resultado[0]['min'];
+                    let max = resultado[0]['max'];
+                    return makeJobDepartamento(min, max, 100, consultaDepartamentos);
                 }
                 else return;
             })
@@ -210,17 +201,14 @@ function migrarDepartamentos() {
 
 function migrarLocalidad() {
     let consultaLocalidad = 'select * from T_LOCALIDAD WHERE CODIGO BETWEEN @offset AND @limit';
-    let countLocalidad = 'select COUNT(*) as cantLocalidades from T_LOCALIDAD';
-    let size = 100;
-    return sqlserver.query(countLocalidad)
+    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_LOCALIDAD';
+    
+    return sqlserver.query(limites)
             .then(resultado => {
                 if (resultado[0]) {
-                    let cantLocalidad = resultado[0]['cantLocalidades'];
-                    console.log('Cantidad Localidad', cantLocalidad);
-                    if (cantLocalidad < size) {
-                        size = cantLocalidad;
-                    }
-                    return makeJobLocalidad(0, cantLocalidad, size, consultaLocalidad);
+                    let min = resultado[0]['min'];
+                    let max = resultado[0]['max'];
+                    return makeJobLocalidad(min, max, 100, consultaLocalidad);
                 }
                 else return;
             })

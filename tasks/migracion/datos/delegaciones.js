@@ -44,13 +44,14 @@ function addDelegacion(nueva_delegacion) {
 module.exports.migrar = function () {
     console.log('Migrando delegaciones...');
     let consulta = 'select * from T_SUCURSAL WHERE CODIGO BETWEEN @offset AND @limit';
-    let countDelegaciones = 'select COUNT(*) as cant from T_SUCURSAL';
+    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_SUCURSAL';
+
     return sqlserver.query(countDelegaciones)
         .then(resultado => {
             if (resultado[0]) {
-                let cantDelegaciones = resultado[0]['cant'];
-                console.log(`Cantidad de Delegaciones: ${cantDelegaciones}`);
-                return makeJobDelegacion(0, cantDelegaciones, 100, consulta);
+                let min = resultado[0]['min'];
+                let max = resultado[0]['max'];
+                return makeJobDelegacion(min, max, 100, consulta);
             }
             else {
                 sql.close();

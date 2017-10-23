@@ -43,12 +43,14 @@ function addEstadoMatricula(nuevo) {
 module.exports.migrar = function () {
     console.log('Migrando estados de matrícula...');
     let consulta = 'select * from T_ESTADO_MAT WHERE CODIGO BETWEEN @offset AND @limit';
-    let countEstados = 'select COUNT(*) as cantEstados from T_ESTADO_MAT';
+    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_ESTADO_MAT';
+
     return sqlserver.query(countEstados)
         .then(resultado => {
             if (resultado[0]) {
-                let cantEstados = resultado[0]['cantEstados'];
-                return makeJobEstadoMatricula(0, cantEstados, 100, consulta);
+                let min = resultado[0]['min'];
+                let max = resultado[0]['max'];
+                return makeJobEstadoMatricula(min, max, 100, consulta);
             }
             else return;
         })
