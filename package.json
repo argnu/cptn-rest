@@ -7,8 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node_modules/nodemon/bin/nodemon.js index.js",
     "initdb": "node ./tasks/initdb.js",
-    "premigrate": "node ./tasks/initdb.js & node ./tasks/migracion/dropSequences.js",
-    "migrate": "node ./tasks/migracion"
+    "premigrate": "node ./tasks/initdb.js & node ./tasks/migracion/sequences/drop.js",
+    "migrate": "node ./tasks/migracion",
+    "postmigrate": "node ./tasks/migracion/sequences/create.js"
   },
   "keywords": [
     "rest",

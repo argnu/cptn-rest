@@ -16,6 +16,7 @@ function migracion() {
          .then(r => matriculas.titulos.migrar())
          .then(r => matriculas.posgrados.migrar())
          .then(r => matriculas.beneficiarios.migrar())
+         .then(r => matriculas.subsidiarios.migrar())
          .catch(e => console.error(e));
  }
 
@@ -28,7 +29,7 @@ function migrarTodo() {
   .catch(e => console.error(e));
 }
 
-function migrar() {
+function migrarAlgo() {
   matriculas.subsidiarios.migrar()
   .then(e => { 
     console.log('listo');
@@ -37,6 +38,6 @@ function migrar() {
   .catch(e => console.error(e));
   }
 
-//migrarTodo();
-migrar();
+migrarTodo();
+//migrarAlgo();
 
