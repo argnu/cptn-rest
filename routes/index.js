@@ -29,5 +29,6 @@ router.use('/departamentos', require('./departamentos'));
 router.use('/localidades', require('./localidades'));
 router.use('/delegaciones', require('./delegaciones'));
 router.use('/instituciones', require('./instituciones'));
+router.use('/titulos', require('./titulos'));
 
 module.exports = router;

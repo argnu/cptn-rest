@@ -226,9 +226,13 @@ function getTotal(params) {
       table.count(table.id).as('total')
     ).from(select.from);
 
+    if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
+    if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
+    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
     if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
     if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
-    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+    if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
+    if (params.cuit) query.where(Profesional.table.cuit.ilike(`%${params.cuit}%`));
   }
 
   return connector.execQuery(query.toQuery())
@@ -242,10 +246,13 @@ module.exports.getAll = function (params) {
     ...select.atributes
   ).from(select.from);
 
+  if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
+  if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
+  if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
   if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
   if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
-
-  if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+  if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
+  if (params.cuit) query.where(Profesional.table.cuit.ilike(`%${params.cuit}%`));
 
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);

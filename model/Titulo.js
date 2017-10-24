@@ -1,6 +1,7 @@
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+const TipoFormacion = require('./tipos/TipoFormacion');
 
 const table = sql.define({
   name: 'titulo',
@@ -39,14 +40,17 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.getAll = function() {
+module.exports.getAll = function(params) {
   let query = table.select(
-    table.id, table.nombre
+    table.id, table.nombre, table.libro,
+    TipoFormacion.table.valor.as('tipo')
   ).from(
-    table
-  ).toQuery();
+    table.join(TipoFormacion.table).on(table.tipo.equals(TipoFormacion.table.id))
+  )
 
-  return connector.execQuery(query)
+  if (params.tipo && !isNaN(+params.tipo)) query.where(table.tipo.equals(params.tipo))
+
+  return connector.execQuery(query.toQuery())
          .then(r => r.rows);
 }
 

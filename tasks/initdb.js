@@ -196,7 +196,6 @@ dropTable()
     createTable(model.TipoContacto.table),
     createTable(model.TipoEstadoCivil.table),
     createTable(model.TipoFormacion.table),
-    createTable(model.TipoRelacionLaboral.table),
     createTable(model.TipoEmpresa.table),
     createTable(model.TipoSociedad.table),
     createTable(model.TipoIncumbencia.table),

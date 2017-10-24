@@ -12,19 +12,19 @@ router.get('/', function(req, res) {
     model.TipoEmpresa.getAll(req.query),
     model.TipoEstadoCivil.getAll(req.query),
     model.TipoFormacion.getAll(req.query),
-    model.TipoRelacionLaboral.getAll(req.query),
     model.TipoSexo.getAll(req.query),
     model.TipoSociedad.getAll(req.query),
     model.TipoIncumbencia.getAll(req.query),
+    model.TipoEstadoMatricula.getAll(req.query),
   ])
   .then(([
     condicionafip, contacto, empresa, estadocivil,
-    formacion, relacionlaboral, sexo, sociedad,
-    incumbencia
+    formacion, sexo, sociedad,
+    incumbencia, estadoMatricula
   ]) => res.json({
         condicionafip, contacto, empresa, estadocivil,
-        formacion, relacionlaboral, sexo, sociedad,
-        incumbencia
+        formacion, sexo, sociedad,
+        incumbencia, estadoMatricula
       })
   )
   .catch(e => {

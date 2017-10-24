@@ -9,7 +9,6 @@ module.exports.TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
 module.exports.TipoContacto = require('./tipos/TipoContacto');
 module.exports.TipoEstadoCivil = require('./tipos/TipoEstadoCivil');
 module.exports.TipoFormacion = require('./tipos/TipoFormacion');
-module.exports.TipoRelacionLaboral = require('./tipos/TipoRelacionLaboral');
 module.exports.TipoEmpresa = require('./tipos/TipoEmpresa');
 module.exports.TipoSociedad = require('./tipos/TipoSociedad');
 module.exports.TipoIncumbencia = require('./tipos/TipoIncumbencia');

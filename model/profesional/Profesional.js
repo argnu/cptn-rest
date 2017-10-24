@@ -7,7 +7,6 @@ const Domicilio = require('../Domicilio');
 const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
-const TipoRelacionLaboral = require('../tipos/TipoRelacionLaboral');
 const sql = require('sql');
 sql.setDialect('postgres');
 
