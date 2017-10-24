@@ -14,13 +14,28 @@ function migracion() {
          .then(r => titulos.migrar())
          .then(r => posgrados.migrar())
          .then(r => matriculas.estados.migrar())
-         //.then(r => matriculas.migrar())
+         .then(r => matriculas.matriculas.migrar())
          .catch(e => console.error(e));
  }
 
-migracion()
-.then(e => { 
-  console.log('listo');
-  process.exit();
-})
-.catch(e => console.error(e));
+function migrarTodo() {
+  migracion()
+  .then(e => { 
+    console.log('listo');
+    process.exit();
+  })
+  .catch(e => console.error(e));
+}
+
+function migrar() {
+  matriculas.titulos.migrar()
+  .then(e => { 
+    console.log('listo');
+    process.exit();
+  })
+  .catch(e => console.error(e));
+  }
+
+//migrarTodo();
+migrar();
+

@@ -6,7 +6,7 @@ const TipoFormacion = require('../tipos/TipoFormacion');
 const Titulo = require('../Titulo');
 
 const table = sql.define({
-  name: 'tipoformacion',
+  name: 'formacion',
   columns: [
     {
       name: 'id',
@@ -20,13 +20,11 @@ const table = sql.define({
     },
     {
       name: 'fecha',
-      dataType: 'date',
-      notNull: true
+      dataType: 'date'
     },
     {
       name: 'institucion',
-      dataType: 'int',
-      notNull: true
+      dataType: 'int'
     },
     {
       name: 'profesional',

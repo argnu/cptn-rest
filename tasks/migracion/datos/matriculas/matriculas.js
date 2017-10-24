@@ -25,7 +25,7 @@ function makeJobMatriculas(i, total, page_size, consulta) {
 
 }
 
-function createDomicilioReal (matricula){
+function createDomicilioReal (matricula) {
     if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
         let nuevoDomicilio = {};
         nuevoDomicilio['calle'] = matricula['DOMICREALCALLE'];
@@ -35,8 +35,8 @@ function createDomicilioReal (matricula){
     else return null;
 }
 
-function createDomicilioLegal (matricula){
-    if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
+function createDomicilioLegal (matricula) {
+    if (matricula['DOMICLEGALCALLE'] && matricula['DOMICLEGALLOCALIDAD'] ){
         let nuevoDomicilio = {};
         nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'];
         nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
@@ -51,7 +51,7 @@ function createProfesional(matricula) {
     nuevoProfesional['apellido'] = matricula['APELLIDO'];
     nuevoProfesional['nombre'] = matricula['NOMBRE'];
     nuevoProfesional['fechaNacimiento'] = matricula['FECNAC_DATE'];
-    nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] == 0 ? null : matricula['ESTADOCIVIL'];
+    nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] + 1;
     nuevoProfesional['observaciones'] = matricula['OBSERVACIONES'];
 
     nuevoProfesional.contactos = [];
@@ -71,7 +71,7 @@ function createProfesional(matricula) {
     } else {
         nuevoProfesional['independiente'] = 0;
     }
-    nuevoProfesional['poseeCajaPrevisional'] = matricula['CODESTADOCAJA'];
+    nuevoProfesional['poseeCajaPrevisional'] = (matricula['CODESTADOCAJA'] == 2);
     nuevoProfesional['publicar'] = matricula['PUBLICARDATOS'];
     //Datos para crear la entidad
     nuevoProfesional['tipo'] = 'profesional';
@@ -88,14 +88,14 @@ function createProfesional(matricula) {
 
     nuevoProfesional['domicilioReal'] = createDomicilioReal(matricula);
     nuevoProfesional['domicilioLegal'] = createDomicilioLegal(matricula);
-    return Profesional.addProfesional(nuevoProfesional);
+    return model.Profesional.addProfesional(nuevoProfesional);
 }
 
 function createMatricula(matricula) {
   return createProfesional(matricula)
          .then(profesional => {
            let nuevaMatricula = {};
-           nuevaMatricula.entidad = profesional.entidad;
+           nuevaMatricula.entidad = profesional.id;
            nuevaMatricula.solicitud = null;
            nuevaMatricula.fechaResolucion = matricula['FECHARESOLUCION_DATE'];
            nuevaMatricula.numeroMatricula = matricula['NROMATRICULA'];
@@ -109,12 +109,14 @@ function createMatricula(matricula) {
            nuevaMatricula.nombreArchivoFirma = matricula['NombreArchivoFirma'];
            nuevaMatricula.estado = matricula['ESTADO'];
            nuevaMatricula.idMigracion = matricula['ID'];
-           return Matricula.addMatriculaMigracion(nuevaMatricula);
+           nuevaMatricula.legajo = matricula['LEGAJO'];
+           return model.Matricula.addMatriculaMigracion(nuevaMatricula);
          })
 }
 
 
 module.exports.migrar = function () {
+    console.log('Migrando matrículas...');
     let consultaMatriculas = 'select M.ID, M.SITAFIP, M.CUIT, ' +
     'M.DOMICREALCALLE, M.DOMICREALCODPOSTAL, ' +
     'M.DOMICREALDEPARTAMENTO, M.DOMICREALLOCALIDAD, ' +
@@ -125,9 +127,9 @@ module.exports.migrar = function () {
     'M.NOMBRE, M.APELLIDO, M.FECNAC_DATE ,M.NUMDOCU, ' +
     'M.ESTADOCIVIL, M.LUGNACCIUDAD as LocalidadNacimiento,' +
     'M.OBSERVACIONES, M.RELACIONLABORAL, M.EMPRESA, M.SERVICIOSPRESTADOS, ' +
-    'M.TELFIJO, M.TELCEL, M.EMAIL, M.PAGWEB' +
+    'M.TELFIJO, M.TELCEL, M.EMAIL, M.PAGWEB, ' +
     'M.PUBLICARDATOS, M.CODESTADOCAJA, ' +
-    'M.LEGAJO, M.NROMATRICULA,M.FECHARESOLUCION_DATE, ' +
+    'M.LEGAJO, M.NROMATRICULA, M.FECHARESOLUCION_DATE, ' +
     'M.NUMACTA, M.FECHABAJA_DATE, M.OBSERVACIONES, M.NOTASPRIVADAS,'  +
     'M.ASIENTOBAJAF, M.CODBAJAF, M.NOMBREARCHIVOFOTO, ' +
     'M.NombreArchivoFirma, M.ESTADO ' +

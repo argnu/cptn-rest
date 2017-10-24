@@ -46,7 +46,7 @@ module.exports.migrar = function () {
     let consulta = 'select * from T_SUCURSAL WHERE CODIGO BETWEEN @offset AND @limit';
     let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_SUCURSAL';
 
-    return sqlserver.query(countDelegaciones)
+    return sqlserver.query(limites)
         .then(resultado => {
             if (resultado[0]) {
                 let min = resultado[0]['min'];

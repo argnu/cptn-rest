@@ -37,8 +37,7 @@ const table = sql.define({
     },
     {
       name: 'fechaNacimiento',
-      dataType: 'date',
-      notNull: true
+      dataType: 'date'
     },
     {
       name: 'sexo',
@@ -66,7 +65,7 @@ const table = sql.define({
     },
     {
       name: 'empresa',
-      dataType: 'varchar(100)'
+      dataType: 'varchar(250)'
     },
     {
       name: 'serviciosPrestados',
@@ -118,7 +117,8 @@ function addProfesional(profesional, client) {
       table.empresa.value(profesional.empresa),
       table.serviciosPrestados.value(profesional.serviciosPrestados),
       table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
-      table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional)
+      table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional),
+      table.publicar.value(profesional.publicar)
     ).toQuery();
 
     return connector.execQuery(query, client);
@@ -135,25 +135,25 @@ function addProfesional(profesional, client) {
     profesional.id = entidad.id;
     return addDatosBasicos(profesional)
           .then(r => {
-            let proms_contactos = profesional.contactos.map(c => {
+            let proms_contactos = (profesional.contactos && profesional.contactos.length) ? profesional.contactos.map(c => {
               c.entidad = entidad.id;
               return Contacto.addContacto(c, client);
-            });
+            }) : [];
 
-            let proms_formaciones = profesional.formaciones.map(f => {
+            let proms_formaciones = (profesional.formaciones && profesional.formaciones.length) ? profesional.formaciones.map(f => {
               f.profesional = profesional.id;
               return Formacion.addFormacion(f, client);
-            });
+            }) : [];
 
-            let proms_beneficiarios = profesional.beneficiarios.map(b => {
+            let proms_beneficiarios = (profesional.beneficiarios && profesional.beneficiarios.length) ? profesional.beneficiarios.map(b => {
               b.profesional = profesional.id;
               return Beneficiario.addBeneficiario(b, client);
-            });
+            }) : [];
 
-            let proms_subsidiarios = profesional.subsidiarios.map(s => {
+            let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
               s.profesional = profesional.id;
               return Subsidiario.addSubsidiario(s, client);
-            });
+            }) : [];
 
 
             return Promise.all(proms_contactos)

@@ -34,13 +34,11 @@ const table = sql.define({
     },
     {
       name: 'fechaResolucion',
-      dataType: 'date',
-      notNull: true
+      dataType: 'date'
     },
     {
       name: 'numeroActa',
-      dataType: 'varchar(50)',
-      notNull: true
+      dataType: 'varchar(50)'
     },
     {
       name: 'fechaBaja',
@@ -48,11 +46,11 @@ const table = sql.define({
     },
     {
       name: 'observaciones',
-      dataType: 'varchar(255)'
+      dataType: 'text'
     },
     {
       name: 'notasPrivadas',
-      dataType: 'varchar(255)'
+      dataType: 'text'
     },
     {
       name: 'asientoBajaF',
@@ -103,20 +101,20 @@ module.exports.table = table;
 
 function addMatriculaMigracion(matricula, client) {
   let query = table.insert(
+    table.legajo.value(matricula.legajo),
     table.idMigracion.value(matricula.idMigracion),
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
     table.fechaResolucion.value(matricula.fechaResolucion),
     table.numeroActa.value(matricula.numeroActa),
-    table.estado.value(matricula.numeroMatricula),
-    table.estado.value(matricula.fechaBaja),
-    table.estado.value(matricula.observaciones),
-    table.estado.value(matricula.notasPrivadas),
-    table.estado.value(matricula.asientoBajaF),
-    table.estado.value(matricula.codBajaF),
-    table.estado.value(matricula.estado),
-    table.estado.value(matricula.nombreArchivoFoto),
-    table.estado.value(matricula.nombreArchivoFirma),
+    table.numeroMatricula.value(matricula.numeroMatricula),
+    table.fechaBaja.value(matricula.fechaBaja),
+    table.observaciones.value(matricula.observaciones),
+    table.notasPrivadas.value(matricula.notasPrivadas),
+    table.asientoBajaF.value(matricula.asientoBajaF),
+    table.codBajaF.value(matricula.codBajaF),
+    table.nombreArchivoFoto.value(matricula.nombreArchivoFoto),
+    table.nombreArchivoFirma.value(matricula.nombreArchivoFirma),
     table.estado.value(matricula.estado)
   ).returning(table.id).toQuery()
 
@@ -261,4 +259,14 @@ module.exports.get = function (id) {
       delete(matricula.tipoEntidad);
       return matricula;
     })
+}
+
+module.exports.getMigracion = function (id) {
+  let solicitud = {};
+  let query = table.select(...select.atributes)
+    .from(select.from)
+    .where(table.idMigracion.equals(id))
+    .toQuery();
+  return connector.execQuery(query)
+    .then(r => matricula = r.rows[0]);
 }
