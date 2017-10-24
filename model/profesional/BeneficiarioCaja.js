@@ -11,7 +11,7 @@ const table = sql.define({
     },
     {
       name: 'dni',
-      dataType: 'varchar(10)',
+      dataType: 'varchar(15)',
       notNull: true
     },
     {

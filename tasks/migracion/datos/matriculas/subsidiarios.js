@@ -1,13 +1,15 @@
-const config = require('../../../config.private');
-const connector = require('../../../connector');
+const config = require('../../../../config.private');
+const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const model = require('../../../model');
-const sqlserver = require('../sqlserver');
+const model = require('../../../../model');
+const sqlserver = require('../../sqlserver');
 
-const consulta = `select ID, APELLIDO,
-        NOMBRE, PORCENTAJE, NUMDOCU
-        from MAT_SUBSIDIO where ID between @offset and @limit`;
+const consulta = `select s.ID, s.APELLIDO,
+        s.NOMBRE, s.PORCENTAJE, s.NUMDOCU
+        from MAT_SUBSIDIO s inner join MATRICULAS m
+        on s.ID=m.ID
+        where s.ID between @offset and @limit`;
 
 function makeJob(i, total, page_size) {
     if (i < total) {
@@ -28,10 +30,10 @@ function makeJob(i, total, page_size) {
     }
 }
 
-function createSubsidiario(subsdiario) {
-  let nuevoSubsidiario = {};
-  return model.Matricula.get(subsidiario['ID'])
+function createSubsidiario(subsidiario) {
+  return model.Matricula.getMigracion(subsidiario['ID'])
   .then(matricula => {
+    let nuevoSubsidiario = {};      
     nuevoSubsidiario.profesional = matricula.entidad;
     nuevoSubsidiario.nombre = subsidiario['NOMBRE'];
     nuevoSubsidiario.apellido = subsidiario['APELLIDO'];
@@ -43,6 +45,7 @@ function createSubsidiario(subsdiario) {
 
 
 module.exports.migrar = function () {
+    console.log('Migrando subsidiarios de caja...');
     let limites = 'select MIN(ID) as min, MAX(ID) as max from MAT_SUBSIDIO';
     return sqlserver.query(limites)
         .then(resultado => {

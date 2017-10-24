@@ -4,8 +4,6 @@ const delegaciones = require('./datos/delegaciones');
 const matriculas = require('./datos/matriculas');
 const titulos = require('./datos/titulos');
 const posgrados = require('./datos/posgrados');
-const beneficiarios = require('./datos/beneficiarios');
-const subsidiarios = require('./datos/subsidiarios');
 
 function migracion() {
        return instituciones.migrar()
@@ -15,6 +13,9 @@ function migracion() {
          .then(r => posgrados.migrar())
          .then(r => matriculas.estados.migrar())
          .then(r => matriculas.matriculas.migrar())
+         .then(r => matriculas.titulos.migrar())
+         .then(r => matriculas.posgrados.migrar())
+         .then(r => matriculas.beneficiarios.migrar())
          .catch(e => console.error(e));
  }
 
@@ -28,7 +29,7 @@ function migrarTodo() {
 }
 
 function migrar() {
-  matriculas.titulos.migrar()
+  matriculas.subsidiarios.migrar()
   .then(e => { 
     console.log('listo');
     process.exit();

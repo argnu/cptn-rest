@@ -5,9 +5,12 @@ sql.setDialect('postgres');
 const model = require('../../../../model');
 const sqlserver = require('../../sqlserver');
 
-const consulta = `select ID, UNIVERSIDAD, POSGRADO,
-  dateadd(day, convert(integer, FECHA), '1800-12-28') as FECHA
-  from MAT_POSG where ID between @offset and @limit`;
+const consulta = `select M.ID, M.POSGRADO, U.CODIGO as UNIVERSIDAD, 
+  dateadd(day, convert(integer, M.FECHA), '1800-12-28') as FECHA
+  from MAT_POSG M
+  LEFT JOIN T_UNIVERSIDAD U 
+  ON (M.UNIVERSIDAD = U.CODIGO)
+  where ID between @offset and @limit`;
 
 
 function makeJob(i, total, page_size) {
@@ -30,7 +33,7 @@ function makeJob(i, total, page_size) {
 }
 
 function getTitulo(idMigracion) {
-  let table = Titulo.table;
+  let table = model.Titulo.table;
   let query = table.select(
                 table.id
               )
@@ -40,25 +43,30 @@ function getTitulo(idMigracion) {
               )
               .toQuery();
 
-  return connector.execQuery(query);
+  return connector.execQuery(query)
+         .then(r => r.rows[0]);
 }
 
 function createFormacion(formacion) {
   return Promise.all([
-    model.Matricula.get(formacion['ID']),
+    model.Matricula.getMigracion(formacion['ID']),
     getTitulo(formacion['POSGRADO'])
   ])
   .then(([matricula, titulo]) => {
-    nuevaFormacion.profesional = matricula.entidad;
-    nuevaFormacion.fecha = formacion['FECHA'];
-    nuevaFormacion.titulo = titulo.id;
-    nuevaFormacion.institucion = formacion['UNIVERSIDAD'];
-    return model.Formacion.addFormacion(nuevaFormacion);
+    if (matricula && titulo) {
+      let nuevaFormacion = {};
+      nuevaFormacion.profesional = matricula.entidad;
+      nuevaFormacion.fecha = formacion['FECHA'];
+      nuevaFormacion.titulo = titulo.id;
+      nuevaFormacion.institucion = formacion['UNIVERSIDAD'];
+      return model.Formacion.addFormacion(nuevaFormacion);      
+    }
   });
 }
 
 
 module.exports.migrar = function () {
+    console.log('Migrando posgrados de matrìculas...');
     let limites = 'select MIN(ID) as min, MAX(ID) as max from MAT_POSG';
     return sqlserver.query(limites)
         .then(resultado => {
