@@ -73,8 +73,8 @@ module.exports.addFormacion = addFormacion;
 module.exports.getAll = function(id_profesional) {
   let query = table.select(
     table.id,
-    Titulo.nombre.as('titulo'),
-    Titulo.tipo.as('tipo'),
+    Titulo.table.nombre.as('titulo'),
+    Titulo.table.tipo.as('tipo'),
     table.fecha, Institucion.table.nombre.as('institucion'),
     TipoFormacion.table.valor.as('tipoFormacion')
   )

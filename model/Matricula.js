@@ -211,7 +211,29 @@ const select = {
 
   from: table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
              .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+             .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+             .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
 };
+
+
+function getTotal(params) {
+  let query;
+  if (!params) {
+    query = table.select(table.count().as('total')).from(table);
+  }
+  else {
+    query = table.select(
+      table.count(table.id).as('total')
+    ).from(select.from);
+
+    if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
+    if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
+    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+  }
+
+  return connector.execQuery(query.toQuery())
+  .then(r => +r.rows[0].total);
+}
 
 
 module.exports.getAll = function (params) {
@@ -220,7 +242,13 @@ module.exports.getAll = function (params) {
     ...select.atributes
   ).from(select.from);
 
+  if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
+  if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
+
   if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+
+  if (params.limit) query.limit(+params.limit);
+  if (params.limit && params.offset) query.offset(+params.offset);
 
   return connector.execQuery(query.toQuery())
     .then(r => {
@@ -236,7 +264,10 @@ module.exports.getAll = function (params) {
             matriculas[i].entidad = r;
             delete(matriculas[i].tipoEntidad);
           });
-          return matriculas;
+          return Promise.all([
+                  getTotal(params),
+                  getTotal()
+                ]).then(([totalQuery, total]) => ({ total, totalQuery, matriculas }))
         })
     })
 }

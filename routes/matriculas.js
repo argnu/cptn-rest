@@ -28,6 +28,12 @@ router.post('/', function(req, res) {
     .catch(e => handler(e, res));
 });
 
+router.post('/total', function(req, res) {
+  model.Matricula.count()
+    .then(total => res.status(200).json(total))
+    .catch(e => handler(e, res));
+});
+
 router.put('/:id', function(req, res) {
 
 });

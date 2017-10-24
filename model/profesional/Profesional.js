@@ -196,23 +196,27 @@ table.nombre, table.apellido, table.dni,
 table.fechaNacimiento, table.nacionalidad,
 TipoSexo.table.valor.as('sexo'),
 TipoEstadoCivil.table.valor.as('estadoCivil'),
-// TipoRelacionLaboral.table.valor.as('relacionLaboral'),
 table.observaciones, table.empresa,
 table.serviciosPrestados, table.poseeCajaPrevisional,
 table.nombreCajaPrevisional, table.publicar,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioLegal.as('domicilioLegal')];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
-                         .join(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
+                         .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .join(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
-                         //.join(TipoRelacionLaboral.table).on(table.relacionLaboral.equals(TipoRelacionLaboral.table.id));
 
-module.exports.getAll = function() {
+
+
+
+module.exports.getAll = function(params) {
   let profesionales = [];
   let query = table.select(...select_atributes)
   .from(select_from)
-  .toQuery();
-  connector.execQuery(query)
+
+  if (params.limit) query.limit(+params.limit);
+  if (params.limit && params.offset) query.offset(+params.offset);
+
+  connector.execQuery(query.toQuery)
   .then(r => {
     profesionales = r.rows;
     let proms = []
@@ -249,11 +253,12 @@ function getDatosProfesional(profesional) {
 }
 
 module.exports.get = function(id) {
-  let profesional = {};
   let query = table.select(...select_atributes)
   .from(select_from)
   .where(table.id.equals(id))
   .toQuery();
+
+  let profesional;
 
   return connector.execQuery(query)
   .then(r => {
