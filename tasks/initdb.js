@@ -113,51 +113,9 @@ function populateOpciones() {
   .catch(e => console.error(e));
 }
 
-function fakeData() {
-  let institucion = model.Institucion.table;
-  let delegacion = model.Delegacion.table;
-  return Promise.all([
-    connector.execQuery(
-      institucion.insert(institucion.nombre.value('UNCO')).toQuery()
-    ),
-    connector.execQuery(
-      delegacion.insert(delegacion.nombre.value('Neuquén')).toQuery()
-    ),
-    connector.execQuery(
-      model.TipoIncumbencia.table.insert(model.TipoIncumbencia.table.id.value(1), model.TipoIncumbencia.table.valor.value('Arquitectura')).toQuery()
-    ),
-    connector.execQuery(
-      model.TipoIncumbencia.table.insert(model.TipoIncumbencia.table.id.value(2), model.TipoIncumbencia.table.valor.value('Saneamiento')).toQuery()
-    )
-  ])
-  .then(r =>     connector.execQuery(
-        model.Pais.table.insert(model.Pais.table.nombre.value('Argentina')).toQuery()
-      ))
-  .then(r => connector.execQuery(
-        model.Provincia.table.insert(
-          model.Provincia.table.nombre.value('Neuquén'),
-          model.Provincia.table.pais.value(1)
-        ).toQuery()
-      ))
-  .then(r => connector.execQuery(
-        model.Departamento.table.insert(
-          model.Departamento.table.nombre.value('Confluencia'),
-          model.Departamento.table.provincia.value(1)
-        ).toQuery()
-      ))
-  .then(r => connector.execQuery(
-        model.Localidad.table.insert(
-          model.Localidad.table.nombre.value('Neuquén'),
-          model.Localidad.table.departamento.value(1)
-        ).toQuery()
-      ))
-}
 
 function populate() {
-  return Promise.all([
-    populateOpciones(),
-    // fakeData()
-  ])
+  return populateOpciones();
 }
 
 function* dropQuery() {
@@ -186,43 +144,64 @@ function createEntidades() {
     .then(r => createTable(model.Profesional.table))
 }
 
-dropTable()
-.then(rs => {
-  Promise.all([
-    createDatosGeograficos(),
-    createDatosTareas(),
-    createTable(model.TipoSexo.table),
-    createTable(model.TipoCondicionAfip.table),
-    createTable(model.TipoContacto.table),
-    createTable(model.TipoEstadoCivil.table),
-    createTable(model.TipoFormacion.table),
-    createTable(model.TipoEmpresa.table),
-    createTable(model.TipoSociedad.table),
-    createTable(model.TipoIncumbencia.table),
-    createTable(model.TipoEstadoMatricula.table),
-    createTable(model.Institucion.table),
-    createTable(model.Delegacion.table),
-    createTable(model.Titulo.table)
-  ])
-  .then(rs => createEntidades())
-  .then(r => Promise.all([
-                createTable(model.Contacto.table),
-                createTable(model.Formacion.table),
-                createTable(model.Solicitud.table),
-                createTable(model.BeneficiarioCaja.table),
-                createTable(model.Subsidiario.table),
-              ]))
-  .then(rs => createTable(model.Matricula.table))
-  .then(r => {
-    console.info('Todas las tablas han sido creadas!');
-    populate()
-      .then(r => {
-          console.info('Tablas con datos falsos!');
-          process.exit();
-        })
+function init() {
+  dropTable()
+  .then(rs => {
+    Promise.all([
+      createDatosGeograficos(),
+      createDatosTareas(),
+      createTable(model.TipoSexo.table),
+      createTable(model.TipoCondicionAfip.table),
+      createTable(model.TipoContacto.table),
+      createTable(model.TipoEstadoCivil.table),
+      createTable(model.TipoFormacion.table),
+      createTable(model.TipoEmpresa.table),
+      createTable(model.TipoSociedad.table),
+      createTable(model.TipoIncumbencia.table),
+      createTable(model.TipoEstadoMatricula.table),
+      createTable(model.Institucion.table),
+      createTable(model.Delegacion.table),
+      createTable(model.Titulo.table)
+    ])
+    .then(rs => createEntidades())
+    .then(r => Promise.all([
+                  createTable(model.Contacto.table),
+                  createTable(model.Formacion.table),
+                  createTable(model.Solicitud.table),
+                  createTable(model.BeneficiarioCaja.table),
+                  createTable(model.Subsidiario.table),
+                ]))
+    .then(rs => createTable(model.Matricula.table))
+    .then(r => {
+      console.info('Todas las tablas han sido creadas!');
+      populate()
+        .then(r => {
+            console.info('Tablas con datos falsos!');
+            process.exit();
+          })
+    })
   })
-})
-.catch(e => {
-  console.error(e);
+  .catch(e => {
+    console.error(e);
+    process.exit();
+  });
+}
+
+// init();
+Promise.all([
+  connector.execQuery(model.TipoEmpresa.table.drop().cascade().ifExists().toQuery()),
+  connector.execQuery(model.TipoSociedad.table.drop().cascade().ifExists().toQuery())
+])
+.then(r => Promise.all([
+  createTable(model.TipoEmpresa.table),
+  createTable(model.TipoSociedad.table)
+]))
+.then(r => Promise.all([
+  populateEmpresa(),
+  populateSociedad()
+]))
+.then(r => {
+  console.log('listo');
   process.exit();
-});
+})
+.catch(e => console.error(e));

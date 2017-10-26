@@ -67,8 +67,8 @@ function addEmpresa(empresa, client) {
     let query = table.insert(
       table.id.value(empresa.id),
       table.nombre.value(empresa.nombre),
-      table.fechaInicio.value(empresa.fechaInicio),
-      table.fechaConstitucion.value(empresa.fechaConstitucion),
+      table.fechaInicio.value(empresa.fechaInicio.length ? empresa.fechaInicio : null),
+      table.fechaConstitucion.value(empresa.fechaConstitucion.length ? empresa.fechaConstitucion : null),
       table.tipoEmpresa.value(empresa.tipoEmpresa),
       table.tipoSociedad.value(empresa.tipoSociedad)
     )

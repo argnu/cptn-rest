@@ -142,7 +142,7 @@ function addMatricula(matricula, client) {
 function getEstadoHabilitada() {
   let query = TipoEstadoMatricula.table.select(
     TipoEstadoMatricula.table.id
-  ).where(TipoEstadoMatricula.table.valor.equals('habilitado'))
+  ).where(TipoEstadoMatricula.table.valor.equals("Habilitado"))
   .toQuery();
 
   return connector.execQuery(query)
