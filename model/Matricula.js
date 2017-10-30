@@ -274,7 +274,7 @@ module.exports.getAll = function (params) {
           return Promise.all([
                   getTotal(params),
                   getTotal()
-                ]).then(([totalQuery, total]) => ({ total, totalQuery, matriculas }))
+                ]).then(([totalQuery, total]) => ({ total, totalQuery, resultados: matriculas }))
         })
     })
 }

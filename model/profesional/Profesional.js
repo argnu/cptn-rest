@@ -128,7 +128,8 @@ function addProfesional(profesional, client) {
     cuit: profesional.cuit,
     condafip: profesional.condafip,
     domicilioReal: profesional.domicilioReal,
-    domicilioLegal: profesional.domicilioLegal
+    domicilioProfesional: profesional.domicilioProfesional,
+    domicilioConstituido: profesional.domicilioConstituido
   }, client)
   .then(entidad => {
     profesional.id = entidad.id;
@@ -199,7 +200,9 @@ table.observaciones, table.empresa,
 table.serviciosPrestados, table.poseeCajaPrevisional,
 table.nombreCajaPrevisional, table.publicar,
 Entidad.table.domicilioReal.as('domicilioReal'),
-Entidad.table.domicilioLegal.as('domicilioLegal')];
+Entidad.table.domicilioProfesional.as('domicilioProfesional'),
+Entidad.table.domicilioConstituido.as('domicilioConstituido')
+];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .join(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
@@ -226,10 +229,11 @@ module.exports.getAll = function(params) {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilioReal, domicilioLegal, contactos,
-        formaciones, beneficiarios, subsidiarios ] = value;
+      [ domicilioReal, domicilioProfesional, domicilioConstituido,
+        contactos, formaciones, beneficiarios, subsidiarios ] = value;
       profesionales[index].domicilioReal = domicilioReal;
-      profesionales[index].domicilioLegal = domicilioLegal;
+      profesionales[index].domicilioProfesional = domicilioProfesional;
+      profesionales[index].domicilioConstituido = domicilioConstituido;
       profesionales[index].contactos = contactos;
       profesionales[index].formaciones = formaciones;
       profesionales[index].beneficiarios = beneficiarios;
@@ -243,7 +247,8 @@ module.exports.getAll = function(params) {
 function getDatosProfesional(profesional) {
   return Promise.all([
       Domicilio.getDomicilio(profesional.domicilioReal),
-      Domicilio.getDomicilio(profesional.domicilioLegal),
+      Domicilio.getDomicilio(profesional.domicilioProfesional),
+      Domicilio.getDomicilio(profesional.domicilioConstituido),
       Contacto.getAll(profesional.id),
       Formacion.getAll(profesional.id),
       Beneficiario.getAll(profesional.id),
@@ -265,11 +270,12 @@ module.exports.get = function(id) {
     return getDatosProfesional(profesional);
   })
   .then(([
-      domicilioReal, domicilioLegal, contactos,
-      formaciones, beneficiarios, subsidiarios
+      domicilioReal, domicilioProfesional, domicilioConstituido,
+      contactos, formaciones, beneficiarios, subsidiarios
     ]) => {
       profesional.domicilioReal = domicilioReal;
-      profesional.domicilioLegal = domicilioLegal;
+      profesional.domicilioProfesional = domicilioProfesional;
+      profesional.domicilioConstituido = domicilioConstituido;
       profesional.contactos = contactos;
       profesional.formaciones = formaciones;
       profesional.beneficiarios = beneficiarios;

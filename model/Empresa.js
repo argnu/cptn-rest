@@ -87,7 +87,8 @@ function addEmpresa(empresa, client) {
     cuit: empresa.cuit,
     condafip: empresa.condafip,
     domicilioReal: empresa.domicilioReal,
-    domicilioLegal: empresa.domicilioLegal
+    domicilioProfesional: empresa.domicilioProfesional,
+    domicilioConstituido: empresa.domicilioConstituido
   }, client)
   .then(entidad => {
     empresa.id = entidad.id;
@@ -143,7 +144,9 @@ TipoSociedad.table.valor.as('tipoSociedad'),
 TipoCondicionAfip.table.valor.as('condafip'),
 Entidad.table.cuit,
 Entidad.table.domicilioReal.as('domicilioReal'),
-Entidad.table.domicilioLegal.as('domicilioLegal')];
+Entidad.table.domicilioProfesional.as('domicilioProfesional'),
+Entidad.table.domicilioConstituido.as('domicilioConstituido')
+];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .join(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .join(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
@@ -166,9 +169,10 @@ module.exports.getAll = function() {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilioReal, domicilioLegal, contactos ] = value;
+      [ domicilioReal, domicilioProfesional, domicilioConstituido, contactos ] = value;
       empresas[index].domicilioReal = domicilioReal;
-      empresas[index].domicilioLegal = domicilioLegal;
+      empresas[index].domicilioProfesional = domicilioProfesional;
+      empresas[index].domicilioConstituido = domicilioConstituido;
       empresas[index].contactos = contactos;
     });
     return empresas;
@@ -179,7 +183,8 @@ module.exports.getAll = function() {
 function getDatosEmpresa(empresa) {
   return Promise.all([
       Domicilio.getDomicilio(empresa.domicilioReal),
-      Domicilio.getDomicilio(empresa.domicilioLegal),
+      Domicilio.getDomicilio(empresa.domicilioProfesional),
+      Domicilio.getDomicilio(empresa.domicilioConstituido),
       Contacto.getAll(empresa.id)
     ]);
 }
@@ -196,9 +201,10 @@ module.exports.get = function(id) {
     empresa = r.rows[0];
     return getDatosEmpresa(empresa);
   })
-  .then(([ domicilioReal, domicilioLegal, contactos ]) => {
+  .then(([ domicilioReal, domicilioProfesional, domicilioConstituido, contactos ]) => {
       empresa.domicilioReal = domicilioReal;
-      empresa.domicilioLegal = domicilioLegal;
+      empresa.domicilioProfesional = domicilioProfesional;
+      empresa.domicilioConstituido = domicilioConstituido;
       empresa.contactos = contactos;
       return empresa;
   });

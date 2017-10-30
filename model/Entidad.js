@@ -23,7 +23,11 @@ const table = sql.define({
       dataType: 'int'
     },
     {
-      name: 'domicilioLegal',
+      name: 'domicilioProfesional',
+      dataType: 'int'
+    },
+    {
+      name: 'domicilioConstituido',
       dataType: 'int'
     },
     {
@@ -49,7 +53,12 @@ const table = sql.define({
     },
     {
       table: 'domicilio',
-      columns: [ 'domicilioLegal' ],
+      columns: [ 'domicilioProfesional' ],
+      refColumns: [ 'id' ]
+    },
+    {
+      table: 'domicilio',
+      columns: [ 'domicilioConstituido' ],
       refColumns: [ 'id' ]
     }
   ]
@@ -60,20 +69,23 @@ module.exports.table = table;
 function addEntidad(entidad, client) {
   return Promise.all([
     Domicilio.addDomicilio(entidad.domicilioReal, client),
-    Domicilio.addDomicilio(entidad.domicilioLegal, client)
+    Domicilio.addDomicilio(entidad.domicilioProfesional, client),
+    Domicilio.addDomicilio(entidad.domicilioConstituido, client)
   ])
-  .then(([domicilioReal, domicilioLegal]) => {
+  .then(([domicilioReal, domicilioProfesional, domicilioConstituido]) => {
     let query = table.insert(
       table.tipo.value(entidad.tipo),
       table.cuit.value(entidad.cuit), table.condafip.value(entidad.condafip),
       table.domicilioReal.value(domicilioReal ? domicilioReal.id : null),
-      table.domicilioLegal.value(domicilioLegal ? domicilioLegal.id : null)
+      table.domicilioProfesional.value(domicilioProfesional ? domicilioProfesional.id : null),
+      table.domicilioConstituido.value(domicilioConstituido ? domicilioConstituido.id : null)
     ).returning(table.id, table.cuit, table.condafip).toQuery();
     return connector.execQuery(query, client)
            .then(r => {
              let entidad_added = r.rows[0];
              entidad_added.domicilioReal = domicilioReal || null;
-             entidad_added.domicilioLegal = domicilioLegal || null;
+             entidad_added.domicilioProfesional = domicilioProfesional || null;
+             entidad_added.domicilioConstituido = domicilioConstituido || null;
              return entidad_added;
            });
   })

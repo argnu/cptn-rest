@@ -35,7 +35,7 @@ function createDomicilioReal (matricula) {
     else return null;
 }
 
-function createDomicilioLegal (matricula) {
+function createDomicilioProfesional (matricula) {
     if (matricula['DOMICLEGALCALLE'] && matricula['DOMICLEGALLOCALIDAD'] ){
         let nuevoDomicilio = {};
         nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'];
@@ -87,7 +87,7 @@ function createProfesional(matricula) {
     // Se crean los contactos del profesional
 
     nuevoProfesional['domicilioReal'] = createDomicilioReal(matricula);
-    nuevoProfesional['domicilioLegal'] = createDomicilioLegal(matricula);
+    nuevoProfesional['domicilioProfesional'] = createDomicilioProfesional(matricula);
     return model.Profesional.addProfesional(nuevoProfesional);
 }
 
