@@ -13,10 +13,16 @@ module.exports.TipoEmpresa = require('./tipos/TipoEmpresa');
 module.exports.TipoSociedad = require('./tipos/TipoSociedad');
 module.exports.TipoIncumbencia = require('./tipos/TipoIncumbencia');
 module.exports.TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
+module.exports.TipoComprobante = require('./tipos/TipoComprobante');
+module.exports.TipoEstadoBoleta = require('./tipos/TipoEstadoBoleta');
+module.exports.TipoMoneda = require('./tipos/TipoMoneda');
+module.exports.TipoPago = require('./tipos/TipoPago');
+module.exports.TipoFormaPago = require('./tipos/TipoFormaPago');
 
 module.exports.Institucion = require('./Institucion');
 module.exports.Titulo = require('./Titulo');
 module.exports.Delegacion = require('./Delegacion');
+module.exports.Banco = require('./Banco');
 
 module.exports.Entidad = require('./Entidad');
 module.exports.Empresa = require('./Empresa');
@@ -31,3 +37,6 @@ module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
 
 module.exports.tareas = require('./tareas');
+
+module.exports.Boleta = require('./cobranzas/Boleta');
+module.exports.BoletaItem = require('./cobranzas/BoletaItem');

@@ -12,7 +12,8 @@ const table = sql.define({
         {
             name: 'numero',
             dataType: 'int',
-            notNull: true
+            notNull: true,
+            unique: true
         },
         {
             name: 'matricula',
@@ -21,8 +22,7 @@ const table = sql.define({
         },
         {
             name: 'tipo_comprobante',
-            dataType: 'varchar(10)',
-
+            dataType: 'varchar(10)'
         },
         {
             name: 'fecha',
@@ -30,7 +30,7 @@ const table = sql.define({
         },
         {
             name: 'total',
-            dataType: 'double',
+            dataType: 'float',
         },
         {
             name: 'estado',

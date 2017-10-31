@@ -96,7 +96,7 @@ const addMatricula = (matricula) => {
 
 
 module.exports.migrar = function() {
-    console.log('Migrando titulos de matrículas...');
+    console.log('Migrando matrículas...');
     let q_objetos = 'select M.ID, M.SITAFIP, M.CUIT, ' +
     'M.DOMICREALCALLE, M.DOMICREALCODPOSTAL, ' +
     'M.DOMICREALDEPARTAMENTO, M.DOMICREALLOCALIDAD, ' +
@@ -114,7 +114,7 @@ module.exports.migrar = function() {
     'M.ASIENTOBAJAF, M.CODBAJAF, M.NOMBREARCHIVOFOTO, ' +
     'M.NombreArchivoFirma, M.ESTADO ' +
     'from MATRICULAS M WHERE ID BETWEEN @offset AND @limit';
-    let q_limites = 'select MIN(ID) as minMatriculas, MAX(ID) as maxMatriculas from MATRICULAS';
+    let q_limites = 'select MIN(ID) as min, MAX(ID) as max from MATRICULAS';
 
     return utils.migrar(q_objetos, q_limites, 100, addMatricula);
 }

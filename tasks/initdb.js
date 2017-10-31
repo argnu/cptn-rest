@@ -102,20 +102,16 @@ function populateAfip() {
   return querysSecuencial(querys);
 }
 
-function populateOpciones() {
-  return populateEstadoCivil()
-  .then(r => populateSexo())
-  .then(r => populateFormacion())
-  .then(r => populateContacto())
-  .then(r => populateEmpresa())
-  .then(r => populateEmpresa())
-  .then(r => populateAfip())
-  .catch(e => console.error(e));
-}
-
-
 function populate() {
-  return populateOpciones();
+  return Promise.all([
+    populateEstadoCivil(),
+    populateSexo(),
+    populateFormacion(),
+    populateContacto(),
+    populateSociedad(),
+    populateEmpresa(),
+    populateAfip()
+  ]);
 }
 
 function* dropQuery() {
@@ -161,9 +157,17 @@ function init() {
       createTable(model.TipoEstadoMatricula.table),
       createTable(model.Institucion.table),
       createTable(model.Delegacion.table),
-      createTable(model.Titulo.table)
+      createTable(model.TipoComprobante.table),
+      createTable(model.TipoEstadoBoleta.table),
+      createTable(model.TipoPago.table),
+      createTable(model.TipoMoneda.table),
+      createTable(model.Banco.table)
     ])
-    .then(rs => createEntidades())
+    .then(rs => Promise.all([
+                  createEntidades(),
+                  createTable(model.Titulo.table),
+                  createTable(model.TipoFormaPago.table)
+                ]))
     .then(r => Promise.all([
                   createTable(model.Contacto.table),
                   createTable(model.Formacion.table),
@@ -172,11 +176,13 @@ function init() {
                   createTable(model.Subsidiario.table),
                 ]))
     .then(rs => createTable(model.Matricula.table))
+    .then(rs => createTable(model.Boleta.table))
+    .then(rs => createTable(model.BoletaItem.table))
     .then(r => {
       console.info('Todas las tablas han sido creadas!');
       populate()
         .then(r => {
-            console.info('Tablas con datos falsos!');
+            console.info('Tablas con datos!');
             process.exit();
           })
     })
@@ -188,21 +194,3 @@ function init() {
 }
 
 init();
-
-// Promise.all([
-//   connector.execQuery(model.TipoEmpresa.table.drop().cascade().ifExists().toQuery()),
-//   connector.execQuery(model.TipoSociedad.table.drop().cascade().ifExists().toQuery())
-// ])
-// .then(r => Promise.all([
-//   createTable(model.TipoEmpresa.table),
-//   createTable(model.TipoSociedad.table)
-// ]))
-// .then(r => Promise.all([
-//   populateEmpresa(),
-//   populateSociedad()
-// ]))
-// .then(r => {
-//   console.log('listo');
-//   process.exit();
-// })
-// .catch(e => console.error(e));

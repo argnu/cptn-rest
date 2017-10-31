@@ -18,21 +18,6 @@ const addSubsidiario = (subsidiario) => {
 }
 
 
-module.exports.migrar = function () {
-    console.log('Migrando subsidiarios de caja...');
-    let limites = 'select MIN(ID) as min, MAX(ID) as max from MAT_SUBSIDIO';
-    return sqlserver.query(limites)
-        .then(resultado => {
-            if (resultado[0]) {
-                let min = resultado[0]['min'];
-                let max = resultado[0]['max'];
-                return makeJob(min, max, 100);
-            }
-            else return;
-        })
-}
-
-
 module.exports.migrar = function() {
     console.log('Migrando subsidiarios de caja...');
     let q_objetos = `select s.ID, s.APELLIDO,
