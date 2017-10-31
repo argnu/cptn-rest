@@ -1,57 +1,24 @@
-const config = require('../../../../config.private');
 const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
-const sqlserver = require('../../sqlserver');
 
-function makeJobEstadoMatricula(i, total, page_size, consulta) {
-    if (i < total) {
-        let offset = i + page_size;
-        return sqlserver.query(consulta, i, offset)
-            .then(estados => {
-                if (estados) {
-                    nuevosEstados = estados.map(estado => {
-                        let nuevoEstado = {};
-                        nuevoEstado['id'] = estado['CODIGO'];
-                        nuevoEstado['valor'] = estado['DESCRIPCION'];
-                        return addEstadoMatricula(nuevoEstado);
-                    });
-                   return Promise.all(nuevosEstados).then(res =>
-                    makeJobEstadoMatricula(offset + 1, total, page_size, consulta)
-                  );
-                }
-                else return makeJobEstadoMatricula(offset + 1, total, page_size, consulta);
-            })
-            .catch(error => {
-                console.log('ERROR', error);
-            })
-    }
 
-}
-
-function addEstadoMatricula(nuevo) {
+const addEstadoMatricula = (estado) => {
     let table = model.TipoEstadoMatricula.table;
     let query = table.insert(
-                  table.id.value(nuevo.id),
-                  table.valor.value(nuevo.valor)
+                  table.id.value(estado['CODIGO']),
+                  table.valor.value(estado['DESCRIPCION'])
                 ).toQuery();
 
     return connector.execQuery(query);
 }
 
-module.exports.migrar = function () {
-    console.log('Migrando estados de matrícula...');
-    let consulta = 'select * from T_ESTADO_MAT WHERE CODIGO BETWEEN @offset AND @limit';
-    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_ESTADO_MAT';
 
-    return sqlserver.query(limites)
-        .then(resultado => {
-            if (resultado[0]) {
-                let min = resultado[0]['min'];
-                let max = resultado[0]['max'];
-                return makeJobEstadoMatricula(min, max, 100, consulta);
-            }
-            else return;
-        })
+module.exports.migrar = function() {
+    console.log('Migrando estados de matrícula...');
+    let q_objetos = 'select * from T_ESTADO_MAT WHERE CODIGO BETWEEN @offset AND @limit';
+    let q_limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_ESTADO_MAT';
+
+    return utils.migrar(q_objetos, q_limites, 100, addEstadoMatricula);
 }

@@ -38,5 +38,5 @@ function migrarAlgo() {
   .catch(e => console.error(e));
   }
 
-// migrarTodo();
-migrarAlgo();
+migrarTodo();
+// migrarAlgo();

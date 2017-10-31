@@ -187,21 +187,22 @@ function init() {
   });
 }
 
- init();
-Promise.all([
-  connector.execQuery(model.TipoEmpresa.table.drop().cascade().ifExists().toQuery()),
-  connector.execQuery(model.TipoSociedad.table.drop().cascade().ifExists().toQuery())
-])
-.then(r => Promise.all([
-  createTable(model.TipoEmpresa.table),
-  createTable(model.TipoSociedad.table)
-]))
-.then(r => Promise.all([
-  populateEmpresa(),
-  populateSociedad()
-]))
-.then(r => {
-  console.log('listo');
-  process.exit();
-})
-.catch(e => console.error(e));
+init();
+
+// Promise.all([
+//   connector.execQuery(model.TipoEmpresa.table.drop().cascade().ifExists().toQuery()),
+//   connector.execQuery(model.TipoSociedad.table.drop().cascade().ifExists().toQuery())
+// ])
+// .then(r => Promise.all([
+//   createTable(model.TipoEmpresa.table),
+//   createTable(model.TipoSociedad.table)
+// ]))
+// .then(r => Promise.all([
+//   populateEmpresa(),
+//   populateSociedad()
+// ]))
+// .then(r => {
+//   console.log('listo');
+//   process.exit();
+// })
+// .catch(e => console.error(e));

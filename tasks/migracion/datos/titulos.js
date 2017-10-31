@@ -5,29 +5,7 @@ sql.setDialect('postgres');
 const model = require('../../../model');
 const sqlserver = require('../sqlserver');
 
-const consulta = `select CODIGO, LIBRO, DESCRIPCION
-  from T_TITULOS where CODIGO between @offset and @limit`;
-
-function makeJob(i, total, page_size) {
-    if (i < total) {
-        let offset = i + page_size;
-        return sqlserver.query(consulta, i, offset)
-            .then(titulos => {
-                if (titulos) {
-                   nuevosTitulos = titulos.map(titulo => createTitulo(titulo));
-                   return Promise.all(nuevosTitulos).then(res =>
-                    makeJob(offset + 1, total, page_size)
-                  );
-                }
-                else return makeJob(offset + 1, total, page_size);
-            })
-            .catch(error => {
-                console.log('ERROR', error);
-            })
-    }
-}
-
-function createTitulo(titulo) {
+const addTitulo = (titulo) => {
   let table = model.Titulo.table;
   let query = table.insert(
                 table.idMigracion.value(titulo['CODIGO']),
@@ -41,15 +19,9 @@ function createTitulo(titulo) {
 
 
 module.exports.migrar = function () {
-    console.log('Migrando titulos...');
-    let limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_TITULOS';
-    return sqlserver.query(limites)
-        .then(resultado => {
-            if (resultado[0]) {
-                let min = resultado[0]['min'];
-                let max = resultado[0]['max'];
-                return makeJob(min, max, 100);
-            }
-            else return;
-        })
+    console.log('Migrando posgrados...');
+    let q_objetos = `select CODIGO, LIBRO, DESCRIPCION from T_TITULOS where CODIGO between @offset and @limit`;
+    let q_limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_TITULOS';
+
+    return utils.migrar(q_objetos, q_limites, 100, addTitulo);
 }
