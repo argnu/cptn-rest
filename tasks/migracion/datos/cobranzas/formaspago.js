@@ -2,11 +2,11 @@ const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
-const utils = require('../utils');
+const utils = require('../../utils');
 
 
 function addFormaPago(tipo) {
-  let table = Model.TipoFormaPago.table;
+  let table = model.TipoFormaPago.table;
   let query = table.insert(
                 table.id.value(tipo['CODIGOFORMAPAGO']),
                 table.nombre.value(tipo['NOMBREFORMAPAGO']),

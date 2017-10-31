@@ -1,9 +1,9 @@
 const bancos = require('./bancos');
-const estadoBoleta = require('./estadoBoleta');
+// const estadoBoleta = require('./estadoBoleta');
 const formaspago = require('./formaspago');
 const monedas = require('./monedas');
 const pagos = require('./pagos');
-const tipoComprobante = require('./tipoComprobante');
+// const tipoComprobante = require('./tipoComprobante');
 
 bancos.migrar()
 .then(r => pagos.migrar())

@@ -2,11 +2,11 @@ const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
-const utils = require('../utils');
+const utils = require('../../utils');
 
 
 function addBanco(banco) {
-  let table = Model.Banco.table;
+  let table = model.Banco.table;
   let query = table.insert(
                 table.id.value(banco['CODIGO']),
                 table.nombre.value(banco['NOMBREBANCO']),

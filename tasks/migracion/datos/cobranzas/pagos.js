@@ -2,16 +2,19 @@ const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
-const utils = require('../utils');
+const utils = require('../../utils');
 
 
 function addTipoPago(tipo) {
-  let table = Model.TipoPago.table;
+  let habilitado = null;
+  if (tipo['HABILITADO'] == 'Si') habilitado = 1;
+  if (tipo['HABILITADO'] == 'No') habilitado = 0;
+  let table = model.TipoPago.table;
   let query = table.insert(
                 table.id.value(tipo['CODTIPOPAGO']),
                 table.descripcion.value(tipo['DESCRIPCION']),
                 table.cuentaContable.value(tipo['CUENTACONTABLE']),
-                table.habilitado.value(tipo['HABILITADO'])
+                table.habilitado.value(habilitado)
               ).toQuery();
 
   return connector.execQuery(query);

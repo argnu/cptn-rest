@@ -2,7 +2,7 @@ const connector = require('../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
-const utils = require('../utils');
+const utils = require('../../utils');
 
 const addEstadoBoleta = (estado) => {
     let table = model.TipoEstadoBoleta.table;

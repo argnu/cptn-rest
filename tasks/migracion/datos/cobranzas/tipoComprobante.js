@@ -2,11 +2,11 @@ const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
-const utils = require('../utils');
+const utils = require('../../utils');
 
 
 function addTipoComprobante(tipo) {
-  let table = Model.TipoComprobante.table;
+  let table = model.TipoComprobante.table;
   let query = table.insert(
                 table.abreviatura.value(tipo['Tipo_doc']),
                 table.descripcion.value(tipo['DESCRIPCION']),
