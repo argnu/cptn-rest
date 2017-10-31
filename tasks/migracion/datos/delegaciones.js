@@ -5,11 +5,6 @@ sql.setDialect('postgres');
 const model = require('../../../model');
 const utils = require('../utils');
 
-let nueva = {};
-nueva['id'] = delegacion['CODIGO'];
-nueva['nombre'] = delegacion['DESCRIPCION'];
-nuevasDelegaciones.push(addDelegacion(nueva));
-
 const addDelegacion = (delegacion)  => {
     let nueva = {
       id: delegacion['CODIGO'],

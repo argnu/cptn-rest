@@ -187,7 +187,7 @@ function init() {
   });
 }
 
-// init();
+ init();
 Promise.all([
   connector.execQuery(model.TipoEmpresa.table.drop().cascade().ifExists().toQuery()),
   connector.execQuery(model.TipoSociedad.table.drop().cascade().ifExists().toQuery())
