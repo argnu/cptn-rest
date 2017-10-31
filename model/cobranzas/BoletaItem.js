@@ -3,7 +3,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const table = sql.define({
-    name: 'boleta',
+    name: 'boleta_item',
     columns: [{
             name: 'id',
             dataType: 'serial',

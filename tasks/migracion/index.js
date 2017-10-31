@@ -22,7 +22,7 @@ function migracion() {
 
 function migrarTodo() {
   migracion()
-  .then(e => { 
+  .then(e => {
     console.log('listo');
     process.exit();
   })
@@ -30,14 +30,13 @@ function migrarTodo() {
 }
 
 function migrarAlgo() {
-  matriculas.subsidiarios.migrar()
-  .then(e => { 
+  delegaciones.migrar()
+  .then(e => {
     console.log('listo');
     process.exit();
   })
   .catch(e => console.error(e));
   }
 
-migrarTodo();
-//migrarAlgo();
-
+// migrarTodo();
+migrarAlgo();
