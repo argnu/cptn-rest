@@ -1,9 +1,8 @@
-const config = require('../../../config.private');
 const connector = require('../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../model');
-const sqlserver = require('../sqlserver');
+const utils = require('../utils');
 
 const addTitulo = (titulo) => {
   let table = model.Titulo.table;

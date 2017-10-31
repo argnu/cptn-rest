@@ -2,6 +2,7 @@ const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
+const utils = require('../utils');
 
 
 function addTipoComprobante(nuevo) {
