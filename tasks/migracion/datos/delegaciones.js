@@ -4,7 +4,6 @@ sql.setDialect('postgres');
 const model = require('../../../model');
 const utils = require('../utils');
 
-
 const addDelegacion = (delegacion)  => {
     let table = model.Delegacion.table;
     let query = table.insert(

@@ -2,8 +2,10 @@ const config = require('../../config.private');
 const sqlserver = require('./sqlserver');
 
 module.exports.migrar = function (q_objeto, q_limites, page_size, addNuevoObjeto) {
+  let max;
+
   function navegar(index) {
-      if (index < total) {
+      if (index < max) {
           let offset = index + page_size;
           return sqlserver.query(q_objeto, index, offset)
               .then(objetos => {
@@ -22,7 +24,7 @@ module.exports.migrar = function (q_objeto, q_limites, page_size, addNuevoObjeto
       .then(resultado => {
           if (resultado[0]) {
               let min = resultado[0]['min'];
-              let max = resultado[0]['max'];
+              max = resultado[0]['max'];
               return navegar(min);
           }
 
