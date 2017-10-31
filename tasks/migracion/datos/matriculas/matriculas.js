@@ -1,29 +1,8 @@
-const config = require('../../../../config.private');
 const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');
-const sqlserver = require('../../sqlserver');
 
-function makeJobMatriculas(i, total, page_size, consulta) {
-    if (i < total) {
-        let offset = i + page_size;
-        return sqlserver.query(consulta, i, offset)
-            .then(matriculas => {
-                if (matriculas) {
-                   nuevasMatriculas = matriculas.map(matricula => createMatricula(matricula));
-                   return Promise.all(nuevasMatriculas).then(res =>
-                    makeJobMatriculas(offset + 1, total, page_size, consulta)
-                  );
-                }
-                else return makeJobMatriculas(offset + 1, total, page_size, consulta);
-            })
-            .catch(error => {
-                console.log('ERROR', error);
-            })
-    }
-
-}
 
 function createDomicilioReal (matricula) {
     if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
@@ -91,7 +70,7 @@ function createProfesional(matricula) {
     return model.Profesional.addProfesional(nuevoProfesional);
 }
 
-function createMatricula(matricula) {
+const addMatricula = (matricula) => {
   return createProfesional(matricula)
          .then(profesional => {
            let nuevaMatricula = {};
@@ -115,9 +94,9 @@ function createMatricula(matricula) {
 }
 
 
-module.exports.migrar = function () {
-    console.log('Migrando matrículas...');
-    let consultaMatriculas = 'select M.ID, M.SITAFIP, M.CUIT, ' +
+module.exports.migrar = function() {
+    console.log('Migrando titulos de matrículas...');
+    let q_objetos = 'select M.ID, M.SITAFIP, M.CUIT, ' +
     'M.DOMICREALCALLE, M.DOMICREALCODPOSTAL, ' +
     'M.DOMICREALDEPARTAMENTO, M.DOMICREALLOCALIDAD, ' +
     'M.DOMICREALPROV, M.DOMICREALPAIS, ' +
@@ -134,14 +113,7 @@ module.exports.migrar = function () {
     'M.ASIENTOBAJAF, M.CODBAJAF, M.NOMBREARCHIVOFOTO, ' +
     'M.NombreArchivoFirma, M.ESTADO ' +
     'from MATRICULAS M WHERE ID BETWEEN @offset AND @limit';
-    let limitesMatriculas = 'select MIN(ID) as minMatriculas, MAX(ID) as maxMatriculas from MATRICULAS';
-    return sqlserver.query(limitesMatriculas)
-        .then(resultado => {
-            if (resultado[0]) {
-                let min = resultado[0]['minMatriculas'];
-                let max = resultado[0]['maxMatriculas'];
-                return makeJobMatriculas(min, max, 100, consultaMatriculas);
-            }
-            else return;
-        })
+    let q_limites = 'select MIN(ID) as minMatriculas, MAX(ID) as maxMatriculas from MATRICULAS';
+
+    return utils.migrar(q_objetos, q_limites, 100, addMatricula);
 }

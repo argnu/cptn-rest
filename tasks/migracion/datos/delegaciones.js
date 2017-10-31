@@ -1,25 +1,15 @@
-const config = require('../../../config.private');
 const connector = require('../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../model');
 const utils = require('../utils');
 
-let nueva = {};
-nueva['id'] = delegacion['CODIGO'];
-nueva['nombre'] = delegacion['DESCRIPCION'];
-nuevasDelegaciones.push(addDelegacion(nueva));
 
 const addDelegacion = (delegacion)  => {
-    let nueva = {
-      id: delegacion['CODIGO'],
-      nombre: delegacion['DESCRIPCION']
-    };
-
     let table = model.Delegacion.table;
     let query = table.insert(
-                  table.id.value(nueva.id),
-                  table.nombre.value(nueva.nombre)
+                  table.id.value(delegacion['CODIGO']),
+                  table.nombre.value(delegacion['DESCRIPCION'])
                 ).toQuery();
 
     return connector.execQuery(query);
