@@ -161,10 +161,9 @@ function init() {
       createTable(model.TipoEstadoMatricula.table),
       createTable(model.Institucion.table),
       createTable(model.Delegacion.table),
-      createTable(model.Titulo.table)
     ])
-    .then(rs => createEntidades())
-    .then(r => Promise.all([
+    .then(rs => Promise.all([createEntidades(), createTable(model.Titulo.table)]))
+    .then(rs => Promise.all([
                   createTable(model.Contacto.table),
                   createTable(model.Formacion.table),
                   createTable(model.Solicitud.table),
