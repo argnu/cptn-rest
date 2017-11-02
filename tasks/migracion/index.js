@@ -4,6 +4,7 @@ const delegaciones = require('./datos/delegaciones');
 const matriculas = require('./datos/matriculas');
 const titulos = require('./datos/titulos');
 const posgrados = require('./datos/posgrados');
+const cobranzas = require('./datos/cobranzas');
 
 function migracion() {
        return instituciones.migrar()
@@ -11,12 +12,8 @@ function migracion() {
          .then(r => delegaciones.migrar())
          .then(r => titulos.migrar())
          .then(r => posgrados.migrar())
-         .then(r => matriculas.estados.migrar())
-         .then(r => matriculas.matriculas.migrar())
-         .then(r => matriculas.titulos.migrar())
-         .then(r => matriculas.posgrados.migrar())
-         .then(r => matriculas.beneficiarios.migrar())
-         .then(r => matriculas.subsidiarios.migrar())
+         .then(r => matriculas.migrar())
+         .then(r => cobranzas.migrar())
          .catch(e => console.error(e));
  }
 

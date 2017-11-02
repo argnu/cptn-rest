@@ -1,5 +1,4 @@
 ## TODO
-* Ajustar correctamente los id's en table condafip.
 * Ver cómo guardar imagenes en postgres:
   - Profesional: fotoarchivo, firma.
 
@@ -32,3 +31,6 @@
 }
 
 ```
+
+## Restore de la migración
+pg_restore -d cptn -U mweingart /home/mweingart/Compartida/back

@@ -1,0 +1,104 @@
+{
+	"variables": [],
+	"info": {
+		"name": "CPTN",
+		"_postman_id": "bc7bbac3-460b-61b2-94a7-70dbc0107ded",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Alta Matrícula",
+			"request": {
+				"url": "http://localhost:3400/api/matriculas",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"solicitud\": 1,\n\t\"fechaResolucion\": \"14/09/2017\",\n\t\"numeroActa\": \"50\"\n}"
+				},
+				"description": "Aprobación de Solicitud de Matrícula"
+			},
+			"response": []
+		},
+		{
+			"name": "Alta Solicitud Profesional",
+			"request": {
+				"url": "http://localhost:3400/api/solicitudes",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"fecha\":\"03/11/2017\",\"delegacion\":1,\"entidad\":{\"tipo\":\"profesional\",\"condafip\":6,\"nombre\":\"Martín\",\"apellido\":\"Weingart\",\"dni\":\"32588311\",\"cuit\":\"\",\"sexo\":2,\"estadoCivil\":5,\"localidadNacimiento\":\"\",\"fechaNacimiento\":\"21/09/1986\",\"nacionalidad\":\"\",\"observaciones\":\"\",\"domicilioReal\":{\"calle\":\"Leloir \",\"numero\":\"200\",\"localidad\":18413,\"pais\":1,\"provincia\":14,\"departamento\":514},\"domicilioProfesional\":{\"calle\":\"Leloir\",\"numero\":\"200\",\"localidad\":18413,\"pais\":1,\"provincia\":14,\"departamento\":514},\"domicilioConstituido\":{\"calle\":\"Leloir\",\"numero\":\"2001\",\"localidad\":18413,\"pais\":1,\"provincia\":14,\"departamento\":514},\"contactos\":[],\"formaciones\":[],\"relacionDependencia\":true,\"independiente\":true,\"empresa\":\"super empresa\",\"serviciosPrestados\":\"informaticos\",\"poseeCajaPrevisional\":\"true\",\"nombreCajaPrevisional\":\"super caja\",\"beneficiarios\":[{\"dni\":\"30653636\",\"apellido\":\"Huenchuman\",\"nombre\":\"Natalia\",\"fechaNacimiento\":\"07/03/1984\",\"vinculo\":\"pareja\",\"invalidez\":false}],\"subsidiarios\":[],\"publicar\":true},\"exencionArt10\":false,\"exencionArt6\":false}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Alta Solicitud Empresa",
+			"request": {
+				"url": "http://localhost:3400/api/solicitudes",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"fecha\":\"08/11/2017\",\"delegacion\":1,\"entidad\":{\"tipo\":\"empresa\",\"nombre\":\"Mega CO\",\"cuit\":\"203256412\",\"condafip\":6,\"fechaInicio\":\"04/11/2017\",\"fechaConstitucion\":\"28/11/2017\",\"tipoEmpresa\":2,\"tipoSociedad\":1,\"domicilioReal\":{\"calle\":\"Leloir\",\"numero\":\"985\",\"localidad\":18413,\"pais\":1,\"provincia\":14,\"departamento\":514},\"domicilioProfesional\":{\"calle\":\"Leloir \",\"numero\":\"211\",\"localidad\":18413,\"pais\":1,\"provincia\":14,\"departamento\":514},\"domicilioConstituido\":{\"calle\":\"Leloir\",\"numero\":\"320\",\"localidad\":18413,\"pais\":1,\"provincia\":14,\"departamento\":514},\"contactos\":[],\"incumbencias\":[],\"representantes\":[57,61]},\"exencionArt10\":false,\"exencionArt6\":false}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener Solicitudes",
+			"request": {
+				"url": "http://localhost:3400/api/solicitudes",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener Matriculas Profesionales",
+			"request": {
+				"url": "http://localhost:3400/api/matriculas?tipoEntidad=profesional&limit=100",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener Matriculas Empresas",
+			"request": {
+				"url": "http://localhost:3400/api/matriculas?tipoEntidad=empresa&limit=100",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
