@@ -1,4 +1,4 @@
-const connector = require('../../../connector');
+const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require('../../../../model');

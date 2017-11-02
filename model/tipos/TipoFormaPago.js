@@ -45,19 +45,6 @@ sql.setDialect('postgres');
       name: 'validoNCredito',
       dataType: 'boolean'
     },
-  ],
-
-  foreignKeys: [
-    {
-      table: 't_moneda',
-      columns: [ 'moneda' ],
-      refColumns: [ 'id' ]
-    },
-    {
-      table: 't_pago',
-      columns: [ 'pago' ],
-      refColumns: [ 'id' ]
-    }
   ]
 });
 
