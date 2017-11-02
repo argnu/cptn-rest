@@ -45,7 +45,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.add = function(representante) {
+module.exports.add = function(representante, client) {
   let query = table.insert(
                 table.idEmpresa.value(representante.empresa),
                 table.idMatricula.value(representante.matricula),
@@ -54,5 +54,5 @@ module.exports.add = function(representante) {
               .returning(table.id, table.idEmpresa, table.idMatricula, table.fechaInicio)
               .toQuery();
 
-  return connector.execQuery(query, client);              
+  return connector.execQuery(query, client);
 }

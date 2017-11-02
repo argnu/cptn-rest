@@ -18,7 +18,7 @@ const addPosgrado = (posgrado) => {
 module.exports.migrar = function () {
     console.log('Migrando posgrados...');
     let q_objetos = `select CODIGO, DESCRIPCION from T_POSGRADOS where CODIGO between @offset and @limit`;
-    let q_limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_TITULOS';
+    let q_limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from T_POSGRADOS';
 
     return utils.migrar(q_objetos, q_limites, 100, addPosgrado);
 }

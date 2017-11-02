@@ -2,6 +2,7 @@ const connector = require('../connector');
 const Domicilio = require('./Domicilio');
 const Entidad = require('./Entidad');
 const Contacto = require('./Contacto');
+const EmpresaRepresentante = require('./EmpresaRepresentante');
 const TipoEmpresa = require('./tipos/TipoEmpresa');
 const TipoSociedad = require('./tipos/TipoSociedad');
 const TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
@@ -104,7 +105,7 @@ function addEmpresa(empresa, client) {
               empresa: empresa_added.id,
               matricula: r,
               fechaInicio: new Date()
-            }));
+            }, client));
 
             return Promise.all(proms_contactos)
             .then(contactos => {
