@@ -42,6 +42,8 @@ function createEntidades() {
   return createTable(model.Entidad.table)
     .then(r => createTable(model.Empresa.table))
     .then(r => createTable(model.Profesional.table))
+    .then(r => createTable(model.Solicitud.table))
+    .then(r => createTable(model.Matricula.table))
     .then(r => createTable(model.EmpresaRepresentante.table))
 }
 
@@ -74,11 +76,9 @@ function init() {
     .then(r => Promise.all([
                   createTable(model.Contacto.table),
                   createTable(model.Formacion.table),
-                  createTable(model.Solicitud.table),
                   createTable(model.BeneficiarioCaja.table),
                   createTable(model.Subsidiario.table),
                 ]))
-    .then(rs => createTable(model.Matricula.table))
     .then(rs => createTable(model.Boleta.table))
     .then(rs => createTable(model.BoletaItem.table))
     .then(r => {

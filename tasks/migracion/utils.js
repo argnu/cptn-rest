@@ -22,7 +22,6 @@ module.exports.migrar = function (q_objeto, q_limites, page_size, addNuevoObjeto
 
   return sqlserver.query(q_limites)
       .then(resultado => {
-        console.log(`${resultado[0]['min']} - ${resultado[0]['max']}`);
           if (resultado[0]) {
               console.log(resultado[0]['min'] + ' - ' + resultado[0]['max']);
               let min = resultado[0]['min'];
