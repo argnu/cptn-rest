@@ -100,6 +100,12 @@ function addEmpresa(empresa, client) {
               return Contacto.addContacto(c, client);
             });
 
+            let proms_representantes = empresa.representantes.map(r => EmpresaRepresentante.add({
+              empresa: empresa_added.id,
+              matricula: r,
+              fechaInicio: new Date()
+            }));
+
             return Promise.all(proms_contactos)
             .then(contactos => {
               empresa_added.contactos = contactos;

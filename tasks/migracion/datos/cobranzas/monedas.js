@@ -6,7 +6,7 @@ const utils = require('../../utils');
 
 
 function addMoneda(moneda) {
-  let table = model.Moneda.table;
+  let table = model.TipoMoneda.table;
   let query = table.insert(
                 table.id.value(moneda['CodMoneda']),
                 table.nombre.value(moneda['NombreMoneda']),
