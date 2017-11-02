@@ -22,7 +22,7 @@ function addTipoComprobante(tipo) {
 module.exports.migrar = function() {
     console.log('Migrando tipos de comprobantes...');
     let q_objetos ='select * from T_TIPOASTO';
-    let q_limites = 'select 0 as min, COUNT(Tipo_doc) as max from T_TIPOASTO';
+    let q_limites = 'select 0 as min, COUNT(*) as max from T_TIPOASTO';
 
     return utils.migrar(q_objetos, q_limites, 100, addTipoComprobante);
 }

@@ -37,6 +37,10 @@ const table = sql.define({
             dataType: 'int',
         },
         {
+            name: 'fecha_vencimiento',
+            dataType: 'date',
+        },
+        {
             name: 'numero_comprobante',
             dataType: 'int',
         },
@@ -49,7 +53,7 @@ const table = sql.define({
             dataType: 'int',
         },
         {
-            name: 'id_tipo_pago',
+            name: 'tipo_pago',
             dataType: 'int',
         },
         {
@@ -59,6 +63,11 @@ const table = sql.define({
         {
             name: 'fecha_update',
             dataType: 'date',
+        },
+        {
+            name: 'delegacion',
+            dataType: 'int',
+            // Agregar foreign key una vez que se confirmen los datos 
         },
     ],
 
