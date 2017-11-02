@@ -306,5 +306,5 @@ module.exports.getMigracion = function (id) {
     .where(table.idMigracion.equals(id))
     .toQuery();
   return connector.execQuery(query)
-    .then(r => matricula = r.rows[0]);
+    .then(r => r.rows[0]);
 }

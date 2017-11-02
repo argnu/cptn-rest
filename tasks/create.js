@@ -1,25 +1,7 @@
 const connector = require('../connector');
 const model = require('../model');
 
-function querysSecuencial(querys) {
-  function* getQuery() {
-      for(let q of querys) yield connector.execQuery(q);
-  }
 
-  var it = getQuery();
-  function execQuerys() {
-    let q = it.next().value;
-    if (q) return q.then(r => execQuerys());
-    else return Promise.resolve();
-  }
-
-  return execQuerys();
-}
-
-function createTable(table) {
-   return connector.execQuery(table.create().ifNotExists().toQuery())
-    .then(r => console.info(`Tabla "${table._name}" creada`));
-}
 
 function createDatosGeograficos() {
   return createTable(model.Pais.table)

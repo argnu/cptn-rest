@@ -6,25 +6,28 @@ const utils = require('../../utils');
 
 
 function addBoleta(boleta) {
-  let table = model.Boleta.table;
-  let query = table.insert(
-                table.numero.value(boleta['NUMBOLETA']),
-                table.matricula.value(boleta['IDMATRICULADO']),
-                table.tipo_comprobante.value(boleta['Tipo_doc']),
-                table.fecha.value(boleta['FECHA_DATE']),
-                table.total.value(boleta['MONTOTOTAL']),
-                table.estado.value(boleta['ESTADO']),
-                table.fecha_vencimiento.value(boleta['FECHAVTO_DATE']),
-                table.numero_comprobante.value(boleta['Num_Comprobante']),
-                table.numero_solicitud.value(boleta['Num_solicitud']),
-                table.numero_condonacion.value(boleta['Num_Condonacion']),
-                table.tipo_pago.value(boleta['CODTIPOPAGO']),
-                table.fecha_pago.value(boleta['FECHAPAGO_DATE']),
-                table.fecha_update.value(boleta['FECHA_TIME']),
-                table.delegacion.value(boleta['CodDelegacion'])
-              ).toQuery();
+  return model.Matricula.getMigracion(boleta['IDMATRICULADO'])
+        .then(matricula => {
+          let table = model.Boleta.table;
+          let query = table.insert(
+                        table.numero.value(boleta['NUMBOLETA']),
+                        table.matricula.value(matricula.id),
+                        table.tipo_comprobante.value(boleta['Tipo_doc']),
+                        table.fecha.value(boleta['FECHA_DATE']),
+                        table.total.value(boleta['MONTOTOTAL']),
+                        table.estado.value(boleta['ESTADO']),
+                        table.fecha_vencimiento.value(boleta['FECHAVTO_DATE']),
+                        table.numero_comprobante.value(boleta['Num_Comprobante']),
+                        table.numero_solicitud.value(boleta['Num_solicitud']),
+                        table.numero_condonacion.value(boleta['Num_Condonacion']),
+                        table.tipo_pago.value(boleta['CODTIPOPAGO']),
+                        table.fecha_pago.value(boleta['FECHAPAGO_DATE']),
+                        table.fecha_update.value(boleta['FECHA_TIME']),
+                        table.delegacion.value(boleta['CodDelegacion'])
+                      ).toQuery();
 
-  return connector.execQuery(query);
+          return connector.execQuery(query);
+        });
 }
 
 
