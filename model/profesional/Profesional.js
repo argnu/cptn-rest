@@ -231,9 +231,9 @@ module.exports.getAll = function(params) {
     rs.forEach((value, index) => {
       [ domicilioReal, domicilioProfesional, domicilioConstituido,
         contactos, formaciones, beneficiarios, subsidiarios ] = value;
-      profesionales[index].domicilioReal = domicilioReal;
-      profesionales[index].domicilioProfesional = domicilioProfesional;
-      profesionales[index].domicilioConstituido = domicilioConstituido;
+      profesionales[index].domicilioReal = domicilioReal || null;
+      profesional.domicilioProfesional = domicilioProfesional || null;
+      profesional.domicilioConstituido = domicilioConstituido || null;
       profesionales[index].contactos = contactos;
       profesionales[index].formaciones = formaciones;
       profesionales[index].beneficiarios = beneficiarios;
@@ -273,9 +273,9 @@ module.exports.get = function(id) {
       domicilioReal, domicilioProfesional, domicilioConstituido,
       contactos, formaciones, beneficiarios, subsidiarios
     ]) => {
-      profesional.domicilioReal = domicilioReal;
-      profesional.domicilioProfesional = domicilioProfesional;
-      profesional.domicilioConstituido = domicilioConstituido;
+      profesional.domicilioReal = domicilioReal || null;
+      profesional.domicilioProfesional = domicilioProfesional || null;
+      profesional.domicilioConstituido = domicilioConstituido || null;
       profesional.contactos = contactos;
       profesional.formaciones = formaciones;
       profesional.beneficiarios = beneficiarios;
