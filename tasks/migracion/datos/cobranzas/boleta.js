@@ -33,7 +33,12 @@ function addBoleta(boleta) {
 
 module.exports.migrar = function() {
     console.log('Migrando Boletas...');
-    let q_objetos = 'select * from BOLETAS WHERE NUMBOLETA BETWEEN @offset AND @limit';
+    let q_objetos = `select b.NUMBOLETA, b.Tipo_doc, b.FECHA_DATE, b.MONTOTOTAL,
+      b.ESTADO, b.FECHAVTO_DATE, b.Num_Comprobante, b.Num_solicitud, b.Num_Condonacion,
+      b.CODTIPOPAGO, b.FECHAPAGO_DATE, b.FECHA_TIME, b.CodDelegacion
+      from BOLETAS b inner join MATRICULAS m
+      on b.IDMATRICULADO = m.ID
+      WHERE b.NUMBOLETA BETWEEN @offset AND @limit`;
     let q_limites = 'select MIN(NUMBOLETA) as min, MAX(NUMBOLETA) as max from BOLETAS';
 
     return utils.migrar(q_objetos, q_limites, 100, addBoleta);
