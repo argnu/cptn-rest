@@ -10,7 +10,7 @@ const table = sql.define({
             primaryKey: true
         },
         {
-            name: 'numero',
+            name: 'boleta',
             dataType: 'int',
             notNull: true
         },
@@ -26,18 +26,13 @@ const table = sql.define({
         {
             name: 'importe',
             dataType: 'float',
-        },
-        {
-            name: 'tipo_comprobante',
-            dataType: 'varchar(10)',
-
         }
     ],
 
     foreignKeys: [{
             table: 'boleta',
-            columns: ['numero'],
-            refColumns: ['numero']
+            columns: ['boleta'],
+            refColumns: ['id']
         },
     ]
 });

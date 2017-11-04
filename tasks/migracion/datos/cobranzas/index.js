@@ -6,6 +6,8 @@ const pagos = require('./pagos');
 const tipoComprobante = require('./tipoComprobante');
 const boleta = require('./boleta');
 module.exports.boleta = boleta;
+const boletaItem = require('./boletaItem');
+module.exports.boletaItem = boletaItem;
 
 module.exports.migrar = function() {
   return bancos.migrar()
@@ -14,5 +16,6 @@ module.exports.migrar = function() {
   .then(r => formaspago.migrar())
   .then(r => estadoBoleta.migrar())
   .then(r => tipoComprobante.migrar())
-  .then(r => boleta.migrar());
+  .then(r => boleta.migrar())
+  .then(r => boletaItem.migrar());
 }

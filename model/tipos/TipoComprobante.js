@@ -35,3 +35,13 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+module.exports.getByAbreviatura = function(abreviatura) {
+  let query = table.select(table.star())
+                   .from(table)
+                   .where(table.abreviatura.equals(abreviatura))
+                   .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => r.rows[0]);
+}
