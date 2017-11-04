@@ -3,7 +3,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const table = sql.define({
-    name: 'comprobantes',
+    name: 'comprobante',
     columns: [{
             name: 'id',
             dataType: 'serial',
@@ -32,11 +32,11 @@ const table = sql.define({
             dataType: 'float',
         },
         {
-            name: 'interes',
+            name: 'interes_total',
             dataType: 'float',
         },
         {
-            name: 'bonificacion',
+            name: 'bonificacion_total',
             dataType: 'float',
         },
         {
