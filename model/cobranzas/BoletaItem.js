@@ -38,3 +38,13 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+module.exports.getByBoleta = function(boleta) {
+  let query = table.select(table.star())
+                   .from(table)
+                   .where(table.boleta.equals(boleta))
+                   .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => r.rows);
+}
