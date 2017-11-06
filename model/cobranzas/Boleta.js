@@ -1,6 +1,7 @@
 const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+const BoletaItem = require('./BoletaItem');
 
 const table = sql.define({
     name: 'boleta',
@@ -99,4 +100,44 @@ module.exports.getByNumero = function(numero) {
 
   return connector.execQuery(query)
          .then(r => r.rows[0]);
+}
+
+module.exports.getAll = function() {
+  let boletas = [];
+
+  let query = table.select(table.star())
+                   .from(table)
+                   .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => {
+           boletas = r.rows;
+           let proms = boletas.map(b => BoletaItem.getByBoleta(b.id));
+           return Promise.all(proms);
+         })
+         .then(bol_items => {
+           bol_items.forEach((items, index) => {
+             boletas[index].items = items;
+           });
+           return boletas;
+         });
+}
+
+module.exports.get = function(id) {
+  let query = table.select(table.star())
+                   .from(table)
+                   .where(table.id.equals(id))
+                   .toQuery();
+
+  let boleta;
+
+  return connector.execQuery(query)
+         .then(r => {
+           boleta = r.rows[0];
+           return BoletaItem.getByBoleta(id);
+         })
+         .then(items => {
+           boleta.items = items;
+           return boleta;
+         });
 }
