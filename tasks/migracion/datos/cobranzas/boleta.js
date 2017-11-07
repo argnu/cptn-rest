@@ -10,7 +10,7 @@ function addBoleta(boleta) {
     model.Matricula.getMigracion(boleta['IDMATRICULADO']),
     model.TipoComprobante.getByAbreviatura(boleta['Tipo_doc'])
   ])
-  .then([matricula, tipo_comprobante] => {
+  .then(([matricula, tipo_comprobante]) => {
     let table = model.Boleta.table;
     let query = table.insert(
                   table.numero.value(boleta['NUMBOLETA']),

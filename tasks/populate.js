@@ -16,10 +16,6 @@ function querysSecuencial(querys) {
   return execQuerys();
 }
 
-function createTable(table) {
-   return connector.execQuery(table.create().ifNotExists().toQuery())
-    .then(r => console.info(`Tabla "${table._name}" creada`));
-}
 
 function populateEstadoCivil() {
   let querys = [];

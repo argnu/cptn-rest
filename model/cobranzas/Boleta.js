@@ -2,6 +2,8 @@ const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const BoletaItem = require('./BoletaItem');
+const TipoComprobante = require('../tipos/TipoComprobante');
+const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
 
 const table = sql.define({
     name: 'boleta',
@@ -23,7 +25,7 @@ const table = sql.define({
         },
         {
             name: 'tipo_comprobante',
-            dataType: 'varchar(10)'
+            dataType: 'int'
         },
         {
             name: 'fecha',
@@ -102,25 +104,39 @@ module.exports.getByNumero = function(numero) {
          .then(r => r.rows[0]);
 }
 
-module.exports.getAll = function() {
+
+function getData(b) {
+  return Promise.all([
+    BoletaItem.getByBoleta(b.id),
+    TipoComprobante.get(b.tipo_comprobante),
+    TipoEstadoBoleta.get(b.estado)
+  ])
+}
+
+module.exports.getAll = function(params) {
   let boletas = [];
 
   let query = table.select(table.star())
-                   .from(table)
-                   .toQuery();
+                   .from(table);
 
-  return connector.execQuery(query)
+   if (params.matricula) query.where(table.matricula.equals(params.matricula));
+   if (params.limit) query.limit(+params.limit);
+   if (params.limit && params.offset) query.offset(+params.offset);
+
+  return connector.execQuery(query.toQuery())
          .then(r => {
            boletas = r.rows;
-           let proms = boletas.map(b => BoletaItem.getByBoleta(b.id));
+           let proms = boletas.map(b => getData(b));
            return Promise.all(proms);
          })
-         .then(bol_items => {
-           bol_items.forEach((items, index) => {
-             boletas[index].items = items;
+         .then(data_list => {
+           data_list.forEach((data, index) => {
+             boletas[index].items = data[0];
+             boletas[index].tipo_comprobante = data[1];
+             boletas[index].estado = data[2];
            });
            return boletas;
-         });
+         })
 }
 
 module.exports.get = function(id) {
@@ -134,10 +150,12 @@ module.exports.get = function(id) {
   return connector.execQuery(query)
          .then(r => {
            boleta = r.rows[0];
-           return BoletaItem.getByBoleta(id);
+           return getData(boleta);
          })
-         .then(items => {
+         .then(([items, tipo_comprobante, estado]) => {
            boleta.items = items;
+           boleta.tipo_comprobante = tipo_comprobante;
+           boleta.estado = estado;
            return boleta;
          });
 }
