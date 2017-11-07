@@ -44,6 +44,7 @@ const table = sql.define({
             dataType: 'int',
             // Agregar foreign key una vez que se confirmen los datos 
         }
+
     ],
 
     foreignKeys: [{

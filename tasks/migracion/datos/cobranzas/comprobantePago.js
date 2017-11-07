@@ -25,13 +25,44 @@ const table = sql.define({
         {
             name: 'importe',
             dataType: 'float',
+        },
+        {
+            name: 'forma_pago',
+            dataType: 'int'
+        },
+        {
+            name: 'numero_cheque',
+            dataType: 'int'
+        },
+        {
+            name: 'codigo_banco',
+            dataType: 'int'
+        },
+        {
+            name: 'numero_cheque',
+            dataType: 'int'
+        },
+        {
+            name: 'fecha_vto_cheque',
+            dataType: 'date'
+        },
+        {
+            name: 'compensado',
+            dataType: 'int'
         }
+        
+
        
     ],
 
     foreignKeys: [{
             table: 'comprobante',
             columns: ['comprobante'],
+            refColumns: ['id']
+        },
+        {
+            table: 't_formapago',
+            columns: ['forma_pago'],
             refColumns: ['id']
         }
     ]
