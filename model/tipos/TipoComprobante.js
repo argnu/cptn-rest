@@ -45,3 +45,13 @@ module.exports.getByAbreviatura = function(abreviatura) {
   return connector.execQuery(query)
          .then(r => r.rows[0]);
 }
+
+module.exports.get = function(id) {
+  let query = table.select(table.star())
+                   .from(table)
+                   .where(table.id.equals(id))
+                   .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => r.rows[0]);
+}

@@ -2,6 +2,10 @@ const connector = require('../connector');
 const model = require('../model');
 
 
+function createTable(table) {
+   return connector.execQuery(table.create().ifNotExists().toQuery())
+    .then(r => console.info(`Tabla "${table._name}" creada`));
+}
 
 function createDatosGeograficos() {
   return createTable(model.Pais.table)

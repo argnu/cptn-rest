@@ -12,7 +12,7 @@ function addBoletaItem(boletaItem) {
                            table.boleta.value(boleta.id),
                            table.item.value(boletaItem['ITEM']),
                            table.descripcion.value(boletaItem['DESCRIPCION']),
-                           table.importe.value(boletaItem['MONTO']),
+                           table.importe.value(boletaItem['MONTO'])
                          ).toQuery();
 
              return connector.execQuery(query);
