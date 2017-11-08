@@ -67,6 +67,9 @@ function init() {
                 ]))
     .then(rs => createTable(model.Boleta.table))
     .then(rs => createTable(model.BoletaItem.table))
+    .then(rs => createTable(model.Comprobante.table))
+    .then(rs => createTable(model.ComprobanteItem.table))
+    .then(rs => createTable(model.ComprobantePago.table))
     .then(r => {
       console.info('Todas las tablas han sido creadas!');
       process.exit();
