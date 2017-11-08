@@ -120,6 +120,8 @@ module.exports.getAll = function(params) {
                    .from(table);
 
    if (params.matricula) query.where(table.matricula.equals(params.matricula));
+   if (params.fecha_desde) query.where(table.fecha.gte(params.fecha_desde));
+   if (params.fecha_hasta) query.where(table.fecha.lte(params.fecha_hasta));
    if (params.limit) query.limit(+params.limit);
    if (params.limit && params.offset) query.offset(+params.offset);
 
