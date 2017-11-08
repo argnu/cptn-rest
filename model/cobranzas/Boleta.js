@@ -94,68 +94,78 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.getByNumero = function(numero) {
-  let query = table.select(table.star())
-                   .from(table)
-                   .where(table.numero.equals(numero))
-                   .toQuery();
-
-  return connector.execQuery(query)
-         .then(r => r.rows[0]);
-}
-
-
 function getData(b) {
-  return Promise.all([
-    BoletaItem.getByBoleta(b.id),
-    TipoComprobante.get(b.tipo_comprobante),
-    TipoEstadoBoleta.get(b.estado)
-  ])
+    return Promise.all([
+        BoletaItem.getByBoleta(b.id),
+        TipoComprobante.get(b.tipo_comprobante),
+        TipoEstadoBoleta.get(b.estado)
+    ])
 }
 
-module.exports.getAll = function(params) {
-  let boletas = [];
+module.exports.getAll = function (params) {
+    let boletas = [];
 
-  let query = table.select(table.star())
-                   .from(table);
+    let query = table.select(table.star())
+        .from(table);
 
-   if (params.matricula) query.where(table.matricula.equals(params.matricula));
-   if (params.limit) query.limit(+params.limit);
-   if (params.limit && params.offset) query.offset(+params.offset);
+    if (params.matricula) query.where(table.matricula.equals(params.matricula));
+    if (params.limit) query.limit(+params.limit);
+    if (params.limit && params.offset) query.offset(+params.offset);
 
-  return connector.execQuery(query.toQuery())
-         .then(r => {
-           boletas = r.rows;
-           let proms = boletas.map(b => getData(b));
-           return Promise.all(proms);
-         })
-         .then(data_list => {
-           data_list.forEach((data, index) => {
-             boletas[index].items = data[0];
-             boletas[index].tipo_comprobante = data[1];
-             boletas[index].estado = data[2];
-           });
-           return boletas;
-         })
+    return connector.execQuery(query.toQuery())
+        .then(r => {
+            boletas = r.rows;
+            let proms = boletas.map(b => getData(b));
+            return Promise.all(proms);
+        })
+        .then(data_list => {
+            data_list.forEach((data, index) => {
+                boletas[index].items = data[0];
+                boletas[index].tipo_comprobante = data[1];
+                boletas[index].estado = data[2];
+            });
+            return boletas;
+        })
 }
 
-module.exports.get = function(id) {
-  let query = table.select(table.star())
-                   .from(table)
-                   .where(table.id.equals(id))
-                   .toQuery();
+module.exports.get = function (id) {
+    let query = table.select(table.star())
+        .from(table)
+        .where(table.id.equals(id))
+        .toQuery();
 
-  let boleta;
+    let boleta;
 
-  return connector.execQuery(query)
-         .then(r => {
-           boleta = r.rows[0];
-           return getData(boleta);
-         })
-         .then(([items, tipo_comprobante, estado]) => {
-           boleta.items = items;
-           boleta.tipo_comprobante = tipo_comprobante;
-           boleta.estado = estado;
-           return boleta;
-         });
+    return connector.execQuery(query)
+        .then(r => {
+            boleta = r.rows[0];
+            return getData(boleta);
+        })
+        .then(([items, tipo_comprobante, estado]) => {
+            boleta.items = items;
+            boleta.tipo_comprobante = tipo_comprobante;
+            boleta.estado = estado;
+            return boleta;
+        });
+}
+
+module.exports.getByNumero = function (numero) {
+    let query = table.select(table.star())
+        .from(table)
+        .where(table.numero.equals(numero))
+        .toQuery();
+
+    let boleta;
+
+    return connector.execQuery(query)
+        .then(r => {
+            boleta = r.rows[0];
+            return getData(boleta);
+        })
+        .then(([items, tipo_comprobante, estado]) => {
+            boleta.items = items;
+            boleta.tipo_comprobante = tipo_comprobante;
+            boleta.estado = estado;
+            return boleta;
+        });
 }

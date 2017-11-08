@@ -1,6 +1,7 @@
 const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+const Boleta = require('./Boleta');
 
 const table = sql.define({
     name: 'boleta_item',
@@ -30,21 +31,40 @@ const table = sql.define({
     ],
 
     foreignKeys: [{
-            table: 'boleta',
-            columns: ['boleta'],
-            refColumns: ['id']
-        },
-    ]
+        table: 'boleta',
+        columns: ['boleta'],
+        refColumns: ['id']
+    }, ]
 });
 
 module.exports.table = table;
 
-module.exports.getByBoleta = function(boleta) {
-  let query = table.select(table.star())
-                   .from(table)
-                   .where(table.boleta.equals(boleta))
-                   .toQuery();
+module.exports.getByBoleta = function (boleta) {
+    let query = table.select(table.star())
+        .from(table)
+        .where(table.boleta.equals(boleta))
+        .toQuery();
 
-  return connector.execQuery(query)
-         .then(r => r.rows);
+    return connector.execQuery(query)
+        .then(r => r.rows);
+}
+
+module.exports.getByNumeroBoleta = function (numero, item) {
+    let query = table.select(
+            table.id,
+            table.item,
+            table.descripcion
+        )
+        .from(
+            table.join(Boleta.table)
+            .on(table.boleta.equals(Boleta.table.id))
+        )
+        .where(
+            Boleta.table.numero.equals(numero)
+            .and(table.item.equals(item))
+        )
+        .toQuery();
+
+    return connector.execQuery(query)
+        .then(r => r.rows ? r.rows[0] : null);
 }

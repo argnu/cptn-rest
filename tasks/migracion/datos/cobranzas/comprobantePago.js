@@ -1,71 +1,43 @@
-const connector = require('../../connector');
+const connector = require('../../../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+const model = require('../../../../model');
+const utils = require('../../utils');
 
-const table = sql.define({
-    name: 'comprobante_pago',
-    columns: [{
-            name: 'id',
-            dataType: 'serial',
-            primaryKey: true
-        },
-        {
-            name: 'comprobante',
-            dataType: 'int',
-            notNull: true
-        },
-        {
-            name: 'item',
-            dataType: 'int',
-        },
-        {
-            name: 'fecha_pago',
-            dataType: 'date',
-        },
-        {
-            name: 'importe',
-            dataType: 'float',
-        },
-        {
-            name: 'forma_pago',
-            dataType: 'int'
-        },
-        {
-            name: 'numero_cheque',
-            dataType: 'int'
-        },
-        {
-            name: 'codigo_banco',
-            dataType: 'int'
-        },
-        {
-            name: 'numero_cheque',
-            dataType: 'int'
-        },
-        {
-            name: 'fecha_vto_cheque',
-            dataType: 'date'
-        },
-        {
-            name: 'compensado',
-            dataType: 'int'
-        }
-        
+function addPagos(pago) {
+    return model.Comprobante.getByNumero(pago['NUMRECIBO'])
+        .then(comprobante => {
+            if (comprobante) {
+                let table = model.ComprobantePago.table;
+                let query = table.insert(
+                    table.comprobante.value(comprobante.id),
+                    table.item.value(pago['Item']),
+                    table.fecha_pago.value(pago['FechaPago_DATE']),
+                    table.importe.value(pago['Importe']),
+                    table.forma_pago.value(pago['FormaPago']),
+                    table.numero_cheque.value(pago['NroCheque']),
+                    table.codigo_banco.value(pago['CodBanco']),
+                    table.titular_cuenta.value(pago['TitularCuenta']),
+                    table.fecha_vto_cheque.value(pago['FECHA_VTO']),
+                    table.compensado.value(pago['Compensado'])
+                ).toQuery();
+                return connector.execQuery(query);
+            } else {
+                return Promise.resolve();
+            }
+        });
+}
 
-       
-    ],
+module.exports.migrar = function () {
+    console.log('Migrando Comprobantes de Pago...');
+    let q_objetos = `select RM.NumRecibo, RM.Item, RM.FechaPago_DATE,
+    RM.Importe, RM.NroCheque, RM.CodBanco, RM.TitularCuenta,
+    RM.Compensado, RM.FormaPago,
+    FECHA_VTO= case when (FechaVto = '' OR FechaVto is Null) then null
+    else  DATEADD(DAY, CONVERT(integer, fechaVto),'1800-12-28') end
+    from RECMAT2 RM
+    WHERE RM.NumRecibo BETWEEN @offset AND @limit`;
+    let q_limites = 'select MIN(NumRecibo) as min, MAX(NumRecibo) as max from RECMAT2';
 
-    foreignKeys: [{
-            table: 'comprobante',
-            columns: ['comprobante'],
-            refColumns: ['id']
-        },
-        {
-            table: 't_formapago',
-            columns: ['forma_pago'],
-            refColumns: ['id']
-        }
-    ]
-});
-
-module.exports.table = table;
+    return utils.migrar(q_objetos, q_limites, 100, addPagos);
+}
