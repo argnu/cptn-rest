@@ -3,7 +3,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const table = sql.define({
-    name: 'comprobante_item',
+    name: 'comprobante_pago',
     columns: [{
             name: 'id',
             dataType: 'serial',
@@ -19,27 +19,40 @@ const table = sql.define({
             dataType: 'int',
         },
         {
-            name: 'boleta_item',
-            dataType: 'int'
-        },
-        {
-            name: 'descripcion',
-            dataType: 'varchar(255)',
-        },
-        {
-            name: 'cuenta_contable',
-            dataType: 'varchar(255)',
+            name: 'fecha_pago',
+            dataType: 'date',
         },
         {
             name: 'importe',
             dataType: 'float',
         },
         {
-            name: 'delegacion',
-            dataType: 'int',
-            // Agregar foreign key una vez que se confirmen los datos
+            name: 'forma_pago',
+            dataType: 'int'
+        },
+        {
+            name: 'numero_cheque',
+            dataType: 'int'
+        },
+        {
+            name: 'codigo_banco',
+            dataType: 'int'
+        },
+        {
+            name: 'titular_cuenta',
+            dataType: 'varchar(255)'
+        },
+        {
+            name: 'fecha_vto_cheque',
+            dataType: 'date'
+        },
+        {
+            name: 'compensado',
+            dataType: 'int'
         }
+        
 
+       
     ],
 
     foreignKeys: [{
@@ -48,8 +61,8 @@ const table = sql.define({
             refColumns: ['id']
         },
         {
-            table: 'boleta_item',
-            columns: ['boleta_item'],
+            table: 't_formapago',
+            columns: ['forma_pago'],
             refColumns: ['id']
         }
     ]

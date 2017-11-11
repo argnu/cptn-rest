@@ -6,11 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node_modules/nodemon/bin/nodemon.js index.js",
-    "premigrate": "node ./tasks/droptables.js && node ./tasks/create.js & node ./tasks/migracion/sequences/drop.js",
     "migrate": "node ./tasks/migracion",
-    "postmigrate": "node ./tasks/migracion/sequences/create.js",
     "create": "node ./tasks/create.js",
-    "drop": "node ./tasks/droptables.js"
+    "drop": "node ./tasks/droptables.js",
+    "populate": "node ./tasks/populate.js"
   },
   "keywords": [
     "rest",

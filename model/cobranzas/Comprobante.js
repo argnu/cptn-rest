@@ -49,12 +49,12 @@ const table = sql.define({
         },
         {
             name: 'observaciones',
-            dataType: 'varchar(255)',
+            dataType: 'text',
         },
         {
             name: 'delegacion',
             dataType: 'int',
-            // Agregar foreign key una vez que se confirmen los datos 
+            // Agregar foreign key una vez que se confirmen los datos
         },
         {
             name: 'operador',
@@ -79,3 +79,13 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+module.exports.getByNumero = function(numero) {
+    let query = table.select(table.star())
+                     .from(table)
+                     .where(table.numero.equals(numero))
+                     .toQuery();
+
+    return connector.execQuery(query)
+           .then(r => r.rows[0]);
+  }
