@@ -6,10 +6,8 @@ router.get('/*', (req, res, next) => {
     for(let s of req.query.sort.split(',')) {
       let key = s;
       let type = 'asc';
-      if (s[0] == '-') {
-        type = 'desc';
-        key = s.substring(1, s.length);
-      }
+      if (s[0] == '-') type = 'desc';
+      key = s.substring(1, s.length).trim();
       sort_obj[key] = type;
     }
     req.query.sort = sort_obj;
@@ -31,5 +29,6 @@ router.use('/delegaciones', require('./delegaciones'));
 router.use('/instituciones', require('./instituciones'));
 router.use('/titulos', require('./titulos'));
 router.use('/boletas', require('./boletas'));
+router.use('/comprobantes', require('./comprobantes'));
 
 module.exports = router;

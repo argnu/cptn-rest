@@ -1,3 +1,5 @@
+global.__base = __dirname;
+
 const express = require('express');
 const pg = require('pg');
 const config = require('./config.private');

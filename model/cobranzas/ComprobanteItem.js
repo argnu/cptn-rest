@@ -56,3 +56,13 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+module.exports.getByComprobante = function(id) {
+  let query = table.select(table.star())
+      .from(table)
+      .where(table.comprobante.equals(id))
+      .toQuery();
+
+  return connector.execQuery(query)
+      .then(r => r.rows);
+}
