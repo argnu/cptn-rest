@@ -1,5 +1,10 @@
 const router = require('express').Router();
 
+router.use((req, res, next) => {
+  if (req.path == '/usuarios/auth' || !!req.user) next();
+  else return res.status(401).json({ msg: 'Usuario sin autorización' });
+});
+
 router.get('/*', (req, res, next) => {
   if (req.query.sort) {
     let sort_obj = {};
@@ -31,5 +36,6 @@ router.use('/delegaciones', require('./delegaciones'));
 router.use('/instituciones', require('./instituciones'));
 router.use('/titulos', require('./titulos'));
 router.use('/boletas', require('./boletas'));
+router.use('/usuarios', require('./usuarios'));
 
 module.exports = router;

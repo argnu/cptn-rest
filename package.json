@@ -22,9 +22,11 @@
   "author": "ARGNU",
   "license": "GPL-3.0",
   "dependencies": {
+    "bcrypt": "^1.0.3",
     "body-parser": "^1.17.2",
     "bunyan": "^1.8.12",
     "express": "^4.15.4",
+    "jsonwebtoken": "^8.1.0",
     "lodash": "^4.17.4",
     "mssql": "^4.0.4",
     "pg": "^7.1.0",
