@@ -30,5 +30,6 @@ router.use('/instituciones', require('./instituciones'));
 router.use('/titulos', require('./titulos'));
 router.use('/boletas', require('./boletas'));
 router.use('/comprobantes', require('./comprobantes'));
+router.use('/bancos', require('./bancos'));
 
 module.exports = router;

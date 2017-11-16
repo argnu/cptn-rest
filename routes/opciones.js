@@ -16,33 +16,27 @@ router.get('/', function(req, res) {
     model.TipoSociedad.getAll(req.query),
     model.TipoIncumbencia.getAll(req.query),
     model.TipoEstadoMatricula.getAll(req.query),
+    model.TipoEstadoBoleta.getAll(req.query),
+    model.TipoComprobante.getAll(req.query),
+    model.TipoFormaPago.getAll(req.query),
+    model.TipoPago.getAll(req.query)
   ])
   .then(([
     condicionafip, contacto, empresa, estadocivil,
     formacion, sexo, sociedad,
-    incumbencia, estadoMatricula
+    incumbencia, estadoMatricula,
+    estadoBoleta, comprobante, formaPago, pago
   ]) => res.json({
         condicionafip, contacto, empresa, estadocivil,
         formacion, sexo, sociedad,
-        incumbencia, estadoMatricula
+        incumbencia, estadoMatricula,
+        estadoBoleta, comprobante, formaPago, pago
       })
   )
   .catch(e => {
     console.error(e);
     res.status(500).json({ msg: 'Error en el servidor' });
   });
-});
-
-router.post('/', function(req, res) {
-
-});
-
-router.put('/:id', function(req, res) {
-
-});
-
-router.delete('/:id', function(req, res) {
-
 });
 
 module.exports = router;
