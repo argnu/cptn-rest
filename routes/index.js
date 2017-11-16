@@ -1,8 +1,12 @@
 const router = require('express').Router();
 
 router.use((req, res, next) => {
-  if (req.path == '/usuarios/auth' || !!req.user) next();
-  else return res.status(401).json({ msg: 'Usuario sin autorización' });
+  if (req.method != 'OPTIONS') {
+    if (req.path == '/usuarios/auth' || !!req.user) next();
+    else return res.status(401).json({ msg: 'Usuario sin autorización' });
+  }
+  else next();
+
 });
 
 router.get('/*', (req, res, next) => {
