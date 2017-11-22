@@ -46,3 +46,4 @@ module.exports.Comprobante = require('./cobranzas/Comprobante');
 module.exports.ComprobanteItem = require('./cobranzas/ComprobanteItem');
 module.exports.ComprobantePago = require('./cobranzas/ComprobantePago');
 
+module.exports.Usuario = require('./Usuario');

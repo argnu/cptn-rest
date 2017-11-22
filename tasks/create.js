@@ -52,10 +52,8 @@ function init() {
       createTable(model.TipoEstadoBoleta.table),
       createTable(model.TipoPago.table),
       createTable(model.TipoMoneda.table),
-      createTable(model.Banco.table)
-      createTable(model.Comprobante.table)
-      createTable(model.ComprobanteItem.table)
-      createTable(model.ComprobantePago.table)
+      createTable(model.Banco.table),
+      createTable(model.Usuario.table)
     ])
     .then(rs => Promise.all([
                   createEntidades(),

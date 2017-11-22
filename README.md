@@ -12,7 +12,7 @@
 
 Crear una base de datos y en caso de tener los datos hacer un restore de los datos migrados:
 
-`pg_restore -d basededatos -U usuario archivodebackup`
+`pg_restore --no-privileges --no-owner -n public  -d basededatos -U usuario archivodebackup`
 
 ### 4- Configurar API
 
