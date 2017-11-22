@@ -94,6 +94,7 @@ module.exports.getByNumero = function(numero) {
 function getData(b) {
     return Promise.all([
         model.ComprobanteItem.getByComprobante(b.id),
+        model.ComprobantePago.getByComprobante(b.id),
     ])
 }
 
@@ -122,6 +123,7 @@ module.exports.getAll = function (params) {
         .then(data_list => {
             data_list.forEach((data, index) => {
                 comprobantes[index].items = data[0];
+                comprobantes[index].pagos = data[1];
             });
             return comprobantes;
         })
