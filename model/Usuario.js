@@ -76,7 +76,11 @@ module.exports.add = function(usuario) {
 }
 
 module.exports.auth = function(usuario) {
-  let query = table.select(table.star())
+  let query = table.select(
+          table.id, table.hash_password,
+          table.nombre, table.apellido,
+          table.email
+        )
        .from(table)
        .where(table.id.equals(usuario.id))
        .toQuery();
@@ -86,7 +90,9 @@ module.exports.auth = function(usuario) {
       if (r.rows.length == 1) {
         let usuario_bd =r.rows[0];
         if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password)) {
-          return { id: usuario.id, token: jwt.sign({ id: usuario_bd.id, admin: usuario_bd.admin }, config.secret) };
+          usuario_bd.token = jwt.sign({ id: usuario_bd.id, admin: usuario_bd.admin }, config.secret);
+          delete(usuario_bd.hash_password);
+          return usuario_bd
         }
         else throw Error("No existe la combinación usuario/contraseña")
       }

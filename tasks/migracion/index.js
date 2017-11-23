@@ -1,3 +1,5 @@
+const path = require('path');
+global.__base = path.join(__dirname, '..');
 const instituciones = require('./datos/instituciones');
 const geograficos = require('./datos/geograficos');
 const delegaciones = require('./datos/delegaciones');
