@@ -31,7 +31,7 @@ function migrarTodo() {
 }
 
 function migrarAlgo() {
-  legajos.categorias.migrar()
+  legajos.items.migrar()
   .then(e => {
     console.log('listo');
     process.exit();
