@@ -21,7 +21,7 @@ function createDatosTareas() {
   return createTable(model.tareas.Categoria.table)
   .then(r => createTable(model.tareas.Subcategoria.table))
   .then(r => createTable(model.tareas.Item.table))
-  .then(r => createTable(model.tareas.ItemsPredeterminados.table))
+  .then(r => createTable(model.tareas.ItemPredeterminado.table))
   .then(r => createTable(model.tareas.ItemValorPredeterminado.table))
 }
 

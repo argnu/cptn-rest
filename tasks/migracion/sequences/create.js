@@ -7,7 +7,9 @@ Promise.all([
  connector.execRawQuery('SELECT MAX(id) FROM provincia'),
  connector.execRawQuery('SELECT MAX(id) FROM departamento'),
  connector.execRawQuery('SELECT MAX(id) FROM localidad'),
- connector.execRawQuery('SELECT MAX(id) FROM tarea_categoria')
+ connector.execRawQuery('SELECT MAX(id) FROM tarea_categoria'),
+ connector.execRawQuery('SELECT MAX(id) FROM tarea_subcategoria'),
+ connector.execRawQuery('SELECT MAX(id) FROM tarea_item')
 ])
 .then(([
     maxInstituciones,
@@ -16,7 +18,9 @@ Promise.all([
     maxProvincias,
     maxDepartamentos,
     maxLocalidades,
-    maxCategorias
+    maxCategorias,
+    maxSubcategorias,
+    maxItems
 ]) => {
     return connector.execRawQuery(`
     CREATE SEQUENCE institucion_id_seq OWNED BY institucion.id START WITH ${maxInstituciones.rows[0].max+1};
@@ -33,6 +37,10 @@ Promise.all([
     ALTER TABLE localidad ALTER COLUMN id SET DEFAULT nextval('localidad_id_seq');
     CREATE SEQUENCE tarea_categoria_id_seq OWNED BY tarea_categoria.id START WITH ${maxCategorias.rows[0].max+1};
     ALTER TABLE tarea_categoria ALTER COLUMN id SET DEFAULT nextval('tarea_categoria_id_seq');
+    CREATE SEQUENCE tarea_subcategoria_id_seq OWNED BY tarea_subcategoria.id START WITH ${maxSubcategorias.rows[0].max+1};
+    ALTER TABLE tarea_subcategoria ALTER COLUMN id SET DEFAULT nextval('tarea_subcategoria_id_seq');
+    CREATE SEQUENCE tarea_item_id_seq OWNED BY tarea_item.id START WITH ${maxItems.rows[0].max+1};
+    ALTER TABLE tarea_item ALTER COLUMN id SET DEFAULT nextval('tarea_item_id_seq');
     `)
 })
 .then(r => {

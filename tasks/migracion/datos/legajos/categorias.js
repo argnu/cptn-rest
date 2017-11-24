@@ -2,10 +2,10 @@ const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require(`${__base}/model`);
-const utils = require(`${__base}/utils`);
+const utils = require(`${__base}/tasks/migracion/utils`);
 
 const addCategoria = (categoria)  => {
-    let table = model.TareaCategoria.table;
+    let table = model.tareas.Categoria.table;
     let query = table.insert(
                   table.id.value(categoria['CODIGO']),
                   table.descripcion.value(categoria['DESCRIPCION'])

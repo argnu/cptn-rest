@@ -47,6 +47,3 @@ module.exports.ComprobanteItem = require('./cobranzas/ComprobanteItem');
 module.exports.ComprobantePago = require('./cobranzas/ComprobantePago');
 
 module.exports.Usuario = require('./Usuario');
-
-module.exports.TareaCategoria = require('./tareas/Categoria');
-module.exports.TareaSubcategoria = require('./tareas/Subcategoria');
