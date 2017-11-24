@@ -10,6 +10,10 @@ const table = sql.define({
             primaryKey: true
         },
         {
+            name: 'tipo_comprobante',
+            dataType: 'int'
+        },
+        {
             name: 'numero',
             dataType: 'int',
             notNull: true
