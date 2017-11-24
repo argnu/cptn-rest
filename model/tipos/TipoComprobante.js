@@ -55,3 +55,11 @@ module.exports.get = function(id) {
   return connector.execQuery(query)
          .then(r => r.rows[0]);
 }
+
+module.exports.getAll = function(params) {
+  let query = table.select(table.star()).from(table);
+  if (params.sort && params.sort.valor) query.order(table.valor[params.sort.valor]);
+
+  return connector.execQuery(query.toQuery())
+  .then(r => r.rows);
+}

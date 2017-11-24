@@ -1,0 +1,23 @@
+const connector = require(`${__base}/connector`);
+const sql = require('sql');
+sql.setDialect('postgres');
+const model = require(`${__base}/model`);
+const utils = require(`${__base}/utils`);
+
+const addCategoria = (categoria)  => {
+    let table = model.TareaCategoria.table;
+    let query = table.insert(
+                  table.id.value(categoria['CODIGO']),
+                  table.descripcion.value(categoria['DESCRIPCION'])
+                ).toQuery();
+
+    return connector.execQuery(query);
+}
+
+module.exports.migrar = function () {
+    console.log('Migrando categorias de tareas...');
+    let q_objetos = 'select * from Tareas_N1 WHERE CODIGO BETWEEN @offset AND @limit';
+    let q_limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from Tareas_N1';
+
+    return utils.migrar(q_objetos, q_limites, 100, addCategoria);
+}

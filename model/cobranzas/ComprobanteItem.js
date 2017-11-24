@@ -20,13 +20,8 @@ const table = sql.define({
         },
         {
             name: 'boleta_item',
-            dataType: 'int',
-            notNull: true
+            dataType: 'int'
         },
-        // {
-        //     name: 'tipo_comprobante',
-        //     dataType: 'int'
-        // },
         {
             name: 'descripcion',
             dataType: 'varchar(255)',
@@ -42,7 +37,7 @@ const table = sql.define({
         {
             name: 'delegacion',
             dataType: 'int',
-            // Agregar foreign key una vez que se confirmen los datos 
+            // Agregar foreign key una vez que se confirmen los datos
         }
 
     ],
@@ -61,3 +56,13 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+module.exports.getByComprobante = function(id) {
+  let query = table.select(table.star())
+      .from(table)
+      .where(table.comprobante.equals(id))
+      .toQuery();
+
+  return connector.execQuery(query)
+      .then(r => r.rows);
+}

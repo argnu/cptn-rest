@@ -108,9 +108,16 @@ module.exports.getAll = function (params) {
     let query = table.select(table.star())
         .from(table);
 
-    if (params.matricula) query.where(table.matricula.equals(params.matricula));
-    if (params.limit) query.limit(+params.limit);
-    if (params.limit && params.offset) query.offset(+params.offset);
+   if (params.matricula) query.where(table.matricula.equals(params.matricula));
+   if (params.estado) query.where(table.estado.equals(params.estado));
+   if (params.fecha_desde) query.where(table.fecha_vencimiento.gte(params.fecha_desde));
+   if (params.fecha_hasta) query.where(table.fecha_vencimiento.lte(params.fecha_hasta));
+
+   if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
+   if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
+
+   if (params.limit) query.limit(+params.limit);
+   if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
         .then(r => {

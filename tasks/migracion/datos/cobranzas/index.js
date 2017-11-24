@@ -9,6 +9,11 @@ module.exports.boleta = boleta;
 const boletaItem = require('./boletaItem');
 module.exports.boletaItem = boletaItem;
 
+const comprobante = require('./comprobante');
+module.exports.comprobante = comprobante;
+const comprobanteItem = require('./comprobanteItem');
+module.exports.comprobanteItem = comprobanteItem;
+
 module.exports.migrar = function() {
   return bancos.migrar()
   .then(r => pagos.migrar())

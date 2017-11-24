@@ -20,7 +20,7 @@ function addComprobantesItems(comprobante_item) {
           table.descripcion.value(comprobante_item['DESCRIPCION']),
           table.cuenta_contable.value(comprobante_item['CUENTACONTABLE']),
           table.importe.value(comprobante_item['IMPORTE']),
-          table.delegacion.value(comprobante_item['CODDELEGACIONCMPTE']),
+          table.delegacion.value(comprobante_item['CODDELEGACIONCMPTE'])
         ).toQuery();
         return connector.execQuery(query);
       } else {
@@ -36,7 +36,7 @@ module.exports.migrar = function () {
     RC.NUMCMPTE, RC.ITEMCMPTE, RC.DESCRIPCION, RC.IMPORTE as IMPORTE,
     BI.CODTIPOASTO as TIPO_COMPROBANTE
     from RECMAT1 RC LEFT JOIN BOL_ITEMS BI
-    ON (RC.NUMCMPTE = BI.NUMBOLETA AND RC.ITEMCMPTE= BI.ITEM) 
+    ON (RC.NUMCMPTE = BI.NUMBOLETA AND RC.ITEMCMPTE= BI.ITEM)
     WHERE RC.NUMRECIBO BETWEEN @offset AND @limit`;
   let q_limites = 'select MIN(NUMRECIBO) as min, MAX(NUMRECIBO) as max from RECMAT1';
 

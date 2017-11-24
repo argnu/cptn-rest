@@ -1,3 +1,5 @@
+const path = require('path');
+global.__base = path.join(__dirname, '..');
 const connector = require('../connector');
 const model = require('../model');
 
@@ -52,7 +54,8 @@ function init() {
       createTable(model.TipoEstadoBoleta.table),
       createTable(model.TipoPago.table),
       createTable(model.TipoMoneda.table),
-      createTable(model.Banco.table)
+      createTable(model.Banco.table),
+      createTable(model.Usuario.table)
     ])
     .then(rs => Promise.all([
                   createEntidades(),

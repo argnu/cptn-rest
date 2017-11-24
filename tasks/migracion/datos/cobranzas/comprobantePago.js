@@ -5,7 +5,7 @@ const model = require('../../../../model');
 const utils = require('../../utils');
 
 function addPagos(pago) {
-    return model.Comprobante.getByNumero(pago['NUMRECIBO'])
+    return model.Comprobante.getByNumero(pago['NumRecibo'])
         .then(comprobante => {
             if (comprobante) {
                 let table = model.ComprobantePago.table;

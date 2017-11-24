@@ -1,7 +1,8 @@
+const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
-module.exports.table = sql.define({
+const table = sql.define({
   name: 'tarea_subcategoria',
   columns: [
     {
@@ -27,3 +28,5 @@ module.exports.table = sql.define({
       refColumns: ['id']
     }
 });
+
+module.exports.table = table;
