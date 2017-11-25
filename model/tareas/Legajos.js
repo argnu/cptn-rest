@@ -2,7 +2,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 module.exports.table = sql.define({
-    name: 'legajos',
+    name: 'legajo',
     columns: [{
             name: 'id',
             dataType: 'serial',
