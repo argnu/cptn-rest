@@ -156,6 +156,11 @@ module.exports.table = sql.define({
             table: 'tarea_subcategoria',
             columns: ['subcategoria'],
             refColumns: ['id']
+        },
+        {
+            table: 'comitente',
+            columns: ['comitente'],
+            refColumns: ['id']
         }
     ]
 });
