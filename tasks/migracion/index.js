@@ -1,5 +1,5 @@
 const path = require('path');
-global.__base = path.join(__dirname, '..');
+global.__base = path.join(__dirname, '../..');
 const instituciones = require('./datos/instituciones');
 const geograficos = require('./datos/geograficos');
 const delegaciones = require('./datos/delegaciones');
@@ -31,7 +31,7 @@ function migrarTodo() {
 }
 
 function migrarAlgo() {
-  legajos.categorias.migrar()
+  legajos.items.migrar()
   .then(e => {
     console.log('listo');
     process.exit();

@@ -1,7 +1,7 @@
 const sql = require('sql');
 sql.setDialect('postgres');
 
-module.exports.table = sql.define({
+const table = sql.define({
   name: 'tarea_item',
   columns: [
     {
@@ -16,3 +16,5 @@ module.exports.table = sql.define({
     }
   ]
 });
+
+module.exports.table = table;
