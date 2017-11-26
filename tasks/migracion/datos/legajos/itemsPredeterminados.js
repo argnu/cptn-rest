@@ -8,7 +8,7 @@ const addItem = (item)  => {
     let table = model.tareas.ItemPredeterminado.table;
     let id_item = `${item['CODIGOPREGUNTA']}${item['NUMEROPREGUNTA']}`;
     let query = table.insert(
-                  table.item.value(id)
+                  table.item.value(id_item),
                   table.subcategoria.value(item['CODIGOTAREAN2'])
                 ).toQuery();
 
@@ -17,12 +17,12 @@ const addItem = (item)  => {
 
 module.exports.migrar = function () {
     console.log('Migrando items predeterminados de tareas...');
-    let q_objetos = 'SELECT *
+    let q_objetos = `SELECT t.CODIGOPREGUNTA, t.NUMEROPREGUNTA, CODIGOTAREAN2 
         FROM Tareas_N2_Preguntas t
         JOIN PreguntasTareas p ON (t.CODIGOPREGUNTA=p.CODIGO AND t.NUMEROPREGUNTA=p.NUMEROPREGUNTA)
-        WHERE CODIGO BETWEEN @offset AND @limit';
-    let q_limites = 'select 0 as min, COUNT(*) as max FROM Tareas_N2_Preguntas t
-    JOIN PreguntasTareas p ON (t.CODIGOPREGUNTA=p.CODIGO AND t.NUMEROPREGUNTA=p.NUMEROPREGUNTA) ';
+        WHERE CODIGO BETWEEN @offset AND @limit`;
+    let q_limites = `select 0 as min, COUNT(*) as max FROM Tareas_N2_Preguntas t
+    JOIN PreguntasTareas p ON (t.CODIGOPREGUNTA=p.CODIGO AND t.NUMEROPREGUNTA=p.NUMEROPREGUNTA)`;
 
     return utils.migrar(q_objetos, q_limites, 100, addItem);
 }
