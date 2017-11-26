@@ -2,7 +2,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 module.exports.table = sql.define({
-    name: 'legajos',
+    name: 'legajo',
     columns: [{
             name: 'id',
             dataType: 'serial',
@@ -156,6 +156,27 @@ module.exports.table = sql.define({
             table: 'tarea_subcategoria',
             columns: ['subcategoria'],
             refColumns: ['id']
+        },
+        {
+            table: 'comitente',
+            columns: ['comitente'],
+            refColumns: ['id']
+        },
+        {
+            table: 't_incumbencia',
+            columns: ['incumbencia'],
+            refColumns: ['id']
         }
     ]
 });
+
+
+
+module.exports.getSolicitud = function (idSolicitud) {
+    let query = table.select(...select.atributes)
+      .from(select.from)
+      .where(table.solicitud.equals(idSolicitud))
+      .toQuery();
+    return connector.execQuery(query)
+      .then(r => r.rows[0]);
+  }

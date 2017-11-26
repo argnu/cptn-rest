@@ -4,7 +4,7 @@ sql.setDialect('postgres');
 const model = require(`${__base}/model`);
 const utils = require(`${__base}/tasks/migracion/utils`);
 
-const addItem = (item)  => {
+const addItem = (item) => {
     let table = model.tareas.ItemPredeterminado.table;
     let id_item = `${item['CODIGOPREGUNTA']}${item['NUMEROPREGUNTA']}`;
     let query = table.insert(
@@ -17,7 +17,7 @@ const addItem = (item)  => {
 
 module.exports.migrar = function () {
     console.log('Migrando items predeterminados de tareas...');
-    let q_objetos = `SELECT t.CODIGOPREGUNTA, t.NUMEROPREGUNTA, CODIGOTAREAN2 
+    let q_objetos = `SELECT t.CODIGOPREGUNTA, t.NUMEROPREGUNTA, CODIGOTAREAN2
         FROM Tareas_N2_Preguntas t
         JOIN PreguntasTareas p ON (t.CODIGOPREGUNTA=p.CODIGO AND t.NUMEROPREGUNTA=p.NUMEROPREGUNTA)
         WHERE CODIGO BETWEEN @offset AND @limit`;
