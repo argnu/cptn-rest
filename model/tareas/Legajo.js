@@ -161,6 +161,22 @@ module.exports.table = sql.define({
             table: 'comitente',
             columns: ['comitente'],
             refColumns: ['id']
+        },
+        {
+            table: 't_incumbencia',
+            columns: ['incumbencia'],
+            refColumns: ['id']
         }
     ]
 });
+
+
+
+module.exports.getSolicitud = function (idSolicitud) {
+    let query = table.select(...select.atributes)
+      .from(select.from)
+      .where(table.solicitud.equals(idSolicitud))
+      .toQuery();
+    return connector.execQuery(query)
+      .then(r => r.rows[0]);
+  }

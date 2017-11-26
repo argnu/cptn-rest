@@ -27,7 +27,7 @@ function addLegajos(legajo) {
                 table.tipo.value(legajo['TIPO']),
                 table.matricula.value(matricula.id),
                 table.fecha_solicitud.value(comprobante['FECHASOLICITUD_DATE']),
-                table.comitente.value(createComitente(legajo)),
+                table.comitente.value(createComitente(legajo)), //TODO: ver como implementar
                 table.direccion.value(legajo['DIRECCION']),
                 table.nomenclatura.value(legajo['NOMENCLATURA']),
                 table.estado.value(legajo['ESTADO']),
@@ -64,7 +64,8 @@ function addLegajos(legajo) {
 
 module.exports.migrar = function () {
     console.log('Migrando legajos...');
-    let q_objetos = 'select * from LEGTECNICOS WHERE ID_Solicitud BETWEEN @offset AND @limit';
+    // TODO: Quitar de la condicion MatricEmp='M' cuando se migren las empresas
+    let q_objetos = `select * from LEGTECNICOS WHERE MATRICEMP='M' AND ID_Solicitud BETWEEN @offset AND @limit`;
     let q_limites = 'select MIN(ID_Solicitud) as min, MAX(ID_Solicitud) as max from LEGTECNICOS';
 
     return utils.migrar(q_objetos, q_limites, 100, addLegajos);
