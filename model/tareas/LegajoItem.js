@@ -1,7 +1,7 @@
 const sql = require('sql');
 sql.setDialect('postgres');
 
-module.exports.table = sql.define({
+const table = sql.define({
   name: 'legajo_item',
   columns: [
     {
@@ -16,7 +16,7 @@ module.exports.table = sql.define({
       },
     {
       name: 'item',
-      dataType: 'int', 
+      dataType: 'int',
     },
     {
       name: 'valor',
@@ -30,3 +30,5 @@ module.exports.table = sql.define({
       refColumns: [ 'id' ]
   }
 });
+
+module.exports.table = table;
