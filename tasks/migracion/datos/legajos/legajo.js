@@ -6,20 +6,29 @@ const utils = require(`${__base}/tasks/migracion/utils`);
 
 
 function createComitente(legajo) {
-    let nuevoComitente = {};
-    nuevoComitente['apellido'] = legajo['APELLIDO'];
-    nuevoComitente['nombres'] = legajo['NOMBRES'];
-    nuevoComitente['empresa'] = legajo['EMPRESA'];
-    nuevoComitente['idempresa'] = legajo['IDEMPRESA'];
-    nuevoComitente['tipo_documento'] = legajo['TIPODOC'];
-    nuevoComitente['numero_documento'] = legajo['NUMDOC'];
-    nuevoComitente['telefono'] = legajo['TELEFONOCOMITENTE'];
-    return nuevoComitente;
+    let table = model.tareas.Comitente.table;
+    let query = table.insert(
+      table.apellido.value(legajo['APELLIDO']),
+      table.nombres.value(legajo['NOMBRES']),
+      table.empresa.value(legajo['EMPRESA'])
+      table.idempresa.value(legajo['IDEMPRESA'])
+      table.tipo_documento.value(legajo['TIPODOC']),
+      table.numero_documento.value(legajo['NUMDOC']),
+      table.telefono.value(legajo['TELEFONOCOMITENTE'])
+    )
+    .returning(table.id)
+    .toQuery()
+
+    return connector.execQuery(query)
+           .then(r => r.rows[0].id);
 }
 
-function addLegajos(legajo) {
+
+
+function addLegajo(legajo) {
     return model.Matricula.getMigracion(comprobante['IDMATRICULADO'])
-        .then(matricula => {
+        .then(matricula => createComitente(legajo))
+        .then(id_comitente => {
             let table = model.tareas.Legajo.table;
             let query = table.insert(
                 table.solicitud.value(legajo['ID_Solicitud']),
@@ -27,7 +36,7 @@ function addLegajos(legajo) {
                 table.tipo.value(legajo['TIPO']),
                 table.matricula.value(matricula.id),
                 table.fecha_solicitud.value(comprobante['FECHASOLICITUD_DATE']),
-                table.comitente.value(createComitente(legajo)), //TODO: ver como implementar
+                table.comitente.value(id_comitente),
                 table.direccion.value(legajo['DIRECCION']),
                 table.nomenclatura.value(legajo['NOMENCLATURA']),
                 table.estado.value(legajo['ESTADO']),
@@ -68,5 +77,5 @@ module.exports.migrar = function () {
     let q_objetos = `select * from LEGTECNICOS WHERE MATRICEMP='M' AND ID_Solicitud BETWEEN @offset AND @limit`;
     let q_limites = 'select MIN(ID_Solicitud) as min, MAX(ID_Solicitud) as max from LEGTECNICOS';
 
-    return utils.migrar(q_objetos, q_limites, 100, addLegajos);
+    return utils.migrar(q_objetos, q_limites, 100, addLegajo);
 }
