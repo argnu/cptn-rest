@@ -1,7 +1,8 @@
+const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
-module.exports.table = sql.define({
+const table = sql.define({
     name: 'legajo',
     columns: [{
             name: 'id',
@@ -34,7 +35,7 @@ module.exports.table = sql.define({
         {
             name: 'comitente',
             dataType: 'int',
-        },        
+        },
         {
             name: 'direccion',
             dataType: 'varchar(255)',
@@ -53,10 +54,6 @@ module.exports.table = sql.define({
         },
         {
             name: 'departamento',
-            dataType: 'varchar(255)',
-        },
-        {
-            name: 'nomenclatura',
             dataType: 'varchar(255)',
         },
         {
@@ -113,15 +110,15 @@ module.exports.table = sql.define({
         },
         {
             name: 'observaciones',
-            dataType: 'varchar(255)',
+            dataType: 'text',
         },
         {
             name: 'observaciones_internas',
-            dataType: 'varchar(255)',
+            dataType: 'text',
         },
         {
             name: 'informacion_adicional',
-            dataType: 'varchar(255)',
+            dataType: 'text',
         },
         {
             name: 'evaluador',
@@ -144,7 +141,7 @@ module.exports.table = sql.define({
             name: 'operador_aprobacion',
             dataType: 'varchar(30)',
         }
-        
+
     ],
 
     foreignKeys: [{
@@ -170,12 +167,12 @@ module.exports.table = sql.define({
     ]
 });
 
+module.exports.table = table;
 
-
-module.exports.getSolicitud = function (idSolicitud) {
-    let query = table.select(...select.atributes)
-      .from(select.from)
-      .where(table.solicitud.equals(idSolicitud))
+module.exports.getBySolicitud = function (id_solicitud) {
+    let query = table.select(table.id)
+      .from(table)
+      .where(table.solicitud.equals(id_solicitud))
       .toQuery();
     return connector.execQuery(query)
       .then(r => r.rows[0]);

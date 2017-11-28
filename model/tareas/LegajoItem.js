@@ -1,3 +1,4 @@
+const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 

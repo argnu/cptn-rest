@@ -9,7 +9,8 @@
     "migrate": "node ./tasks/migracion",
     "create": "node ./tasks/create.js",
     "drop": "node ./tasks/droptables.js",
-    "populate": "node ./tasks/populate.js"
+    "populate": "node ./tasks/populate.js",
+    "addinvitado": "node ./tasks/addinvitado.js"
   },
   "keywords": [
     "rest",

@@ -6,14 +6,14 @@ const utils = require('../../utils');
 
 
 function addLegajoItem(item) {
-    return model.Legajo.getSolicitud(item['IDSOLICITUD'])
+    return model.tareas.Legajo.getBySolicitud(item['IDSOLICITUD'])
         .then(legajo => {
-            let table = model.tareas.LegajoItema.table;
+            let table = model.tareas.LegajoItem.table;
             let id_item = `${item['IDPREGUNTA']}${item['NumPregunta']}`;
             let query = table.insert(
                 table.legajo.value(legajo.id),
                 table.item.value(id_item),
-                table.valor.value(item['valorRespuesta']),
+                table.valor.value(item['valorRespuesta'])
             ).toQuery();
 
             return connector.execQuery(query);
@@ -24,10 +24,10 @@ function addLegajoItem(item) {
 module.exports.migrar = function () {
     console.log('Migrando Legajos Items...');
     // TODO: Quitar de la condicion MatricEmp='M' cuando se migren las empresas
-    let q_objetos = `  SELECT IDSOLICITUD, IDPREGUNTA, NumPregunta, LT.CODTAREAN2 
-                        ,valorRespuesta= CASE 
+    let q_objetos = `  SELECT IDSOLICITUD, IDPREGUNTA, NumPregunta, LT.CODTAREAN2
+                        ,valorRespuesta= CASE
                       WHEN (CODRTAALTERNATIVA IS NULL) THEN RT.DESCRIPCION
-                      ELSE  CONVERT(varchar(200),CODRTAALTERNATIVA)  
+                      ELSE  CONVERT(varchar(200),CODRTAALTERNATIVA)
                       END
                       from LEGTECNICOS LT INNER JOIN RESPUESTASLT R ON (LT.ID_Solicitud=R.IDSOLICITUD)
                       LEFT JOIN RespuestasTareas RT ON

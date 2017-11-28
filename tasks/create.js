@@ -23,6 +23,9 @@ function createDatosTareas() {
   .then(r => createTable(model.tareas.Item.table))
   .then(r => createTable(model.tareas.ItemPredeterminado.table))
   .then(r => createTable(model.tareas.ItemValorPredeterminado.table))
+  .then(r => createTable(model.tareas.Comitente.table))
+  .then(r => createTable(model.tareas.Legajo.table))
+  .then(r => createTable(model.tareas.LegajoItem.table))
 }
 
 
