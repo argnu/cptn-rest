@@ -42,4 +42,12 @@ router.delete('/:id', function(req, res) {
 
 });
 
+
+/* LEGAJOS */
+router.get('/:id/legajos', function(req, res) {
+  model.tareas.Legajo.getAll({ matricula: req.params.id })
+    .then(matricula => res.json(matricula))
+    .catch(e => handler(e, res));
+});
+
 module.exports = router;
