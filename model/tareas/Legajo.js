@@ -231,3 +231,18 @@ module.exports.getAll = function(params) {
       return legajos;
     })
 }
+
+module.exports.get = function() {
+  let legajos;
+  let query = table.select(table.star()).from(table);
+
+  return connector.execQuery(query.toQuery())
+    .then(r => {
+      legajo = r.rows[0];
+      return getItems(legajo.id);
+    })
+    .then(items => {
+      legajo.items = items;
+      return legajo;
+    })
+}
