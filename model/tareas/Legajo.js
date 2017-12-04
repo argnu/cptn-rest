@@ -1,6 +1,8 @@
 const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
+const LegajoItem = require('./LegajoItem')
+const Item = require('./Item')
 
 const table = sql.define({
     name: 'legajo',
@@ -176,4 +178,71 @@ module.exports.getBySolicitud = function (id_solicitud) {
       .toQuery();
     return connector.execQuery(query)
       .then(r => r.rows[0]);
-  }
+}
+
+function getItems(id_legajo) {
+  let table = LegajoItem.table;
+  let query = table.select(table.star()).from(table)
+                   .where(table.legajo.equals(id_legajo))
+                   .toQuery();
+  let items = [];
+
+ return connector.execQuery(query)
+   .then(r => {
+     items = r.rows;
+     return Promise.all(items.map(i => getItemData(i.item)))
+   })
+   .then(data => {
+     items.forEach((item, i) => {
+       item.item = data[i];
+     });
+     return items;
+   })
+}
+
+function getItemData(id_item) {
+  let table = Item.table;
+  let query = table.select(table.star()).from(table)
+                   .where(table.id.equals(id_item))
+                   .toQuery();
+
+ return connector.execQuery(query)
+   .then(r => r.rows[0]);
+}
+
+module.exports.getAll = function(params) {
+  let legajos = [];
+  let query = table.select(table.star()).from(table);
+  query.where(table.tipo.notEquals(0)); // EVITAR LOS ANULADOS
+  if (params.matricula) query.where(table.matricula.equals(params.matricula));
+
+  if (params.limit) query.limit(+params.limit);
+  if (params.limit && params.offset) query.offset(+params.offset);
+
+  return connector.execQuery(query.toQuery())
+    .then(r => {
+      legajos = r.rows;
+      return Promise.all(r.rows.map(m => getItems(m.id)))
+    })
+    .then(items => {
+      legajos.forEach((legajo, i) => {
+        legajo.items = items[i];
+      });
+      return legajos;
+    })
+}
+
+module.exports.get = function() {
+  let legajos;
+  let query = table.select(table.star()).from(table);
+
+  return connector.execQuery(query.toQuery())
+    .then(r => {
+      legajo = r.rows[0];
+      return getItems(legajo.id);
+    })
+    .then(items => {
+      legajo.items = items;
+      return legajo;
+    })
+}
