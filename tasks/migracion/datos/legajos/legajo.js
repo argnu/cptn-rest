@@ -65,6 +65,7 @@ function addLegajo(legajo_1) {
                           table.dependencia.value(legajo['DEPENDENCIA'] === 1 ? true : false),
                           table.aporte_bruto.value(legajo['APORTEBRUTO']),
                           table.aporte_neto.value(legajo['APORTENETO']),
+                          table.aporte_neto_bonificacion.value(legajo['APORTENETOBONIFPORAPORTEENTERMINO']),
                           table.cantidad_planos.value(legajo['CANTIDADPLANOS']),
                           table.observaciones.value(legajo['OBSERVACIONES']),
                           table.observaciones_internas.value(legajo['OBSERVACIONESINTERNAS']),

@@ -44,3 +44,21 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+module.exports.add = function(comitente, client) {
+  let query = table.insert(
+    table.apellido.value(comitente.apellido),
+    table.nombres.value(comitente.nombres),
+    table.empresa.value(comitente.empresa),
+    table.numero_documento.value(comitente.numero_documento),
+    table.telefono.value(comitente.telefono)
+  )
+  .returning(
+    table.id, table.apellido, table.nombres,
+    table.empresa, table.numero_documento, table.telefono
+  )
+  .toQuery();
+
+  return connector.execQuery(query, client)
+         .then(r => r.rows[0]);
+}

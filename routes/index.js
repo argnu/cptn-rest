@@ -42,5 +42,6 @@ router.use('/comprobantes', require('./comprobantes'));
 router.use('/bancos', require('./bancos'));
 router.use('/usuarios', require('./usuarios'));
 router.use('/legajos', require('./legajos'));
+router.use('/tareas', require('./tareas'));
 
 module.exports = router;
