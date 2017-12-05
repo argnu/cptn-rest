@@ -12,8 +12,8 @@ function addComprobantes(comprobante) {
       let query = table.insert(
         table.numero.value(comprobante['NumRecibo']),
         table.matricula.value(matricula.id),
-        table.fecha.value(comprobante['Fecha_DATE']),
-        table.fecha_vencimiento.value(comprobante['FechaVto_DATE']),
+        table.fecha.value(utils.getFecha(comprobante['Fecha_DATE'])),
+        table.fecha_vencimiento.value(utils.getFecha(comprobante['FechaVto_DATE'])),
         table.subtotal.value(comprobante['Subtotal']),
         table.interes_total.value(comprobante['InteresTotal']),
         table.bonificacion_total.value(comprobante['BonificacionTotal']),

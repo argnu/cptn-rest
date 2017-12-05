@@ -15,8 +15,8 @@ function addRepresentante(representante) {
                         let query = table.insert(
                             table.idEmpresa.value(empresa.id),
                             table.idMatricula.value(matricula.id),
-                            table.fechaInicio.value(representante['InicVinc_DATE']),
-                            table.fechaFin.value(representante['SeceVinc_DATE'])
+                            table.fechaInicio.value(utils.getFecha(representante['InicVinc_DATE'])),
+                            table.fechaFin.value(utils.getFecha(representante['SeceVinc_DATE']))
                         ).toQuery();
 
                         return connector.execQuery(query);

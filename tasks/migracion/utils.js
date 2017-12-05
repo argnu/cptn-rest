@@ -1,6 +1,10 @@
 const config = require('../../config.private');
 const sqlserver = require('./sqlserver');
 
+module.exports.getFecha = function(fecha) {
+  return fecha ? fecha.toISOString().substring(0, 10) : null;
+}
+
 module.exports.migrar = function (q_objeto, q_limites, page_size, addNuevoObjeto) {
   let max;
 

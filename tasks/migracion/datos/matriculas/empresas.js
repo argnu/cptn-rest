@@ -29,11 +29,10 @@ function createEmpresa(matricula) {
     let nuevaEmpresa = {};
     nuevaEmpresa['nombre'] = matricula['NOMBRE'];
     // nuevaEmpresa['cuit'] = matricula['CUIT'];
-    nuevaEmpresa['fechaInicio'] = matricula['FECHAINC_DATE'];
-    nuevaEmpresa['fechaInicio'] = matricula['FECHAINC_DATE'];
+    nuevaEmpresa['fechaInicio'] = utils.getFecha(matricula['FECHAINC_DATE']);
     nuevaEmpresa['tipoEmpresa'] = matricula['TIPOEMPRESA'];
     nuevaEmpresa['tipoSociedad'] = matricula['TIPOSOCIEDAD'];
-    nuevaEmpresa['fechaConstitucion'] = matricula['FECHACONSTITUCION_date'];
+    nuevaEmpresa['fechaConstitucion'] = utils.getFecha(matricula['FECHACONSTITUCION_date']);
 
     nuevaEmpresa.contactos = [];
     ['TELFIJO', 'TELCEL', 'EMAIL', 'PAGWEB'].forEach((tipo, i) => {
@@ -67,7 +66,7 @@ const addMatricula = (matricula) => {
            let nuevaMatricula = {};
            nuevaMatricula.entidad = empresa.id;
            nuevaMatricula.solicitud = null;
-           nuevaMatricula.fechaResolucion = matricula['FECHARESOLUCION_DATE'];
+           nuevaMatricula.fechaResolucion = utils.getFecha(matricula['FECHARESOLUCION_DATE']);
            nuevaMatricula.numeroMatricula = matricula['NROMATRICULA'];
            nuevaMatricula.numeroActa = matricula['NUMACTA'];
            nuevaMatricula.observaciones = matricula['OBSERVACIONES'];

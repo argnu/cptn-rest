@@ -12,13 +12,13 @@ function addPagos(pago) {
                 let query = table.insert(
                     table.comprobante.value(comprobante.id),
                     table.item.value(pago['Item']),
-                    table.fecha_pago.value(pago['FechaPago_DATE']),
+                    table.fecha_pago.value(utils.getFecha(pago['FechaPago_DATE'])),
                     table.importe.value(pago['Importe']),
                     table.forma_pago.value(pago['FormaPago']),
                     table.numero_cheque.value(pago['NroCheque']),
                     table.codigo_banco.value(pago['CodBanco']),
                     table.titular_cuenta.value(pago['TitularCuenta']),
-                    table.fecha_vto_cheque.value(pago['FECHA_VTO']),
+                    table.fecha_vto_cheque.value(utils.getFecha(pago['FECHA_VTO'])),
                     table.compensado.value(pago['Compensado'])
                 ).toQuery();
                 return connector.execQuery(query);

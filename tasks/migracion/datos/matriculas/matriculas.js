@@ -30,7 +30,7 @@ function createProfesional(matricula) {
     nuevoProfesional['dni'] = matricula['NUMDOCU'];
     nuevoProfesional['apellido'] = matricula['APELLIDO'];
     nuevoProfesional['nombre'] = matricula['NOMBRE'];
-    nuevoProfesional['fechaNacimiento'] = matricula['FECNAC_DATE'];
+    nuevoProfesional['fechaNacimiento'] = utils.getFecha(matricula['FECNAC_DATE']);
     nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] + 1;
     nuevoProfesional['observaciones'] = matricula['OBSERVACIONES'];
 
@@ -77,10 +77,10 @@ const addMatricula = (matricula) => {
            let nuevaMatricula = {};
            nuevaMatricula.entidad = profesional.id;
            nuevaMatricula.solicitud = null;
-           nuevaMatricula.fechaResolucion = matricula['FECHARESOLUCION_DATE'];
+           nuevaMatricula.fechaResolucion = utils.getFecha(matricula['FECHARESOLUCION_DATE']);
            nuevaMatricula.numeroMatricula = matricula['NROMATRICULA'];
            nuevaMatricula.numeroActa = matricula['NUMACTA'];
-           nuevaMatricula.fechaBaja = matricula['FECHABAJA_DATE'];
+           nuevaMatricula.fechaBaja = utils.getFecha(matricula['FECHABAJA_DATE']);
            nuevaMatricula.observaciones = matricula['OBSERVACIONES'];
            nuevaMatricula.notasPrivadas = matricula['NOTASPRIVADAS'];
            nuevaMatricula.asientoBajaF = matricula['ASIENTOBAJAF'];

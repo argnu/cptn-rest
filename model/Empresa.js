@@ -62,14 +62,18 @@ const table = sql.define({
 
 module.exports.table = table;
 
+function addContactos() {
+
+}
+
 function addEmpresa(empresa, client) {
 
   function addDatosBasicos(empresa) {
     let query = table.insert(
       table.id.value(empresa.id),
       table.nombre.value(empresa.nombre),
-      table.fechaInicio.value(empresa.fechaInicio.length ? empresa.fechaInicio : null),
-      table.fechaConstitucion.value(empresa.fechaConstitucion.length ? empresa.fechaConstitucion : null),
+      table.fechaInicio.value(empresa.fechaInicio),
+      table.fechaConstitucion.value(empresa.fechaConstitucion),
       table.tipoEmpresa.value(empresa.tipoEmpresa),
       table.tipoSociedad.value(empresa.tipoSociedad)
     )
@@ -101,15 +105,22 @@ function addEmpresa(empresa, client) {
               return Contacto.addContacto(c, client);
             });
 
-            let proms_representantes = empresa.representantes.map(r => EmpresaRepresentante.add({
-              empresa: empresa_added.id,
-              matricula: r,
-              fechaInicio: new Date()
-            }, client));
+            let proms_representantes = empresa.representantes ?
+              empresa.representantes.map(r => EmpresaRepresentante.add({
+                empresa: empresa_added.id,
+                matricula: r,
+                fechaInicio: r.fechaInicio ? r.fechaInicio : new Date(),
+                fechaFin: r.fechaFin ? r.fechaFin : null
+              }, client))
+              : [];
 
-            return Promise.all(proms_contactos)
-            .then(contactos => {
+            return Promise.all([
+              Promise.all(proms_contactos),
+              Promise.all(proms_representantes)
+            ])
+            .then(([contactos, representantes]) => {
               empresa_added.contactos = contactos;
+              empresa_added.representantes = representantes;
               return empresa_added;
             });
           });

@@ -28,7 +28,7 @@ const addFormacion = (formacion) => {
     if (matricula && titulo) {
       let nuevaFormacion = {};
       nuevaFormacion.profesional = matricula.entidad;
-      nuevaFormacion.fecha = formacion['FECHATITULO_DATE'];
+      nuevaFormacion.fecha = utils.getFecha(formacion['FECHATITULO_DATE']);
       nuevaFormacion.titulo = titulo.id;
       nuevaFormacion.institucion = formacion['CODIGO'];
       return model.Formacion.addFormacion(nuevaFormacion);

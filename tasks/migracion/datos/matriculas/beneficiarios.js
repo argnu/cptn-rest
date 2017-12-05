@@ -13,7 +13,7 @@ const addBeneficiario = (beneficiario) => {
       nombre: beneficiario['NOMBRE'],
       vinculo: beneficiario['VINCULO'],
       dni: beneficiario['NUMDOCU'],
-      fechaNacimiento: beneficiario['FECHANAC_DATE'],
+      fechaNacimiento: utils.getFecha(beneficiario['FECHANAC_DATE']),
       invalidez: beneficiario['INVALIDEZ']
     };
     return model.BeneficiarioCaja.addBeneficiario(nuevoBeneficiario);

@@ -28,7 +28,7 @@ const addPosgrado = (formacion) => {
     if (matricula && titulo) {
       let nuevaFormacion = {
         profesional: matricula.entidad,
-        fecha: formacion['FECHA'],
+        fecha: utils.getFecha(formacion['FECHA']),
         titulo: titulo.id,
         institucion: formacion['UNIVERSIDAD']
       };
