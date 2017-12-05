@@ -31,7 +31,8 @@ el siguiente contenido:
     database: '',
     password: '',
     port: 5432,
-  }
+  },
+  secret: 'frase secreta para token jwt'
 }
 ```
 
