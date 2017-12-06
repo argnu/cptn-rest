@@ -31,7 +31,7 @@ function createEmpresa(matricula) {
     // nuevaEmpresa['cuit'] = matricula['CUIT'];
     nuevaEmpresa['fechaInicio'] = utils.getFecha(matricula['FECHAINC_DATE']);
     nuevaEmpresa['tipoEmpresa'] = matricula['TIPOEMPRESA'];
-    nuevaEmpresa['tipoSociedad'] = matricula['TIPOSOCIEDAD'];
+    nuevaEmpresa['tipoSociedad'] = matricula['TIPOSOCIEDAD'] ? matricula['TIPOSOCIEDAD'] : null;
     nuevaEmpresa['fechaConstitucion'] = utils.getFecha(matricula['FECHACONSTITUCION_date']);
 
     nuevaEmpresa.contactos = [];
@@ -57,7 +57,7 @@ function createEmpresa(matricula) {
 
     nuevaEmpresa['domicilioReal'] = createDomicilioReal(matricula);
     nuevaEmpresa['domicilioProfesional'] = createDomicilioProfesional(matricula);
-    return model.Empresa.addEmpresa(nuevaEmpresa);
+    return model.Empresa.add(nuevaEmpresa);
 }
 
 const addMatricula = (matricula) => {

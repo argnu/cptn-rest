@@ -6,7 +6,7 @@ const utils = require('../../utils');
 
 
 function addIncumbencia(item) {
-    return model.Matricula.getMigracion(item['IDEMP'])
+    return model.Matricula.getMigracion(item['IDEMP'], true)
         .then(empresa => {
             if (empresa) {
                 let table = model.EmpresaIncumbencia.table;

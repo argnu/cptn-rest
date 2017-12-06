@@ -35,7 +35,7 @@ function createComitente(legajo) {
 
 function addLegajo(legajo_1) {
     let legajo = prepare(legajo_1);
-    return model.Matricula.getMigracion(legajo['IDMATRICULADO'])
+    return model.Matricula.getMigracion(legajo['IDMATRICULADO'], legajo['MATRICEMP'] == 'E')
         .then(matricula => {
           if (matricula) {
             return Promise.all([
@@ -93,9 +93,8 @@ function addLegajo(legajo_1) {
 
 module.exports.migrar = function () {
     console.log('Migrando legajos...');
-    // TODO: Quitar de la condicion MatricEmp='M' cuando se migren las empresas
-    let q_objetos = `select L.*, codTarea=T.codigo from LEGTECNICOS L LEFT JOIN Tareas_N2 T ON (L.CODTAREAN2= T.CODIGO) WHERE MATRICEMP='M' AND ID_Solicitud BETWEEN @offset AND @limit`;
-    let q_limites = `select MIN(ID_Solicitud) as min, MAX(ID_Solicitud) as max from LEGTECNICOS WHERE MATRICEMP='M'`;
+    let q_objetos = `select L.*, codTarea=T.codigo from LEGTECNICOS L LEFT JOIN Tareas_N2 T ON (L.CODTAREAN2= T.CODIGO) WHERE ID_Solicitud BETWEEN @offset AND @limit`;
+    let q_limites = `select MIN(ID_Solicitud) as min, MAX(ID_Solicitud) as max from LEGTECNICOS`;
 
     return utils.migrar(q_objetos, q_limites, 100, addLegajo);
 }

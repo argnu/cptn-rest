@@ -6,7 +6,7 @@ const utils = require('../../utils');
 
 
 function addComprobantes(comprobante) {
-  return model.Matricula.getMigracion(comprobante['IDMatriculado'])
+  return model.Matricula.getMigracion(comprobante['IDMatriculado'], comprobante['MatricEmp'] == 'E')
     .then(matricula => {
       let table = model.Comprobante.table;
       let query = table.insert(
@@ -33,13 +33,12 @@ function addComprobantes(comprobante) {
 
 module.exports.migrar = function () {
   console.log('Migrando Comprobantes...');
-  // Quitar de la condicion MatricEmp='M' cuando se migren las empresas
   let q_objetos = `Select CodSucursal, NumRecibo,Fecha_DATE, FechaVto_TIME,
     FechaVto_DATE, MatricEmp,IDMatriculado, CodOperador,
     Subtotal, InteresTotal, BonificacionTotal,ImporteTotal, ImporteCancelado, Anulado,
     EnContable, Observaciones
     FROM RECMAT
-    WHERE IDMatriculado is not null AND MatricEmp='M' AND NumRecibo BETWEEN @offset AND @limit
+    WHERE IDMatriculado is not null AND NumRecibo BETWEEN @offset AND @limit
     ORDER BY NumRecibo`;
   let q_limites = 'select MIN(NumRecibo) as min, MAX(NumRecibo) as max from RECMAT';
 

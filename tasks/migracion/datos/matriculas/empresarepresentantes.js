@@ -6,14 +6,14 @@ const utils = require('../../utils');
 
 
 function addRepresentante(representante) {
-    return model.Matricula.getMigracion(representante['IDEMP'])
-        .then(empresa => {
-            if (empresa) {
+    return model.Matricula.getMigracion(representante['IDEmp'], true)
+        .then(matricula_empresa => {
+            if (matricula_empresa) {
                 return model.Matricula.getMigracion(representante['IDRep'])
                     .then(matricula => {
                         let table = model.EmpresaRepresentante.table;
                         let query = table.insert(
-                            table.idEmpresa.value(empresa.id),
+                            table.idEmpresa.value(matricula_empresa.entidad),
                             table.idMatricula.value(matricula.id),
                             table.fechaInicio.value(utils.getFecha(representante['InicVinc_DATE'])),
                             table.fechaFin.value(utils.getFecha(representante['SeceVinc_DATE']))
@@ -29,7 +29,7 @@ function addRepresentante(representante) {
 module.exports.migrar = function () {
     console.log('Migrando representantes de las empresas...');
     let q_objetos = `  SELECT *
-                       FROM EMP_REPRES BETWEEN @offset AND @limit`;
+                       FROM EMP_REPRES WHERE IDEmp BETWEEN @offset AND @limit`;
     let q_limites = 'select MIN(IDEmp) as min, MAX(IDEmp) as max from EMP_REPRES';
 
     return utils.migrar(q_objetos, q_limites, 100, addRepresentante);

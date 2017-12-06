@@ -23,7 +23,6 @@ function addLegajoItem(item) {
 
 module.exports.migrar = function () {
     console.log('Migrando Legajos Items...');
-    // TODO: Quitar de la condicion MatricEmp='M' cuando se migren las empresas
     let q_objetos = `  SELECT IDSOLICITUD, IDPREGUNTA, NumPregunta, LT.CODTAREAN2
                         ,valorRespuesta= CASE
                       WHEN (CODRTAALTERNATIVA IS NULL) THEN RT.DESCRIPCION
@@ -33,7 +32,7 @@ module.exports.migrar = function () {
                       LEFT JOIN RespuestasTareas RT ON
                       (RT.CODIGO = R.IDRESPUESTA AND
                        RT.NUMERORESPUESTA = R.NumRespuesta)
-                       WHERE LT.MATRICEMP='M' AND IDSOLICITUD BETWEEN @offset AND @limit`;
+                       WHERE IDSOLICITUD BETWEEN @offset AND @limit`;
     let q_limites = 'select MIN(IDSOLICITUD) as min, MAX(IDSOLICITUD) as max from RESPUESTASLT';
 
     return utils.migrar(q_objetos, q_limites, 100, addLegajoItem);

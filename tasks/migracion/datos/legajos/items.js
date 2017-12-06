@@ -18,7 +18,7 @@ const addItem = (item)  => {
 module.exports.migrar = function () {
     console.log('Migrando items de tareas...');
     let q_objetos = 'select * from PreguntasTareas WHERE CODIGO BETWEEN @offset AND @limit';
-    let q_limites = 'select 0 as min, COUNT(*) as max from PreguntasTareas';
+    let q_limites = 'select MIN(CODIGO) as min, MAX(CODIGO) as max from PreguntasTareas';
 
     return utils.migrar(q_objetos, q_limites, 100, addItem);
 }

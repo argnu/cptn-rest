@@ -224,7 +224,7 @@ function getTotal(params) {
   else {
     query = table.select(
       table.count(table.id).as('total')
-    ).from(select.from);
+    ).from(table);
 
     if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
     if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
@@ -243,8 +243,8 @@ function getTotal(params) {
 module.exports.getAll = function (params) {
   let matriculas = [];
   let query = table.select(
-    ...select.atributes
-  ).from(select.from);
+    table.star()
+  ).from(table);
 
   if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
@@ -281,8 +281,8 @@ module.exports.getAll = function (params) {
 
 module.exports.get = function (id) {
   let solicitud = {};
-  let query = table.select(...select.atributes)
-    .from(select.from)
+  let query = table.select(table.star())
+    .from(table)
     .where(table.id.equals(id))
     .toQuery();
   return connector.execQuery(query)
@@ -299,11 +299,14 @@ module.exports.get = function (id) {
     })
 }
 
-module.exports.getMigracion = function (id) {
+module.exports.getMigracion = function (id, empresa) {
   let solicitud = {};
-  let query = table.select(...select.atributes)
-    .from(select.from)
-    .where(table.idMigracion.equals(id))
+  let query = table.select(table.star())
+    .from(table.join(Entidad.table).on(table.entidad.equals(Entidad.table.id)))
+    .where(
+      table.idMigracion.equals(id)
+      .and(Entidad.table.tipo.equals(empresa ? 'empresa' : 'profesional'))
+    )
     .toQuery();
   return connector.execQuery(query)
     .then(r => r.rows[0]);

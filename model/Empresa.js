@@ -62,9 +62,6 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addContactos() {
-
-}
 
 function addEmpresa(empresa, client) {
 

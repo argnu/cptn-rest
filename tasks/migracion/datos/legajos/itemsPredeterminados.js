@@ -20,8 +20,8 @@ module.exports.migrar = function () {
     let q_objetos = `SELECT t.CODIGOPREGUNTA, t.NUMEROPREGUNTA, CODIGOTAREAN2
         FROM Tareas_N2_Preguntas t
         JOIN PreguntasTareas p ON (t.CODIGOPREGUNTA=p.CODIGO AND t.NUMEROPREGUNTA=p.NUMEROPREGUNTA)
-        WHERE CODIGO BETWEEN @offset AND @limit`;
-    let q_limites = `select 0 as min, COUNT(*) as max FROM Tareas_N2_Preguntas t
+        WHERE t.CODIGOPREGUNTA BETWEEN @offset AND @limit`;
+    let q_limites = `select MIN(CODIGOPREGUNTA) as min, MAX(CODIGOPREGUNTA) as max Tareas_N2_Preguntas t
     JOIN PreguntasTareas p ON (t.CODIGOPREGUNTA=p.CODIGO AND t.NUMEROPREGUNTA=p.NUMEROPREGUNTA)`;
 
     return utils.migrar(q_objetos, q_limites, 100, addItem);
