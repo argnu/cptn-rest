@@ -224,7 +224,7 @@ function getTotal(params) {
   else {
     query = table.select(
       table.count(table.id).as('total')
-    ).from(table);
+    ).from(select.from);
 
     if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
     if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
@@ -243,8 +243,8 @@ function getTotal(params) {
 module.exports.getAll = function (params) {
   let matriculas = [];
   let query = table.select(
-    table.star()
-  ).from(table);
+    ...select.atributes
+  ).from(select.from);
 
   if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
@@ -281,10 +281,11 @@ module.exports.getAll = function (params) {
 
 module.exports.get = function (id) {
   let solicitud = {};
-  let query = table.select(table.star())
-    .from(table)
-    .where(table.id.equals(id))
-    .toQuery();
+  let query = table.select(...select.atributes)
+                    .from(select.from)
+                    .where(table.id.equals(id))
+                    .toQuery();
+
   return connector.execQuery(query)
     .then(r => {
       matricula = r.rows[0];

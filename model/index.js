@@ -27,6 +27,7 @@ module.exports.Banco = require('./Banco');
 module.exports.Entidad = require('./Entidad');
 module.exports.Empresa = require('./Empresa');
 module.exports.EmpresaRepresentante = require('./EmpresaRepresentante');
+module.exports.EmpresaIncumbencia = require('./EmpresaIncumbencia');
 module.exports.Profesional = require('./profesional/Profesional');
 
 module.exports.Subsidiario = require('./profesional/Subsidiario');

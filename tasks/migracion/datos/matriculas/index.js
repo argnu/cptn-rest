@@ -11,6 +11,9 @@ module.exports.empresas = empresas;
 const empresarepresentantes = require('./empresarepresentantes');
 module.exports.empresarepresentantes = empresarepresentantes;
 
+const empresaIncumbencias = require('./empresaIncumbencias');
+module.exports.empresaIncumbencias = empresaIncumbencias;
+
  module.exports.migrar = function() {
   return estados.migrar()
          .then(r => matriculas.migrar())
@@ -20,4 +23,5 @@ module.exports.empresarepresentantes = empresarepresentantes;
          .then(r => subsidiarios.migrar())
          .then(r => empresas.migrar())
          .then(r => empresasrepresentantes.migrar())
+         .then(r => empresaIncumbencias.migrar())
  }

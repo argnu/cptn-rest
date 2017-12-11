@@ -36,6 +36,7 @@ function createEntidades() {
     .then(r => createTable(model.Solicitud.table))
     .then(r => createTable(model.Matricula.table))
     .then(r => createTable(model.EmpresaRepresentante.table))
+    .then(r => createTable(model.EmpresaIncumbencia.table))
 }
 
 function init() {

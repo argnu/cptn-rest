@@ -7,11 +7,11 @@ const utils = require('../../utils');
 
 function addIncumbencia(item) {
     return model.Matricula.getMigracion(item['IDEMP'], true)
-        .then(empresa => {
-            if (empresa) {
+        .then(matricula_empresa => {
+            if (matricula_empresa) {
                 let table = model.EmpresaIncumbencia.table;
                 let query = table.insert(
-                    table.idEmpresa.value(empresa.id),
+                    table.idEmpresa.value(matricula_empresa.entidad),
                     table.incumbencia.value(item['IDINC'])
                 ).toQuery();
                 return connector.execQuery(query);
@@ -23,8 +23,8 @@ function addIncumbencia(item) {
 module.exports.migrar = function () {
     console.log('Migrando incumbencias de empresas...');
     let q_objetos = ` SELECT *
-                      FROM EMP_INCUMBENCIAS BETWEEN @offset AND @limit`;
-    let q_limites = 'select MIN(IDEmp) as min, MAX(IDEmp) as max from EMP_INCUMBENCIAS';
+                      FROM EMP_INCUMBENCIAS WHERE IDEMP BETWEEN @offset AND @limit`;
+    let q_limites = 'select MIN(IDEMP) as min, MAX(IDEMP) as max from EMP_INCUMBENCIAS';
 
     return utils.migrar(q_objetos, q_limites, 100, addIncumbencia);
 }
