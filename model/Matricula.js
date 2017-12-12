@@ -187,7 +187,7 @@ module.exports.add = function(matricula) {
               .catch(e => {
                 connector.rollback(connection.client);
                 connection.done();
-                throw e;
+                throw Error(e);
               });
           })
         });

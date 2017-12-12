@@ -100,7 +100,7 @@ module.exports.add = function(solicitud) {
             .catch(e => {
               connector.rollback(connection.client);
               connection.done();
-              throw e;
+              throw Error(e);
             });
         }
         else if (solicitud.entidad.tipo == 'empresa') {
@@ -121,7 +121,7 @@ module.exports.add = function(solicitud) {
             .catch(e => {
               connector.rollback(connection.client);
               connection.done();
-              throw e;
+              throw Error(e);
             });
         }
       });

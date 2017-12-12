@@ -268,50 +268,58 @@ module.exports.get = function(id) {
 }
 
 
-function getNumeroLegajo() {
-  let query = table.select(table.numero_legajo.max().as('numero')).toQuery();
-  return connector.execQuery(query)
-         .then(r => r.rows[0].numero + 1);
+function getNumeroLegajo(numero_legajo) {
+  if (!numero_legajo) {
+    let query = table.select(table.numero_legajo.max().as('numero'))
+                     .where(table.fecha_solicitud.gt(new Date('2017-01-01')))
+                     .toQuery();
+    return connector.execQuery(query)
+           .then(r => r.rows[0].numero + 1);
+  }
+  else return Promise.resolve(numero_legajo);
 }
-
 
 
 function addLegajo(legajo, client) {
+  return getNumeroLegajo(legajo.numero_legajo)
+  .then(numero_legajo => {
+    let query = table.insert(
+      table.matricula.value(legajo.matricula),
+      table.aporte_bruto.value(legajo.aporte_bruto),
+      table.aporte_neto.value(legajo.aporte_neto),
+      table.cantidad_planos.value(legajo.cantidad_planos),
+      table.comitente.value(legajo.comitente),
+      table.domicilio.value(legajo.domicilio),
+      table.delegacion.value(legajo.delegacion),
+      table.dependencia.value(legajo.dependencia),
+      table.estado.value('Pendiente'),
+      table.fecha_solicitud.value(legajo.fecha_solicitud),
+      table.finalizacion_tarea.value(legajo.finalizacion_tarea),
+      table.forma_pago.value(legajo.forma_pago),
+      table.honorarios_presupuestados.value(legajo.honorarios_presupuestados),
+      table.honorarios_reales.value(legajo.honorarios_reales),
+      table.informacion_adicional.value(legajo.informacion_adicional),
+      table.nomenclatura.value(legajo.nomenclatura),
+      table.numero_legajo.value(numero_legajo),
+      table.solicitud.value(legajo.solicitud),
+      table.observaciones.value(legajo.observaciones),
+      table.plazo_cumplimiento.value(legajo.plazo_cumplimiento),
+      table.porcentaje_cumplimiento.value(legajo.porcentaje_cumplimiento),
+      table.subcategoria.value(legajo.subcategoria),
+      table.tarea_publica.value(legajo.tarea_publica),
+      table.tipo.value(legajo.tipo)
+    )
+    .returning(table.id, table.numero_legajo, table.fecha_solicitud,
+      table.estado, table.tipo)
+    .toQuery()
 
-  let query = table.insert(
-    table.matricula.value(legajo.matricula),
-    table.aporte_bruto.value(legajo.aporte_bruto),
-    table.aporte_neto.value(legajo.aporte_neto),
-    table.cantidad_planos.value(legajo.cantidad_planos),
-    table.comitente.value(legajo.comitente),
-    table.domicilio.value(legajo.domicilio),
-    table.delegacion.value(legajo.delegacion),
-    table.dependencia.value(legajo.dependencia),
-    table.estado.value('Pendiente'),
-    table.fecha_solicitud.value(legajo.fecha_solicitud),
-    table.finalizacion_tarea.value(legajo.finalizacion_tarea),
-    table.forma_pago.value(legajo.forma_pago),
-    table.honorarios_presupuestados.value(legajo.honorarios_presupuestados),
-    table.honorarios_reales.value(legajo.honorarios_reales),
-    table.informacion_adicional.value(legajo.informacion_adicional),
-    table.nomenclatura.value(legajo.nomenclatura),
-    table.numero_legajo.value(legajo.numero_legajo),
-    table.solicitud.value(legajo.solicitud),
-    table.observaciones.value(legajo.observaciones),
-    table.plazo_cumplimiento.value(legajo.plazo_cumplimiento),
-    table.porcentaje_cumplimiento.value(legajo.porcentaje_cumplimiento),
-    table.subcategoria.value(legajo.subcategoria),
-    table.tarea_publica.value(legajo.tarea_publica),
-    table.tipo.value(legajo.tipo)
-  )
-  .returning(table.id)
-  .toQuery()
-
-  return connector.execQuery(query, client)
-         .then(r => r.rows[0]);
+    return connector.execQuery(query, client)
+           .then(r => r.rows[0]);
+  })
 }
 
 module.exports.add = function(legajo) {
+  let legajo_nuevo;
   return connector
       .beginTransaction()
       .then(connection => {
@@ -322,12 +330,32 @@ module.exports.add = function(legajo) {
               })
               .then(comitente_nuevo => {
                 legajo.comitente = comitente_nuevo.id;
-                return addLegajo(legajo);
+                return addLegajo(legajo, connection.client);
+              })
+              .then(comitente_nuevo => {
+                legajo.comitente = comitente_nuevo.id;
+                return addLegajo(legajo, connection.client);
+              })
+              .then(legajo_added => {
+                legajo_nuevo = legajo_added;
+                let proms_items = legajo.items.map(item => {
+                  item.legajo = legajo_nuevo.id;
+                  return LegajoItem.add(item, connection.client);
+                })
+                return Promise.all(proms_items);
+              })
+              .then(items => {
+                legajo_nuevo.items = items;
+                return connector.commit(connection.client)
+                .then(r => {
+                  connection.done();
+                  return legajo_nuevo;
+                });
               })
               .catch(e => {
                 connector.rollback(connection.client);
                 connection.done();
-                throw e;
+                throw Error(e);
               });
         });
 }
