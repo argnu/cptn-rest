@@ -99,6 +99,51 @@
 				"description": ""
 			},
 			"response": []
+		},
+		{
+			"name": "Alta Usuario",
+			"request": {
+				"url": "http://localhost:3400/api/usuarios",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\": \"mweingart\",\n\t\"password\": \"123456\",\n\t\"nombre\": \"Martín\",\n\t\"apellido\": \"Weingart\",\n\t\"email\": \"martinweingart@gmail.com\",\n\t\"admin\": true\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Alta Legajo de Matrícula",
+			"request": {
+				"url": "http://localhost:3400/api/matriculas/1/legajos",
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Imludml0YWRvIiwiaWF0IjoxNTEzMDc5NjY2fQ.e6f5Z-s2ZmMY0N71nWfPnjv6cojnJJHbZBE4VpZy7T0",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"aporte_bruto\":null, \n\t\"aporte_neto\":null, \n\t\"cantidad_planos\": null,\n\t\"comitente\":{\"apellido\":\"weingart\",\"empresa\":\"\",\"nombres\":\"martin\",\"numero_documento\":\"132456\",\"telefono\":\"16546\",\"tipo\":\"\"},\n\t\"domicilio\":{\"calle\":\"Leloir\",\"numero\":\"3216\",\"localidad\":18413,\"pais\":1,\"provincia\":14,\"departamento\":514},\n\t\"delegacion\":1,\n\t\"dependencia\":false,\n\t\"fecha_solicitud\":\"13/12/2017\",\n\t\"finalizacion_tarea\":null,\n\t\"forma_pago\":\"\",\n\t\"honorarios_presupuestados\":null,\n\t\"honorarios_reales\":null,\n\t\"informacion_adicional\":\"\",\n\t\"items\":[{\"id\":11,\"descripcion\":\"Destino de la obra\",\"valor\":\"Establecimiento recreativo\"},{\"id\":\"nuevo\",\"descripcion\":\"nuevo\",\"valor\":\"probando\"}],\n\t\"nomenclatura\":\"0320456520063\",\n\t\"observaciones\":\"\",\n\t\"plazo_cumplimiento\":null,\n\t\"porcentaje_cumplimiento\":null,\n\t\"subcategoria\":3,\n\t\"tarea_publica\":false,\n\t\"tipo\":1\n\t\n}"
+				},
+				"description": ""
+			},
+			"response": []
 		}
 	]
 }

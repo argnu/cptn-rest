@@ -15,8 +15,7 @@ const table = sql.define({
         },
         {
             name: 'solicitud',
-            dataType: 'int',
-            notNull: true
+            dataType: 'int'
         },
         {
             name: 'numero_legajo',
@@ -269,7 +268,6 @@ module.exports.get = function(id) {
 }
 
 
-// y la lista de items
 function getNumeroLegajo() {
   let query = table.select(table.numero_legajo.max().as('numero')).toQuery();
   return connector.execQuery(query)
@@ -279,6 +277,7 @@ function getNumeroLegajo() {
 
 
 function addLegajo(legajo, client) {
+
   let query = table.insert(
     table.matricula.value(legajo.matricula),
     table.aporte_bruto.value(legajo.aporte_bruto),
@@ -319,7 +318,7 @@ module.exports.add = function(legajo) {
             return Domicilio.addDomicilio(legajo.domicilio, connection.client)
               .then(domicilio_nuevo => {
                 legajo.domicilio = domicilio_nuevo.id;
-                return Comitente.add(legajo.comitente, connection, client)
+                return Comitente.add(legajo.comitente, connection.client)
               })
               .then(comitente_nuevo => {
                 legajo.comitente = comitente_nuevo.id;

@@ -22,7 +22,9 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-
+  model.tareas.Legajo.add(req.body)
+    .then(legajo => res.json(legajo))
+    .catch(e => handler(e, res));
 });
 
 router.put('/:id', function(req, res) {

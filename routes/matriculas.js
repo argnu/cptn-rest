@@ -50,4 +50,11 @@ router.get('/:id/legajos', function(req, res) {
     .catch(e => handler(e, res));
 });
 
+router.put('/:id/legajos', function(req, res) {
+  req.body.matricula = req.params.id;
+  model.tareas.Legajo.add(req.body)
+    .then(legajo => res.json(legajo))
+    .catch(e => handler(e, res));
+});
+
 module.exports = router;
