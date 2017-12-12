@@ -108,16 +108,16 @@ module.exports.getAll = function (params) {
     let query = table.select(table.star())
         .from(table);
 
-   if (params.matricula) query.where(table.matricula.equals(params.matricula));
-   if (params.estado) query.where(table.estado.equals(params.estado));
-   if (params.fecha_desde) query.where(table.fecha_vencimiento.gte(params.fecha_desde));
-   if (params.fecha_hasta) query.where(table.fecha_vencimiento.lte(params.fecha_hasta));
+    if (params.matricula) query.where(table.matricula.equals(params.matricula));
+    if (params.estado) query.where(table.estado.equals(params.estado));
+    if (params.fecha_desde) query.where(table.fecha_vencimiento.gte(params.fecha_desde));
+    if (params.fecha_hasta) query.where(table.fecha_vencimiento.lte(params.fecha_hasta));
 
-   if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
-   if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
+    if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
+    if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
 
-   if (params.limit) query.limit(+params.limit);
-   if (params.limit && params.offset) query.offset(+params.offset);
+    if (params.limit) query.limit(+params.limit);
+    if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
         .then(r => {
@@ -174,5 +174,71 @@ module.exports.getByNumero = function (numero) {
             boleta.tipo_comprobante = tipo_comprobante;
             boleta.estado = estado;
             return boleta;
+        });
+}
+
+function getNumeroBoleta(numero) {
+    if (!numero) {
+        let query = table.select(table.numero.max().as('numero'))
+            .toQuery();
+        return connector.execQuery(query)
+            .then(r => r.rows[0].numero + 1);
+    } else return Promise.resolve(numero);
+}
+
+function addBoleta(boleta, client) {
+    return getNumeroBoleta(boleta.numero)
+        .then(numero_boleta => {
+            let query = table.insert(
+                    table.numero.value(numero_boleta),
+                    table.matricula.value(boleta.matricula),
+                    table.tipo_comprobante.value(boleta.tipo_comprobante),
+                    table.fecha.value(boleta.fecha),
+                    table.total.value(boleta.total),
+                    table.estado.value(boleta.estado),
+                    table.fecha_vencimiento.value(boleta.fecha_vencimiento),
+                    table.numero_comprobante.value(boleta.numero_comprobante),
+                    table.numero_solicitud.value(boleta.numero_solicitud),
+                    table.numero_condonacion.value(boleta.numero_condonacion),
+                    table.tipo_pago.value(boleta.tipo_pago),
+                    table.fecha_pago.value(boleta.fecha_pago),
+                    table.fecha_update.value(boleta.fecha_update),
+                    table.delegacion.value(boleta.delegacion)
+                )
+                .returning(table.id, table.numero)
+                .toQuery()
+
+            return connector.execQuery(query, client)
+                .then(r => r.rows[0]);
+        })
+}
+
+module.exports.add = function (boleta) {
+    let boleta_nueva;
+    return connector
+        .beginTransaction()
+        .then(connection => {
+            return addBoleta(boleta, connection.client)
+                .then(boleta_added => {
+                    boleta_nueva = boleta_added;
+                    let proms_items = boleta.items.map(item => {
+                        item.boleta = boleta_nueva.id;
+                        return BoletaItem.add(item, connection.client);
+                    })
+                    return Promise.all(proms_items);
+                })
+                .then(items => {
+                    boleta_nueva.items = items;
+                    return connector.commit(connection.client)
+                        .then(r => {
+                            connection.done();
+                            return boleta_nueva;
+                        });
+                })
+                .catch(e => {
+                    connector.rollback(connection.client);
+                    connection.done();
+                    throw Error(e);
+                });
         });
 }

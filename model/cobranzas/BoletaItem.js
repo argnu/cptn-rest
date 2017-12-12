@@ -68,3 +68,16 @@ module.exports.getByNumeroBoleta = function (numero, item) {
     return connector.execQuery(query)
         .then(r => r.rows ? r.rows[0] : null);
 }
+
+module.exports.add = function (boleta_item, client) {
+    let query = table.insert(
+            table.boleta.value(boleta_item.boleta),
+            table.item.value(boleta_item.item),
+            table.descripcion.value(boleta_item.descripcion),
+            table.importe.value(boleta_item.importe)
+        )
+        .returning(table.id, table.descripcion)
+        .toQuery();
+
+    return connector.execQuery(query, client).then(r => r.rows[0]);
+}
