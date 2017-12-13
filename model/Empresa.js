@@ -106,7 +106,7 @@ function addEmpresa(empresa, client) {
               empresa.representantes.map(r => EmpresaRepresentante.add({
                 empresa: empresa_added.id,
                 matricula: r,
-                fechaInicio: r.fechaInicio ? r.fechaInicio : new Date(),
+                fechaInicio: r.fechaInicio ? r.fechaInicio : moment(),
                 fechaFin: r.fechaFin ? r.fechaFin : null
               }, client))
               : [];

@@ -1,3 +1,4 @@
+const moment = require('moment');
 const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -5,6 +6,9 @@ const LegajoItem = require('./LegajoItem')
 const Item = require('./Item')
 const Comitente = require('./Comitente')
 const Domicilio = require(`${__base}/model/Domicilio`);
+const Boleta = require(`${__base}/model/cobranzas/Boleta`);
+const utils = require(`${__base}/utils`);
+
 
 const table = sql.define({
     name: 'legajo',
@@ -271,7 +275,7 @@ module.exports.get = function(id) {
 function getNumeroLegajo(numero_legajo) {
   if (!numero_legajo) {
     let query = table.select(table.numero_legajo.max().as('numero'))
-                     .where(table.fecha_solicitud.gt(new Date('2017-01-01')))
+                     .where(table.fecha_solicitud.gt(moment('2017-01-01', 'YYYY-MM-DD')))
                      .toQuery();
     return connector.execQuery(query)
            .then(r => r.rows[0].numero + 1);
@@ -285,26 +289,26 @@ function addLegajo(legajo, client) {
   .then(numero_legajo => {
     let query = table.insert(
       table.matricula.value(legajo.matricula),
-      table.aporte_bruto.value(legajo.aporte_bruto),
+      table.aporte_bruto.value(utils.checkNull(legajo.aporte_bruto)),
       table.aporte_neto.value(legajo.aporte_neto),
-      table.cantidad_planos.value(legajo.cantidad_planos),
-      table.comitente.value(legajo.comitente),
+      table.cantidad_planos.value(utils.checkNull(legajo.cantidad_planos)),
+      table.comitente.value(legajo.comitente.id),
       table.domicilio.value(legajo.domicilio),
       table.delegacion.value(legajo.delegacion),
       table.dependencia.value(legajo.dependencia),
       table.estado.value('Pendiente'),
-      table.fecha_solicitud.value(legajo.fecha_solicitud),
-      table.finalizacion_tarea.value(legajo.finalizacion_tarea),
+      table.fecha_solicitud.value(utils.checkNull(legajo.fecha_solicitud)),
+      table.finalizacion_tarea.value(utils.checkNull(legajo.finalizacion_tarea)),
       table.forma_pago.value(legajo.forma_pago),
-      table.honorarios_presupuestados.value(legajo.honorarios_presupuestados),
-      table.honorarios_reales.value(legajo.honorarios_reales),
+      table.honorarios_presupuestados.value(utils.checkNull(legajo.honorarios_presupuestados)),
+      table.honorarios_reales.value(utils.checkNull(legajo.honorarios_reales)),
       table.informacion_adicional.value(legajo.informacion_adicional),
       table.nomenclatura.value(legajo.nomenclatura),
       table.numero_legajo.value(numero_legajo),
       table.solicitud.value(legajo.solicitud),
       table.observaciones.value(legajo.observaciones),
-      table.plazo_cumplimiento.value(legajo.plazo_cumplimiento),
-      table.porcentaje_cumplimiento.value(legajo.porcentaje_cumplimiento),
+      table.plazo_cumplimiento.value(utils.checkNull(legajo.plazo_cumplimiento)),
+      table.porcentaje_cumplimiento.value(utils.checkNull(legajo.porcentaje_cumplimiento)),
       table.subcategoria.value(legajo.subcategoria),
       table.tarea_publica.value(legajo.tarea_publica),
       table.tipo.value(legajo.tipo)
@@ -318,6 +322,28 @@ function addLegajo(legajo, client) {
   })
 }
 
+function addBoleta(legajo) {
+  if (legajo.tipo != 3) return Promise.resolve();
+
+  let boleta = {
+    matricula: legajo.matricula,
+    tipo_comprobante: 15,
+    fecha: legajo.fecha_solicitud,
+    total: legajo.aporte_neto,
+    estado: 1,
+    fecha_vencimiento: moment(legajo.fecha_solicitud, 'DD/MM/YYYY').add(15, 'days'),
+    numero_solicitud: legajo.id,
+    fecha_update: moment(),
+    items: [{
+      item: 1,
+      descripcion: `Aportes profesional N° Legajo: ${legajo.numero_legajo} Comitente: ${legajo.comitente.apellido}, ${legajo.comitente.nombres}`,
+      imporet: legajo.aporte_neto
+    }]
+  }
+
+  return Boleta.add(boleta);
+}
+
 module.exports.add = function(legajo) {
   let legajo_nuevo;
   return connector
@@ -329,11 +355,7 @@ module.exports.add = function(legajo) {
                 return Comitente.add(legajo.comitente, connection.client)
               })
               .then(comitente_nuevo => {
-                legajo.comitente = comitente_nuevo.id;
-                return addLegajo(legajo, connection.client);
-              })
-              .then(comitente_nuevo => {
-                legajo.comitente = comitente_nuevo.id;
+                legajo.comitente.id = comitente_nuevo.id;
                 return addLegajo(legajo, connection.client);
               })
               .then(legajo_added => {
@@ -345,7 +367,12 @@ module.exports.add = function(legajo) {
                 return Promise.all(proms_items);
               })
               .then(items => {
+                legajo.id = legajo_nuevo.id;
+                legajo.numero_legajo = legajo_nuevo.numero_legajo;
                 legajo_nuevo.items = items;
+                return addBoleta(legajo);
+              })
+              .then(r => {
                 return connector.commit(connection.client)
                 .then(r => {
                   connection.done();
