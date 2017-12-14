@@ -84,6 +84,12 @@ function populateAfip() {
   return querysSecuencial(querys);
 }
 
+function populateEstadoBoleta () {
+  let querys = [];
+  querys.push(model.TipoEstadoBoleta.table.insert(model.TipoEstadoBoleta.table.valor.value('Volante de Pago Generado')).toQuery());
+  return querysSecuencial(querys);
+}
+
 function populate() {
   return Promise.all([
     populateEstadoCivil(),
@@ -92,7 +98,8 @@ function populate() {
     populateContacto(),
     populateSociedad(),
     populateEmpresa(),
-    populateAfip()
+    populateAfip(),
+    populateEstadoBoleta()
   ]);
 }
 

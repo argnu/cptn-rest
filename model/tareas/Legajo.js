@@ -332,10 +332,6 @@ module.exports.add = function(legajo) {
                 legajo.comitente = comitente_nuevo.id;
                 return addLegajo(legajo, connection.client);
               })
-              .then(comitente_nuevo => {
-                legajo.comitente = comitente_nuevo.id;
-                return addLegajo(legajo, connection.client);
-              })
               .then(legajo_added => {
                 legajo_nuevo = legajo_added;
                 let proms_items = legajo.items.map(item => {

@@ -156,7 +156,7 @@ module.exports.get = function (id) {
         });
 }
 
-module.exports.getByNumero = function (numero) {
+module.exports.getByNumero = function(numero) {
     let query = table.select(table.star())
         .from(table)
         .where(table.numero.equals(numero))
@@ -175,4 +175,10 @@ module.exports.getByNumero = function (numero) {
             boleta.estado = estado;
             return boleta;
         });
+}
+
+module.exports.patch = function(id, boleta, client) {
+  let query = table.update(boleta).where(table.id.equals(id)).toQuery();
+
+  return connector.execQuery(query, client);
 }
