@@ -132,3 +132,66 @@ module.exports.getAll = function (params) {
             return comprobantes;
         })
 }
+
+
+function getNumeroComprobante(numero) {
+    if (!numero) {
+        let query = table.select(table.numero.max().as('numero'))
+            .toQuery();
+        return connector.execQuery(query)
+            .then(r => r.rows[0].numero + 1);
+    } else return Promise.resolve(numero);
+}
+
+function addComprobante(comprobante, client) {
+    return getNumeroComprobante(comprobante.numero)
+        .then(numero_comprobante => {
+            let query = table.insert(
+                    table.numero.value(numero_comprobante),
+                    table.matricula.value(comprobante.matricula),
+                    table.fecha.value(comprobante.fecha),
+                    table.fecha_vencimiento.value(comprobante.fecha_vencimiento),
+                    table.subtotal.value(comprobante.subtotal),
+                    table.interes_total.value(comprobante.interes_total),
+                    table.bonificacion_total.value(comprobante.bonificacion_total),
+                    table.importe_total.value(comprobante.importe_total),
+                    table.importe_cancelado.value(comprobante.importe_cancelado),
+                    table.observaciones.value(comprobante.observaciones)
+                )
+                .returning(table.id, table.numero)
+                .toQuery()
+
+            return connector.execQuery(query, client)
+                .then(r => r.rows[0]);
+        })
+}
+
+module.exports.add = function (comprobante) {
+    let comprobante_nuevo;
+    return connector
+        .beginTransaction()
+        .then(connection => {
+            return addComprobante(comprobante, connection.client)
+                .then(comprobante_added => {
+                    comprobante_nuevo = comprobante_added;
+                    let proms_items = comprobante.items.map(item => {
+                        item.comprobante = comprobante_nueva.id;
+                        return ComprobanteItem.add(item, connection.client);
+                    })
+                    return Promise.all(proms_items);
+                })
+                .then(items => {
+                    comprobante_nuevo.items = items;
+                    return connector.commit(connection.client)
+                        .then(r => {
+                            connection.done();
+                            return comprobante_nuevo;
+                        });
+                })
+                .catch(e => {
+                    connector.rollback(connection.client);
+                    connection.done();
+                    throw Error(e);
+                });
+        });
+}
