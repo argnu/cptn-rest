@@ -66,3 +66,19 @@ module.exports.getByComprobante = function(id) {
   return connector.execQuery(query)
       .then(r => r.rows);
 }
+
+module.exports.add = function (comprobante_item, client) {
+    let query = table.insert(
+            table.comprobante.value(comprobante_item.comprobante),
+            table.item.value(comprobante_item.item),
+            table.boleta.value(comprobante_item.boleta),
+            table.descripcion.value(comprobante_item.descripcion),
+            table.cuenta_contable.value(comprobante_item.cuenta_contable),
+            table.importe.value(comprobante_item.importe),
+            table.delegacion.value(comprobante_item.delegacion)
+        )
+        .returning(table.id, table.descripcion)
+        .toQuery();
+
+    return connector.execQuery(query, client).then(r => r.rows[0]);
+}
