@@ -7,15 +7,15 @@ const utils = require('../../utils');
 function addComprobantesItems(comprobante_item) {
   return Promise.all([
       model.Comprobante.getByNumero(comprobante_item['NUMRECIBO']),
-      model.BoletaItem.getByNumeroBoleta(comprobante_item['NUMCMPTE'], comprobante_item['ITEMCMPTE'])
+      model.Boleta.getByNumero(comprobante_item['NUMCMPTE'], comprobante_item['ITEMCMPTE'])
     ])
-    .then(([comprobante, item]) => {
+    .then(([comprobante, boleta]) => {
       if (comprobante){
         let table = model.ComprobanteItem.table;
         let query = table.insert(
           table.comprobante.value(comprobante.id),
           table.item.value(comprobante_item['ITEM']),
-          table.boleta_item.value(item ? item.id : null),
+          table.boleta.value(boleta ? boleta.id : null),
           //table.tipo_comprobante.value(comprobante_item['TIPO_COMPROBANTE']),
           table.descripcion.value(comprobante_item['DESCRIPCION']),
           table.cuenta_contable.value(comprobante_item['CUENTACONTABLE']),

@@ -19,7 +19,7 @@ const table = sql.define({
             dataType: 'int',
         },
         {
-            name: 'boleta_item',
+            name: 'boleta',
             dataType: 'int'
         },
         {
@@ -48,8 +48,8 @@ const table = sql.define({
             refColumns: ['id']
         },
         {
-            table: 'boleta_item',
-            columns: ['boleta_item'],
+            table: 'boleta',
+            columns: ['boleta'],
             refColumns: ['id']
         }
     ]
