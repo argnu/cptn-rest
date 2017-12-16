@@ -5,16 +5,17 @@ const VolantePagoBoleta = require('./VolantePagoBoleta');
 
 const table = sql.define({
     name: 'volante_pago',
-    columns: [{
+    columns: [
+        {
             name: 'id',
             dataType: 'serial',
             primaryKey: true
         },
         {
-            name: 'tasa',
-            dataType: 'float',
-            notNull: true
-        },
+          name: 'matricula',
+          dataType: 'int',
+          notNull: true
+        },        
         {
             name: 'fecha',
             dataType: 'date',
@@ -24,15 +25,43 @@ const table = sql.define({
             name: 'fecha_vencimiento',
             dataType: 'date',
             notNull: true
+        },
+        {
+          name: 'subtotal',
+          dataType: 'float',
+        },
+        {
+            name: 'interes_total',
+            dataType: 'float',
+        },
+        {
+            name: 'bonificacion_total',
+            dataType: 'float',
+        },
+        {
+            name: 'importe_total',
+            dataType: 'float',
+        },
+        {
+          name: 'delegacion',
+          dataType: 'int',
+          // Agregar foreign key una vez que se confirmen los datos
         }
-    ]
+    ],
+
+    foreignKeys: [
+      {
+        table: 'matricula',
+        columns: ['matricula'],
+        refColumns: ['id']
+      }
+  ]    
 })
 
 module.exports.table = table;
 
 function addVolante(volante) {
   let query = table.insert(
-    table.tasa.value(volante.tasa),
     table.fecha.value(volante.fecha),
     table.fecha_vencimiento.value(volante.fecha_vencimiento)
   )
