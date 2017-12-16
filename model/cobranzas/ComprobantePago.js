@@ -80,7 +80,7 @@ module.exports.getByComprobante = function (id) {
         .then(r => r.rows);
 }
 
-function addComprobantePago(comprobante_pago, client) {
+module.exports.add = function(comprobante_pago, client) {
     let query = table.insert(
             table.comprobante.value(comprobante_pago.comprobante),
             table.item.value(comprobante_pago.item),

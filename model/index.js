@@ -42,9 +42,10 @@ module.exports.tareas = require('./tareas');
 
 module.exports.Boleta = require('./cobranzas/Boleta');
 module.exports.BoletaItem = require('./cobranzas/BoletaItem');
-
 module.exports.Comprobante = require('./cobranzas/Comprobante');
 module.exports.ComprobanteItem = require('./cobranzas/ComprobanteItem');
 module.exports.ComprobantePago = require('./cobranzas/ComprobantePago');
+module.exports.VolantePago = require('./cobranzas/VolantePago');
+module.exports.VolantePagoBoleta = require('./cobranzas/VolantePagoBoleta');
 
 module.exports.Usuario = require('./Usuario');

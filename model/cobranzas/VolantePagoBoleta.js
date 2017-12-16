@@ -18,13 +18,17 @@ const table = sql.define({
             name: 'boleta',
             dataType: 'int',
             notNull: true
+        },
+        {
+          name: 'interes',
+          dataType: 'float'
         }
     ],
 
     foreignKeys: [
       {
-        table: 'volante',
-        columns: ['volante_pago'],
+        table: 'volante_pago',
+        columns: ['volante'],
         refColumns: ['id']
       },
       {
@@ -40,7 +44,8 @@ module.exports.table = table;
 module.exports.add = function(data, client) {
   let query = table.insert(
     table.volante.value(data.volante),
-    table.boleta.value(data.boleta)
+    table.boleta.value(data.boleta),
+    table.interes.value(data.interes)
   )
   .returning(table.id, table.volante, table.boleta)
   .toQuery();

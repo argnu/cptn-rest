@@ -2,6 +2,9 @@ const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const model = require(`${__base}/model`);
+const ComprobanteItem = require('./ComprobanteItem');
+const ComprobantePago = require('./ComprobantePago');
+const Boleta = require('./Boleta');
 
 const table = sql.define({
     name: 'comprobante',
@@ -153,9 +156,10 @@ function addComprobante(comprobante, client) {
                     table.interes_total.value(comprobante.interes_total),
                     table.bonificacion_total.value(comprobante.bonificacion_total),
                     table.importe_total.value(comprobante.importe_total),
-                    table.importe_cancelado.value(comprobante.importe_total)
+                    table.importe_cancelado.value(comprobante.importe_total),
+                    table.delegacion.value(comprobante.delegacion)
                 )
-                .returning(table.id, table.numero)
+                .returning(table.id, table.numero, table.matricula)
                 .toQuery()
 
             return connector.execQuery(query, client)
@@ -163,13 +167,37 @@ function addComprobante(comprobante, client) {
         })
 }
 
-function addComprobanteItem(boleta) {
-
-
-}
 
 module.exports.add = function (comprobante) {
     let comprobante_nuevo;
+    let num_item = 1;
+
+    function addComprobanteItem(boleta) {
+        let proms = [];
+        let comprobante_item = {
+            boleta: boleta.id,
+            comprobante: comprobante_nuevo.id,
+            item: num_item,
+            descripcion: boleta.tipo_comprobante.descripcion,
+            importe: boleta.importe
+        }
+        proms.push(ComprobanteItem.add(comprobante_item, connection.client));
+        num_item++;
+
+        if (boleta.interes) {
+            let interes_item = {
+                boleta: boleta.id,
+                comprobante: comprobante_nuevo.id,
+                item: num_item,
+                descripcion: 'Intereses',
+                importe: boleta.interes
+            }
+            proms.push(ComprobanteItem.add(interes_item, connection.client));
+            num_item++;
+        }
+        return proms;
+    }
+
     return connector
         .beginTransaction()
         .then(connection => {
@@ -177,39 +205,38 @@ module.exports.add = function (comprobante) {
                 .then(comprobante_added => {
                     comprobante_nuevo = comprobante_added;
 
-                    let proms_comprobantePago = comprobante.formasPago.map(forma => {
+                    let proms_comprobante_pago = comprobante.items_pago.map(forma => {
                         forma.comprobante = comprobante.id;
-                        return Comprobante.addComprobantePago(forma, client);
+                        return ComprobantePago.add(forma, client);
                     });
 
-                    let comprobanteItem = {};
                     let cantidad = 1;
                     let proms_items = [];
                     comprobante.boletas.forEach(boleta => {
-                        //Reveer 
-                        comprobanteItem['boleta'] = boleta.id;
-                        comprobanteItem['comprobante'] = comprobante_nuevo.id;
-                        comprobanteItem['item'] = cantidad;
-                        comprobanteItem['descripcion'] = boleta.tipo_comprobante.descripcion;
-                        comprobanteItem['importe'] = boleta.importe;
-                        proms_items.push(ComprobanteItem.add(comprobanteItem, connection.client));
-                        if (boleta.interes) {
-                            let interesItem = {};
-                            interesItem = comprobanteItem;
-                            cantidad = cantidad + 1;
-                            interesItem.item = cantidad;
-                            interesItem.descripcion = 'Intereses';
-                            interesItem.importe = boleta.interes;
-                            proms_items.push(ComprobanteItem.add(interesItem, connection.client));
+                        if (boleta.tipo == 'volante') {
+                            let volante = VolantePago.get(boleta.id);
+                            volante.boletas.forEach(b => {
+                                proms_items.concat(addComprobanteItem(b));
+                            })
+                        }
+                        else {
+                            proms_items.concat(addComprobanteItem(boleta));
                         }
                     })
+
+                    //2 es 'cancelada'
+                    let proms_boleta_estado = comprobante.boletas
+                    .map(b => Boleta.patch(b.id, { estado: 2 }, connection.client)); 
+
                     return Promise.all([
                         Promise.all(proms_items),
-                        Promise.all(proms_comprobantePago)
+                        Promise.all(proms_comprobantePago),
+                        Promise.all(proms_boleta_estado)
                     ])
                 })
-                .then(([items, formasPago]) => {
+                .then(([items, items_pago, boletas]) => {
                     comprobante_nuevo.items = items;
+                    comprobante_nuevo.items_pago = items_pago;
                     return connector.commit(connection.client)
                         .then(r => {
                             connection.done();

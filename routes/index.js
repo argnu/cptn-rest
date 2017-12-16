@@ -39,6 +39,7 @@ router.use('/instituciones', require('./instituciones'));
 router.use('/titulos', require('./titulos'));
 router.use('/boletas', require('./boletas'));
 router.use('/comprobantes', require('./comprobantes'));
+router.use('/volantespago', require('./volantespago'));
 router.use('/bancos', require('./bancos'));
 router.use('/usuarios', require('./usuarios'));
 router.use('/legajos', require('./legajos'));
