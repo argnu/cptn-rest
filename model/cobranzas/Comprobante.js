@@ -5,6 +5,7 @@ const model = require(`${__base}/model`);
 const ComprobanteItem = require('./ComprobanteItem');
 const ComprobantePago = require('./ComprobantePago');
 const Boleta = require('./Boleta');
+const VolantePago = require('./VolantePago');
 
 const table = sql.define({
     name: 'comprobante',
@@ -170,30 +171,27 @@ function addComprobante(comprobante, client) {
 
 module.exports.add = function (comprobante) {
     let comprobante_nuevo;
-    let num_item = 1;
 
-    function addComprobanteItem(boleta) {
+    function addComprobanteItem(boleta, num_item, client) {
         let proms = [];
         let comprobante_item = {
             boleta: boleta.id,
             comprobante: comprobante_nuevo.id,
             item: num_item,
             descripcion: boleta.tipo_comprobante.descripcion,
-            importe: boleta.importe
+            importe: boleta.total
         }
-        proms.push(ComprobanteItem.add(comprobante_item, connection.client));
-        num_item++;
+        proms.push(ComprobanteItem.add(comprobante_item, client));
 
         if (boleta.interes) {
             let interes_item = {
                 boleta: boleta.id,
                 comprobante: comprobante_nuevo.id,
-                item: num_item,
+                item: num_item + 1,
                 descripcion: 'Intereses',
                 importe: boleta.interes
             }
-            proms.push(ComprobanteItem.add(interes_item, connection.client));
-            num_item++;
+            proms.push(ComprobanteItem.add(interes_item, client));
         }
         return proms;
     }
@@ -206,37 +204,48 @@ module.exports.add = function (comprobante) {
                     comprobante_nuevo = comprobante_added;
 
                     let proms_comprobante_pago = comprobante.items_pago.map(forma => {
-                        forma.comprobante = comprobante.id;
-                        return ComprobantePago.add(forma, client);
+                        forma.comprobante = comprobante_nuevo.id;
+                        forma.fecha_pago = comprobante.fecha;
+                        return ComprobantePago.add(forma, connection.client);
                     });
 
-                    let cantidad = 1;
+                    let num_item = 1;
                     let proms_items = [];
+                    let proms_boleta_estado = [];
+                    let proms_volante_pagado = [];
+
                     comprobante.boletas.forEach(boleta => {
                         if (boleta.tipo == 'volante') {
-                            let volante = VolantePago.get(boleta.id);
+                            let volante = boleta;
                             volante.boletas.forEach(b => {
-                                proms_items.concat(addComprobanteItem(b));
-                            })
+                                proms_boleta_estado.push(Boleta.patch(b.id, { estado: 2 }, connection.client));
+                                addComprobanteItem(b, num_item, connection.client)
+                                .forEach(p => {
+                                    proms_items.push(p);
+                                    num_item++;
+                                })
+                            });
+
+                            proms_volante_pagado.push(VolantePago.patch(volante.id, { pagado: true }, connection.client));
                         }
                         else {
-                            proms_items.concat(addComprobanteItem(boleta));
+                            proms_boleta_estado.push(Boleta.patch(boleta.id, { estado: 2 }, connection.client));
+                            addComprobanteItem(boleta, num_item, connection.client)
+                            .forEach(p => {
+                                proms_items.push(p);
+                                num_item++;
+                            })                            
                         }
                     })
 
-                    //2 es 'cancelada'
-                    let proms_boleta_estado = comprobante.boletas
-                    .map(b => Boleta.patch(b.id, { estado: 2 }, connection.client)); 
-
                     return Promise.all([
                         Promise.all(proms_items),
-                        Promise.all(proms_comprobantePago),
-                        Promise.all(proms_boleta_estado)
+                        Promise.all(proms_comprobante_pago),
+                        Promise.all(proms_boleta_estado),
+                        Promise.all(proms_volante_pagado)
                     ])
                 })
-                .then(([items, items_pago, boletas]) => {
-                    comprobante_nuevo.items = items;
-                    comprobante_nuevo.items_pago = items_pago;
+                .then(r => {
                     return connector.commit(connection.client)
                         .then(r => {
                             connection.done();

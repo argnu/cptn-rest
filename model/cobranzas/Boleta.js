@@ -162,19 +162,8 @@ module.exports.getByNumero = function(numero) {
         .where(table.numero.equals(numero))
         .toQuery();
 
-    let boleta;
-
     return connector.execQuery(query)
-        .then(r => {
-            boleta = r.rows[0];
-            return getData(boleta);
-        })
-        .then(([items, tipo_comprobante, estado]) => {
-            boleta.items = items;
-            boleta.tipo_comprobante = tipo_comprobante;
-            boleta.estado = estado;
-            return boleta;
-        });
+        .then(r => r.rows[0])
 }
 
 

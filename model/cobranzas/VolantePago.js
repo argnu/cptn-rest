@@ -141,7 +141,7 @@ function getBoletas(id_volante) {
   return connector.execQuery(query)
          .then(r => { 
             datos_volante = r.rows;
-            return Promise.all(r.rows.map(b => Boleta.get(b.id)));
+            return Promise.all(r.rows.map(b => Boleta.get(b.boleta)));
           })
           .then(boletas => {
             boletas.forEach((b, i) => b.interes = datos_volante[i].interes);

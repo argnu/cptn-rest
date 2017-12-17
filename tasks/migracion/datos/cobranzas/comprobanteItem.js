@@ -7,7 +7,7 @@ const utils = require('../../utils');
 function addComprobantesItems(comprobante_item) {
   return Promise.all([
       model.Comprobante.getByNumero(comprobante_item['NUMRECIBO']),
-      model.Boleta.getByNumero(comprobante_item['NUMCMPTE'], comprobante_item['ITEMCMPTE'])
+      model.Boleta.getByNumero(comprobante_item['NUMCMPTE'])
     ])
     .then(([comprobante, boleta]) => {
       if (comprobante){
@@ -30,7 +30,7 @@ function addComprobantesItems(comprobante_item) {
 }
 
 module.exports.migrar = function () {
-  console.log('Migrando Comprobantes...');
+  console.log('Migrando Items de Comprobantes...');
   let q_objetos = `SELECT RC.NUMRECIBO, RC.ITEM,
     RC.CUENTACONTABLE, CODDELEGACIONCMPTE,
     RC.NUMCMPTE, RC.ITEMCMPTE, RC.DESCRIPCION, RC.IMPORTE as IMPORTE,

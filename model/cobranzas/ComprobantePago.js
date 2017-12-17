@@ -1,4 +1,5 @@
-const connector = require('../../connector');
+const utils = require(`${__base}/utils`);
+const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -87,10 +88,12 @@ module.exports.add = function(comprobante_pago, client) {
             table.fecha_pago.value(comprobante_pago.fecha_pago),
             table.importe.value(comprobante_pago.importe),
             table.forma_pago.value(comprobante_pago.forma_pago),
-            table.numero_cheque.value(comprobante_pago.numero_cheque),
-            table.codigo_banco.value(comprobante_pago.codigo_banco)
+            table.numero_cheque.value(utils.checkNull(comprobante_pago.cheque.numero)),
+            table.codigo_banco.value(utils.checkNull(comprobante_pago.cheque.banco)),
+            table.fecha_vto_cheque.value(utils.checkNull(comprobante_pago.cheque.fecha_vencimiento)),
+            table.titular_cuenta.value(comprobante_pago.cheque.titular)
         )
-        .returning(table.id, table.numero)
+        .returning(table.id)
         .toQuery()
 
     return connector.execQuery(query, client)

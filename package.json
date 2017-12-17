@@ -10,7 +10,8 @@
     "create": "node ./tasks/create.js",
     "drop": "node ./tasks/droptables.js",
     "populate": "node ./tasks/populate.js",
-    "addinvitado": "node ./tasks/addinvitado.js"
+    "addinvitado": "node ./tasks/addinvitado.js",
+    "addestadovolante": "node ./tasks/addEstadoBoletaVolante.js"
   },
   "keywords": [
     "rest",

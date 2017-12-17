@@ -1,4 +1,4 @@
-const connector = require('../../connector');
+const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -34,4 +34,14 @@ module.exports.get = function (id) {
     .toQuery();
   return connector.execQuery(query)
     .then(r => r.rows[0]);
+}
+
+module.exports.add = function(estado) {
+  let query = table.insert(
+    table.valor.value(estado)
+  )
+  .returning(table.id, table.valor)
+  .toQuery();
+
+  return connector.execQuery(query).then(r => r.rows[0]);
 }

@@ -34,12 +34,6 @@ const table = sql.define({
             name: 'importe',
             dataType: 'float',
         },
-        {
-            name: 'delegacion',
-            dataType: 'int',
-            // Agregar foreign key una vez que se confirmen los datos
-        }
-
     ],
 
     foreignKeys: [{
@@ -74,8 +68,7 @@ module.exports.add = function (comprobante_item, client) {
             table.boleta.value(comprobante_item.boleta),
             table.descripcion.value(comprobante_item.descripcion),
             table.cuenta_contable.value(comprobante_item.cuenta_contable),
-            table.importe.value(comprobante_item.importe),
-            table.delegacion.value(comprobante_item.delegacion)
+            table.importe.value(comprobante_item.importe)
         )
         .returning(table.id, table.descripcion)
         .toQuery();
