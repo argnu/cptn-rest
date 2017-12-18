@@ -9,7 +9,7 @@ module.exports.Titulo = require('./Titulo');
 module.exports.Delegacion = require('./Delegacion');
 module.exports.Banco = require('./Banco');
 module.exports.Usuario = require('./Usuario');
-module.exports.UsuarioDelegacion = require('./Delegacion');
+module.exports.UsuarioDelegacion = require('./UsuarioDelegacion');
 
 module.exports.TipoSexo = require('./tipos/TipoSexo');
 module.exports.TipoCondicionAfip = require('./tipos/TipoCondicionAfip');

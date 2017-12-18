@@ -5,6 +5,9 @@ const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
+const Delegacion = require('./Delegacion');
+const UsuarioDelegacion = require('./UsuarioDelegacion');
+
  const table = sql.define({
   name: 'usuario',
   columns: [{
@@ -98,4 +101,30 @@ module.exports.auth = function(usuario) {
       }
       else throw Error("No existe la combinación usuario/contraseña")
   });
+}
+
+module.exports.getDelegaciones = function(id) {
+  let table = Delegacion.table;
+  let query = table.select(
+    table.id, table.nombre
+  )
+  .from(table.join(UsuarioDelegacion.table).on(table.id.equals(UsuarioDelegacion.table.delegacion)))
+  .where(UsuarioDelegacion.table.usuario.equals(id))
+  .toQuery();
+
+  return connector.execQuery(query)
+    .then(r => r.rows);  
+}
+
+module.exports.addDelegacion = function(id, delegacion) {
+  let table = UsuarioDelegacion.table;
+  let query = table.insert(
+    table.usuario.value(id),
+    table.delegacion.value(delegacion)
+  )
+  .returning(table.id, table.usuario, table.delegacion)
+  .toQuery();
+
+  return connector.execQuery(query)
+    .then(r => r.rows[0]);    
 }

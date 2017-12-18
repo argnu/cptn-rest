@@ -62,7 +62,7 @@ function init() {
       createTable(model.Usuario.table)
     ])
     .then(rs => Promise.all([
-                  createEntidades(),
+                  createEntidades(),                  
                   createTable(model.Titulo.table),
                   createTable(model.TipoFormaPago.table)
                 ]))
@@ -79,6 +79,7 @@ function init() {
     .then(rs => createTable(model.ComprobantePago.table))
     .then(rs => createTable(model.VolantePago.table))
     .then(rs => createTable(model.VolantePagoBoleta.table))
+    .then(rs => createTable(model.UsuarioDelegacion.table))
     .then(r => {
       console.info('Todas las tablas han sido creadas!');
       process.exit();

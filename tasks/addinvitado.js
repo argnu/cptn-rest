@@ -10,8 +10,15 @@ model.Usuario.add({
   apellido: 'CPTN',
   email: 'invitado@cptn.org'
 }).
-then(r => {
+then(usuario => {
   console.log('Usuario invitado agregado!');
-  process.exit();
+  Promise.all([
+    model.Usuario.addDelegacion(usuario.id, 1),
+    model.Usuario.addDelegacion(usuario.id, 2)
+  ])
+  .then(r => {
+    console.log('Delegaciones "Neuquén" y "Zapala" agregadas al usuario!');
+    process.exit();
+  })
 })
 .catch(e => console.error(e));

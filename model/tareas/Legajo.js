@@ -325,6 +325,7 @@ function addBoleta(legajo) {
     if (legajo.tipo != 3) return Promise.resolve();
 
     let boleta = {
+        delegacion: legajo.delegacion,
         matricula: legajo.matricula,
         tipo_comprobante: 15,
         fecha: legajo.fecha_solicitud,
