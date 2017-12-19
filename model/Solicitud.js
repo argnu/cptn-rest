@@ -207,3 +207,39 @@ module.exports.setEstado = function(id, estado, client) {
                    .toQuery();
   return connector.execQuery(query, client);
 }
+
+
+
+module.exports.edit = function(id, solicitud) {
+  return connector
+    .beginTransaction()
+    .then(connection => {
+        let query = table.update({
+          fecha: solicitud.fecha,
+          exencionArt10: solicitud.exencionArt10,
+          exencionArt6: solicitud.exencionArt6,
+          delegacion: solicitud.delegacion
+        })
+        .where(table.id.equals(id))
+        .toQuery();
+
+        return connector.execQuery(query, connection.client)
+        .then(r => {
+            if (solicitud.entidad.tipo == 'profesional') {
+              return Profesional.edit(solicitud.entidad.id, solicitud.entidad, connection.client)
+                .then(r => {
+                    return connector.commit(connection.client)
+                          .then(r => {
+                            connection.done();
+                            return id
+                          });                  
+                })
+            }  
+        })
+        .catch(e => {
+          connector.rollback(connection.client);
+          connection.done();
+          throw Error(e);
+        });       
+    })
+}

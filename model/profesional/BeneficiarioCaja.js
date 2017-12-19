@@ -80,3 +80,8 @@ module.exports.getAll = function(id_profesional) {
   return connector.execQuery(query)
          .then(r => r.rows);
 }
+
+module.exports.delete = function (id, client) {
+  let query = table.delete().where(table.id.value(id)).toQuery();
+  return connector.execQuery(query, client);
+}

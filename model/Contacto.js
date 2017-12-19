@@ -79,3 +79,8 @@ module.exports.get = function(id) {
   return connector.execQuery(query)
          .then(r => r.rows[0]);
 }
+
+module.exports.delete = function(id, client) {
+  let query = table.delete().where(table.id.value(id)).toQuery();
+  return connector.execQuery(query, client);
+}

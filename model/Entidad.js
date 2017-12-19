@@ -75,7 +75,8 @@ function addEntidad(entidad, client) {
   .then(([domicilioReal, domicilioProfesional, domicilioConstituido]) => {
     let query = table.insert(
       table.tipo.value(entidad.tipo),
-      table.cuit.value(entidad.cuit), table.condafip.value(entidad.condafip),
+      table.cuit.value(entidad.cuit), 
+      table.condafip.value(entidad.condafip),
       table.domicilioReal.value(domicilioReal ? domicilioReal.id : null),
       table.domicilioProfesional.value(domicilioProfesional ? domicilioProfesional.id : null),
       table.domicilioConstituido.value(domicilioConstituido ? domicilioConstituido.id : null)
@@ -92,3 +93,36 @@ function addEntidad(entidad, client) {
 }
 
 module.exports.addEntidad = addEntidad;
+
+
+module.exports.edit = function(id, entidad, client) {
+  let proms_domicilios = [];
+  proms_domicilios.push(Domicilio.edit(entidad.domicilioReal.id, entidad.domicilioReal, client));
+  
+  if (entidad.domicilioProfesional && entidad.domicilioProfesional.id) 
+    proms_domicilios.push(Domicilio.edit(entidad.domicilioProfesional.id, entidad.domicilioProfesional, client));
+  else if (entidad.domicilioProfesional.pais)
+    proms_domicilios.push(Domicilio.add(entidad.domicilioProfesional, client));
+  else proms_domicilios.push(Promise.resolve(null));
+  
+  if (entidad.domicilioConstituido && entidad.domicilioConstituido.id) 
+    proms_domicilios.push(Domicilio.edit(entidad.domicilioConstituido.id, entidad.domicilioConstituido, client));
+  else if (entidad.domicilioConstituido.pais)
+    proms_domicilios.push(Domicilio.add(entidad.domicilioConstituido, client));
+  else proms_domicilios.push(Promise.resolve(null));
+
+  return Promise.all(proms_domicilios)  
+  .then(([domicilioReal, domicilioProfesional, domicilioConstituido]) => {
+      let query = table.update({
+        domicilioReal,
+        domicilioProfesional,
+        domicilioConstituido,
+        condafip: entidad.condafip,
+        cuil: entidad.cuil
+      })
+      .where(table.id.equals(id))
+      .toQuery();
+
+      return connector.execQuery(query, client);
+  })
+}

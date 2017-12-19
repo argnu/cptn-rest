@@ -7,6 +7,7 @@ const Domicilio = require('../Domicilio');
 const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
+const TipoCondicionAfip = require('../tipos/TipoCondicionAfip');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -37,6 +38,10 @@ const table = sql.define({
     {
       name: 'fechaNacimiento',
       dataType: 'date'
+    },
+    {
+      name: 'localidadNacimiento',
+      dataType: 'varchar(100)'
     },
     {
       name: 'sexo',
@@ -108,6 +113,7 @@ function addProfesional(profesional, client) {
       table.dni.value(profesional.dni), table.nombre.value(profesional.nombre),
       table.apellido.value(profesional.apellido),
       table.fechaNacimiento.value(profesional.fechaNacimiento),
+      table.localidadNacimiento.value(profesional.localidadNacimiento),
       table.sexo.value(profesional.sexo), table.estadoCivil.value(profesional.estadoCivil),
       table.nacionalidad.value(profesional.nacionalidad),
       table.observaciones.value(profesional.observaciones),
@@ -194,8 +200,10 @@ const select_atributes = [table.id,
 Entidad.table.tipo,
 table.nombre, table.apellido, table.dni,
 table.fechaNacimiento, table.nacionalidad,
+table.relacionDependencia, table.independiente,
 TipoSexo.table.valor.as('sexo'),
 TipoEstadoCivil.table.valor.as('estadoCivil'),
+TipoCondicionAfip.table.valor.as('condafip'),
 table.observaciones, table.empresa,
 table.serviciosPrestados, table.poseeCajaPrevisional,
 table.nombreCajaPrevisional, table.publicar,
@@ -204,8 +212,10 @@ Entidad.table.domicilioProfesional.as('domicilioProfesional'),
 Entidad.table.domicilioConstituido.as('domicilioConstituido')
 ];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
+                         .join(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .join(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
+                         
 
 
 
@@ -282,4 +292,113 @@ module.exports.get = function(id) {
       profesional.subsidiarios = subsidiarios;
       return profesional;
     });
+}
+
+
+module.exports.edit = function(id, profesional, client) {
+  return Entidad.edit(id, {
+    cuit: profesional.cuit,
+    condafip: profesional.condafip,
+    domicilioReal: profesional.domicilioReal,
+    domicilioProfesional: profesional.domicilioProfesional,
+    domicilioConstituido: profesional.domicilioConstituido
+  }, client)
+  .then(r => {
+    let query = table.update({
+      dni: profesional.dni,
+      apellido: profesional.apellido,
+      nombre: profesional.nombre,
+      fechaNacimiento: profesional.fechaNacimiento,
+      // localidadNacimiento: profesional.localidadNacimiento,
+      sexo: profesional.sexo,
+      estadoCivil: profesional.estadoCivil,
+      nacionalidad: profesional.nacionalidad,
+      observaciones: profesional.observaciones,
+      relacionDependencia: profesional.relacionDependencia,
+      independiente: profesional.independiente,
+      empresa: profesional.empresa,
+      serviciosPrestados: profesional.serviciosPrestados,
+      poseeCajaPrevisional: profesional.poseeCajaPrevisional,
+      nombreCajaPrevisional: profesional.nombreCajaPrevisional,
+    })
+      .where(table.id.equals(id))
+      .toQuery();
+
+    return Promise.all([
+      Contacto.getAll(profesional.id),
+      Formacion.getAll(profesional.id),
+      Beneficiario.getAll(profesional.id),
+      Subsidiario.getAll(profesional.id)      
+    ])
+    .then(([contactos, formaciones, beneficiarios, subsidiarios]) => {
+      return connector.execQuery(query, client)
+        .then(r => {
+          let proms_contactos = [];
+          for(let c of profesional.contactos) {
+            if (!c.id) {
+              c.entidad = id;
+              proms_contactos.push(Contacto.addContacto(c, client));
+            }
+          }
+          
+          //BUSCO LOS CONTACTOS QUE YA NO ESTAN EN LA LISTA PARA BORRARLOS
+          for(let contacto of contactos) {
+            if (!profesional.contactos.find(c => c.id && c.id == contacto.id))
+              proms_contactos.push(Contacto.delete(contacto.id, client));
+          }
+
+
+          
+          let proms_formaciones = [];
+          for (let f of profesional.formaciones) {
+            if (!f.id) {
+              f.entidad = id;
+              proms_formaciones.push(Formacion.addFormacion(f, client));
+            }
+          }
+          
+          for (let formacion of formaciones) {
+            if (!profesional.formaciones.find(c => c.id && c.id == formacion.id))
+              proms_formaciones.push(Formacion.delete(formacion.id, client));
+          }
+
+
+          
+          let proms_beneficiarios = [];
+          for (let b of profesional.beneficiarios) {
+            if (!b.id) {
+              b.entidad = id;
+              proms_beneficiarios.push(Beneficiario.addBeneficiario(b, client));
+            }
+          }
+          
+          for (let beneficiario of beneficiarios) {
+            if (!profesional.beneficiarios.find(c => c.id && c.id == beneficiario.id))
+              proms_beneficiarios.push(Beneficiario.delete(formacion.id, client));
+          }
+
+
+          
+          let proms_subsidiarios = [];
+          for (let s of profesional.subsidiarios) {
+            if (!s.id) {
+              s.entidad = id;
+              proms_subsidiarios.push(Subsidiario.addSubsidiario(s, client));
+            }
+          }
+          
+          for (let subsidiario of subsidiarios) {
+            if (!profesional.subsidiarios.find(c => c.id && c.id == subsidiario.id))
+              proms_subsidiarios.push(Subsidiario.delete(subsidiario.id, client));
+          }
+
+          return Promise.all([
+            Promise.all(proms_formaciones),
+            Promise.all(proms_beneficiarios),
+            Promise.all(proms_subsidiarios)
+          ])
+          .then(rs => id);
+        })
+    })
+  })
 }

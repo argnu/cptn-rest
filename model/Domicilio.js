@@ -73,4 +73,17 @@ function getDomicilio(id) {
 
 module.exports.table = table;
 module.exports.addDomicilio = addDomicilio;
+module.exports.add = addDomicilio;
 module.exports.getDomicilio = getDomicilio;
+
+module.exports.edit = function(id, domicilio, client) {
+  let query = table.update({
+    calle: domicilio.calle,
+    localidad: domicilio.localidad,
+    numero: domicilio.numero
+  })
+  .where(table.id.equals(id))
+  .toQuery();
+
+  return connector.execQuery(query);
+}
