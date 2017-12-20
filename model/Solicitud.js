@@ -235,6 +235,16 @@ module.exports.edit = function(id, solicitud) {
                           });                  
                 })
             }  
+            else if (solicitud.entidad.tipo == 'empresa') {
+              return Empresa.edit(solicitud.entidad.id, solicitud.entidad, connection.client)
+                .then(r => {
+                    return connector.commit(connection.client)
+                          .then(r => {
+                            connection.done();
+                            return id
+                          });                  
+                })
+            }  
         })
         .catch(e => {
           connector.rollback(connection.client);

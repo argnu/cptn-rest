@@ -65,3 +65,8 @@ module.exports.getAll = function(id_empresa) {
   return connector.execQuery(query)
         .then(r => r.rows);
 }
+
+module.exports.delete = function (id, client) {
+  let query = table.delete().where(table.id.value(id)).toQuery();
+  return connector.execQuery(query, client);
+}
