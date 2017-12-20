@@ -224,3 +224,90 @@ module.exports.get = function(id) {
       return empresa;
   });
 }
+
+
+module.exports.edit = function (id, empresa, client) {
+  return Entidad.edit(id, {
+    cuit: empresa.cuit,
+    condafip: empresa.condafip,
+    domicilioReal: empresa.domicilioReal,
+    domicilioProfesional: empresa.domicilioProfesional,
+    domicilioConstituido: empresa.domicilioConstituido
+  }, client)
+    .then(r => {
+      let query = table.update({
+        nombre: empresa.nombre,
+        fechaInicio: empresa.fechaInicio,
+        fechaConstitucion: empresa.fechaConstitucion,
+        tipoEmpresa: empresa.tipoEmpresa,
+        tipoSociedad: empresa.tipoSociedad
+      })
+      .where(table.id.equals(id))
+      .toQuery();
+
+      return Promise.all([
+        Contacto.getAll(empresa.id),
+        EmpresaRepresentante.getAll(empresa.id),
+        EmpresaIncumbencia.getAll(empresa.id)
+      ])
+        .then(([contactos, representantes, incumbencias]) => {
+          return connector.execQuery(query, client)
+            .then(r => {
+
+              let proms_contactos = [];
+              for (let c of empresa.contactos) {
+                if (!c.id) {
+                  c.entidad = id;
+                  proms_contactos.push(Contacto.addContacto(c, client));
+                }
+              }
+
+              //BUSCO LOS CONTACTOS QUE YA NO ESTAN EN LA LISTA PARA BORRARLOS
+              for (let contacto of contactos) {
+                if (!empresa.contactos.find(c => c.id && c.id == contacto.id))
+                  proms_contactos.push(Contacto.delete(contacto.id, client));
+              }
+
+              let proms_representantes = [];
+              for (let r of empresa.representantes) {
+                if (!r.id) {
+                  proms_representantes.push(EmpresaRepresentante.add({ 
+                    idEmpresa: id, 
+                    idMatricula: r.matricula,
+                    fechaInicio: r.fechaInicio ? r.fechaInicio : moment(),
+                    fechaFin: r.fechaFin ? r.fechaFin : null                    
+                   }, client));
+                }
+              }
+
+              for (let representante of representantes) {
+                if (!empresa.representantes.find(c => c.id && c.id == representante.id))
+                  proms_representantes.push(EmpresaRepresentante.delete(representante.id, client));
+              }
+
+              let proms_incumbencias = [];
+              for (let i of empresa.incumbencias) {
+                if (!i.id) {
+                  proms_incumbencias.push(EmpresaIncumbencia.add({ 
+                    empresa: id, 
+                    incumbencia: i,
+                   }, client));
+                }
+              }
+
+              for (let incumbencia of incumbencias) {
+                if (!empresa.incumbencias.find(c => c.id && c.id == incumbencia.id))
+                  proms_incumbencias.push(EmpresaIncumbencia.delete(incumbencia.id, client));
+              }
+
+
+              return Promise.all([
+                Promise.all(proms_formaciones),
+                Promise.all(proms_representantes),
+                Promise.all(proms_incumbencias)
+              ])
+                .then(rs => id);
+            })
+        })
+    })
+}

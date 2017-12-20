@@ -56,3 +56,8 @@ module.exports.add = function(representante, client) {
 
   return connector.execQuery(query, client);
 }
+
+module.exports.delete = function (id, client) {
+  let query = table.delete().where(table.id.value(id)).toQuery();
+  return connector.execQuery(query, client);
+}
