@@ -33,6 +33,7 @@ function createProfesional(matricula) {
     nuevoProfesional['fechaNacimiento'] = utils.getFecha(matricula['FECNAC_DATE']);
     nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] + 1;
     nuevoProfesional['observaciones'] = matricula['OBSERVACIONES'];
+    nuevoProfesional['lugarNacimiento'] = matricula['lugarNacimiento'];
 
     nuevoProfesional.contactos = [];
     ['TELFIJO', 'TELCEL', 'EMAIL', 'PAGWEB'].forEach((tipo, i) => {
@@ -97,23 +98,25 @@ const addMatricula = (matricula) => {
 
 module.exports.migrar = function() {
     console.log('Migrando matrículas...');
-    let q_objetos = 'select M.ID, M.SITAFIP, M.CUIT, ' +
-    'M.DOMICREALCALLE, M.DOMICREALCODPOSTAL, ' +
-    'M.DOMICREALDEPARTAMENTO, M.DOMICREALLOCALIDAD, ' +
-    'M.DOMICREALPROV, M.DOMICREALPAIS, ' +
-    'M.DOMICLEGALCALLE, M.DOMICLEGALCODPOSTAL, ' +
-    'M.DOMICLEGALDEPARTAMENTO, M.DOMICLEGALLOCALIDAD, ' +
-    'M.DOMICLEGALPROV, M.DOMICLEGALPAIS, ' +
-    'M.NOMBRE, M.APELLIDO, M.FECNAC_DATE ,M.NUMDOCU, ' +
-    'M.ESTADOCIVIL, M.LUGNACCIUDAD as LocalidadNacimiento,' +
-    'M.OBSERVACIONES, M.RELACIONLABORAL, M.EMPRESA, M.SERVICIOSPRESTADOS, ' +
-    'M.TELFIJO, M.TELCEL, M.EMAIL, M.PAGWEB, ' +
-    'M.PUBLICARDATOS, M.CODESTADOCAJA, ' +
-    'M.LEGAJO, M.NROMATRICULA, M.FECHARESOLUCION_DATE, ' +
-    'M.NUMACTA, M.FECHABAJA_DATE, M.OBSERVACIONES, M.NOTASPRIVADAS,'  +
-    'M.ASIENTOBAJAF, M.CODBAJAF, M.NOMBREARCHIVOFOTO, ' +
-    'M.NombreArchivoFirma, M.ESTADO ' +
-    'from MATRICULAS M WHERE ID BETWEEN @offset AND @limit';
+    let q_objetos = `select M.ID, M.SITAFIP, M.CUIT, 
+        M.DOMICREALCALLE, M.DOMICREALCODPOSTAL, 
+        M.DOMICREALDEPARTAMENTO, M.DOMICREALLOCALIDAD, 
+        M.DOMICREALPROV, M.DOMICREALPAIS, 
+        M.DOMICLEGALCALLE, M.DOMICLEGALCODPOSTAL, 
+        M.DOMICLEGALDEPARTAMENTO, M.DOMICLEGALLOCALIDAD, 
+        M.DOMICLEGALPROV, M.DOMICLEGALPAIS, 
+        M.NOMBRE, M.APELLIDO, M.FECNAC_DATE ,M.NUMDOCU, 
+        M.ESTADOCIVIL, l.DESCRIPCION as lugarNacimiento,
+        M.OBSERVACIONES, M.RELACIONLABORAL, M.EMPRESA, M.SERVICIOSPRESTADOS, 
+        M.TELFIJO, M.TELCEL, M.EMAIL, M.PAGWEB, 
+        M.PUBLICARDATOS, M.CODESTADOCAJA, 
+        M.LEGAJO, M.NROMATRICULA, M.FECHARESOLUCION_DATE, 
+        M.NUMACTA, M.FECHABAJA_DATE, M.OBSERVACIONES, M.NOTASPRIVADAS,
+        M.ASIENTOBAJAF, M.CODBAJAF, M.NOMBREARCHIVOFOTO, 
+        M.NombreArchivoFirma, M.ESTADO 
+    from MATRICULAS M left join T_LOCALIDAD l
+    on m.LUGNACCIUDAD = l.CODIGO
+    WHERE ID BETWEEN @offset AND @limit;`
     let q_limites = 'select MIN(ID) as min, MAX(ID) as max from MATRICULAS';
 
     return utils.migrar(q_objetos, q_limites, 100, addMatricula);

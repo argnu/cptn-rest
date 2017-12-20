@@ -40,7 +40,7 @@ const table = sql.define({
       dataType: 'date'
     },
     {
-      name: 'localidadNacimiento',
+      name: 'lugarNacimiento',
       dataType: 'varchar(100)'
     },
     {
@@ -113,7 +113,7 @@ function addProfesional(profesional, client) {
       table.dni.value(profesional.dni), table.nombre.value(profesional.nombre),
       table.apellido.value(profesional.apellido),
       table.fechaNacimiento.value(profesional.fechaNacimiento),
-      table.localidadNacimiento.value(profesional.localidadNacimiento),
+      table.lugarNacimiento.value(profesional.lugarNacimiento),
       table.sexo.value(profesional.sexo), table.estadoCivil.value(profesional.estadoCivil),
       table.nacionalidad.value(profesional.nacionalidad),
       table.observaciones.value(profesional.observaciones),
@@ -309,7 +309,7 @@ module.exports.edit = function(id, profesional, client) {
       apellido: profesional.apellido,
       nombre: profesional.nombre,
       fechaNacimiento: profesional.fechaNacimiento,
-      // localidadNacimiento: profesional.localidadNacimiento,
+      lugarNacimiento: profesional.lugarNacimiento,
       sexo: profesional.sexo,
       estadoCivil: profesional.estadoCivil,
       nacionalidad: profesional.nacionalidad,
