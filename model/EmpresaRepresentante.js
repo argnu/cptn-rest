@@ -56,3 +56,12 @@ module.exports.add = function(representante, client) {
 
   return connector.execQuery(query, client);
 }
+
+module.exports.getAll = function(id_empresa) {
+  let query = table.select()
+  .where(table.idEmpresa.equals(id_empresa))
+  .toQuery();
+
+  return connector.execQuery(query)
+        .then(r => r.rows);
+}

@@ -37,3 +37,24 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+module.exports.getAll = function(id_empresa) {
+  let query = table.select()
+  .where(table.idEmpresa.equals(id_empresa))
+  .toQuery();
+
+  return connector.execQuery(query)
+        .then(r => r.rows);
+}
+
+module.exports.add = function(data, client) {
+  let query = table.insert(
+    table.idEmpresa.value(data.idEmpresa),
+    table.incumbencia.value(data.incumbencia)
+  )
+  .returning(table.id, table.idEmpresa, table.incumbencia)
+  .toQuery();
+
+  return connector.execQuery(query)
+        .then(r => r.rows[0]);  
+}

@@ -1,8 +1,10 @@
+const moment = require('moment');
 const connector = require('../connector');
 const Domicilio = require('./Domicilio');
 const Entidad = require('./Entidad');
 const Contacto = require('./Contacto');
 const EmpresaRepresentante = require('./EmpresaRepresentante');
+const EmpresaIncumbencia = require('./EmpresaIncumbencia');
 const TipoEmpresa = require('./tipos/TipoEmpresa');
 const TipoSociedad = require('./tipos/TipoSociedad');
 const TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
@@ -97,6 +99,7 @@ function addEmpresa(empresa, client) {
     return addDatosBasicos(empresa)
           .then(r => {
             let empresa_added = r.rows[0];
+
             let proms_contactos = empresa.contactos.map(c => {
               c.entidad = empresa_added.id;
               return Contacto.addContacto(c, client);
@@ -111,13 +114,22 @@ function addEmpresa(empresa, client) {
               }, client))
               : [];
 
+              let proms_incumbencias = empresa.incumbencias ? 
+                empresa.incumbencias.map(i => EmpresaIncumbencia.add({
+                  idEmpresa: empresa_added.id,
+                  incumbencia: i
+                }), client)
+              : [];
+
             return Promise.all([
               Promise.all(proms_contactos),
-              Promise.all(proms_representantes)
+              Promise.all(proms_representantes),
+              Promise.all(proms_incumbencias)
             ])
-            .then(([contactos, representantes]) => {
+            .then(([contactos, representantes, incumbencias]) => {
               empresa_added.contactos = contactos;
               empresa_added.representantes = representantes;
+              empresa_added.incumbencias = incumbencias;
               return empresa_added;
             });
           });
@@ -184,11 +196,14 @@ module.exports.getAll = function() {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilioReal, domicilioProfesional, domicilioConstituido, contactos ] = value;
+      [ domicilioReal, domicilioProfesional, domicilioConstituido, 
+        contactos, incumbencias, representantes ] = value;
       empresas[index].domicilioReal = domicilioReal;
       empresas[index].domicilioProfesional = domicilioProfesional;
       empresas[index].domicilioConstituido = domicilioConstituido;
       empresas[index].contactos = contactos;
+      empresas[index].incumbencias = incumbencias;
+      empresas[index].representantes = representantes;
     });
     return empresas;
   })
@@ -200,7 +215,9 @@ function getDatosEmpresa(empresa) {
       Domicilio.getDomicilio(empresa.domicilioReal),
       Domicilio.getDomicilio(empresa.domicilioProfesional),
       Domicilio.getDomicilio(empresa.domicilioConstituido),
-      Contacto.getAll(empresa.id)
+      Contacto.getAll(empresa.id),
+      EmpresaIncumbencia.getAll(empresa.id),
+      EmpresaRepresentante.getAll(empresa.id)
     ]);
 }
 
@@ -216,11 +233,14 @@ module.exports.get = function(id) {
     empresa = r.rows[0];
     return getDatosEmpresa(empresa);
   })
-  .then(([ domicilioReal, domicilioProfesional, domicilioConstituido, contactos ]) => {
+  .then(([ domicilioReal, domicilioProfesional, domicilioConstituido, 
+           contactos, incumbencias, representantes ]) => {
       empresa.domicilioReal = domicilioReal;
       empresa.domicilioProfesional = domicilioProfesional;
       empresa.domicilioConstituido = domicilioConstituido;
       empresa.contactos = contactos;
+      empresa.incumbencias = incumbencias;
+      empresa.representantes = representantes;
       return empresa;
   });
 }
