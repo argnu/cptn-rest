@@ -9,8 +9,8 @@ function addMoneda(moneda) {
   let table = model.TipoMoneda.table;
   let query = table.insert(
                 table.id.value(moneda['CodMoneda']),
-                table.nombre.value(moneda['NombreMoneda']),
-                table.abreviatura.value(moneda['Abreviatura']),
+                table.nombre.value(moneda['NombreMoneda'].trim()),
+                table.abreviatura.value(moneda['Abreviatura'].trim()),
                 table.cambio.value(moneda['ValorCambio'])
               ).toQuery();
 

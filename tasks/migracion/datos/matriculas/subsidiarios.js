@@ -9,9 +9,9 @@ const addSubsidiario = (subsidiario) => {
   .then(matricula => {
     let nuevoSubsidiario = {};
     nuevoSubsidiario.profesional = matricula.entidad;
-    nuevoSubsidiario.nombre = subsidiario['NOMBRE'];
-    nuevoSubsidiario.apellido = subsidiario['APELLIDO'];
-    nuevoSubsidiario.dni = subsidiario['NUMDOCU'];
+    nuevoSubsidiario.nombre = subsidiario['NOMBRE'].trim();
+    nuevoSubsidiario.apellido = subsidiario['APELLIDO'].trim();
+    nuevoSubsidiario.dni = subsidiario['NUMDOCU'].trim();
     nuevoSubsidiario.porcentaje = subsidiario['PORCENTAJE'];
     return model.Subsidiario.addSubsidiario(nuevoSubsidiario);
   });

@@ -17,7 +17,7 @@ function addComprobantesItems(comprobante_item) {
           table.item.value(comprobante_item['ITEM']),
           table.boleta.value(boleta ? boleta.id : null),
           //table.tipo_comprobante.value(comprobante_item['TIPO_COMPROBANTE']),
-          table.descripcion.value(comprobante_item['DESCRIPCION']),
+          table.descripcion.value(comprobante_item['DESCRIPCION'].trim()),
           table.cuenta_contable.value(comprobante_item['CUENTACONTABLE']),
           table.importe.value(comprobante_item['IMPORTE']),
           table.delegacion.value(comprobante_item['CODDELEGACIONCMPTE'])

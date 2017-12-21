@@ -8,9 +8,9 @@ const utils = require('../../utils');
 const addEstadoMatricula = (estado) => {
     let table = model.TipoEstadoMatricula.table;
     let query = table.insert(
-                  table.id.value(estado['CODIGO']),
-                  table.valor.value(estado['DESCRIPCION'])
-                ).toQuery();
+        table.id.value(estado['CODIGO']),
+        table.valor.value(estado['DESCRIPCION'].trim())
+    ).toQuery();
 
     return connector.execQuery(query);
 }

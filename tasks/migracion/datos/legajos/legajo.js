@@ -16,13 +16,13 @@ return nuevo;
 function createComitente(legajo) {
     let table = model.tareas.Comitente.table;
     let query = table.insert(
-      table.apellido.value(legajo['APELLIDO']),
-      table.nombres.value(legajo['NOMBRES']),
-      table.empresa.value(legajo['EMPRESA']),
+      table.apellido.value(legajo['APELLIDO'].trim()),
+      table.nombres.value(legajo['NOMBRES'].trim()),
+      table.empresa.value(legajo['EMPRESA'].trim()),
       table.idempresa.value(legajo['IDEMPRESA']),
-      table.tipo_documento.value(legajo['TIPODOC']),
+      table.tipo_documento.value(legajo['TIPODOC'].trim()),
       table.numero_documento.value(legajo['NUMDOC']),
-      table.telefono.value(legajo['TELEFONOCOMITENTE'])
+      table.telefono.value(legajo['TELEFONOCOMITENTE'].trim())
     )
     .returning(table.id)
     .toQuery()
@@ -56,8 +56,8 @@ function addLegajo(legajo_1) {
                     table.fecha_solicitud.value(utils.getFecha(legajo['FECHASOLICITUD_DATE'])),
                     table.comitente.value(id_comitente),
                     table.domicilio.value(id_domicilio),
-                    table.nomenclatura.value(legajo['NOMENCLATURA']),
-                    table.estado.value(legajo['ESTADO']),
+                    table.nomenclatura.value(legajo['NOMENCLATURA'].trim()),
+                    table.estado.value(legajo['ESTADO'].trim()),
                     table.subcategoria.value(legajo['codTarea']),
                     table.incumbencia.value(legajo['INCUMBENCIAS']),
                     table.honorarios_presupuestados.value(legajo['HONORARIOSPRESUPUESTADOS']),
@@ -72,14 +72,14 @@ function addLegajo(legajo_1) {
                     table.aporte_neto.value(legajo['APORTENETO']),
                     table.aporte_neto_bonificacion.value(legajo['APORTENETOBONIFPORAPORTEENTERMINO']),
                     table.cantidad_planos.value(legajo['CANTIDADPLANOS']),
-                    table.observaciones.value(legajo['OBSERVACIONES']),
-                    table.observaciones_internas.value(legajo['OBSERVACIONESINTERNAS']),
-                    table.informacion_adicional.value(legajo['INFOADICIONAL']),
-                    table.evaluador.value(legajo['EVALUADOR']),
+                    table.observaciones.value(legajo['OBSERVACIONES'].trim()),
+                    table.observaciones_internas.value(legajo['OBSERVACIONESINTERNAS'].trim()),
+                    table.informacion_adicional.value(legajo['INFOADICIONAL'].trim()),
+                    table.evaluador.value(legajo['EVALUADOR'].trim()),
                     table.delegacion.value(legajo['CodDelegacion']),
-                    table.numero_acta.value(legajo['NroActa']),
-                    table.operador_carga.value(legajo['OperadorCarge']),
-                    table.operador_aprobacion.value(legajo['OperadorAprobacion'])
+                    table.numero_acta.value(legajo['NroActa'].trim()),
+                    table.operador_carga.value(legajo['OperadorCarge'].trim()),
+                    table.operador_aprobacion.value(legajo['OperadorAprobacion'].trim())
                 ).toQuery();
 
                 return connector.execQuery(query);

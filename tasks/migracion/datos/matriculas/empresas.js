@@ -8,7 +8,7 @@ const utils = require('../../utils');
 function createDomicilioReal (matricula) {
     if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
         let nuevoDomicilio = {};
-        nuevoDomicilio['calle'] = matricula['DOMICREALCALLE'];
+        nuevoDomicilio['calle'] = matricula['DOMICREALCALLE'].trim();
         nuevoDomicilio['localidad'] = matricula['DOMICREALLOCALIDAD'];
         return nuevoDomicilio;
     }
@@ -18,7 +18,7 @@ function createDomicilioReal (matricula) {
 function createDomicilioProfesional (matricula) {
     if (matricula['DOMICLEGALCALLE'] && matricula['DOMICLEGALLOCALIDAD'] ){
         let nuevoDomicilio = {};
-        nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'];
+        nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'].trim();
         nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
         return nuevoDomicilio;
     }
@@ -27,7 +27,7 @@ function createDomicilioProfesional (matricula) {
 
 function createEmpresa(matricula) {
     let nuevaEmpresa = {};
-    nuevaEmpresa['nombre'] = matricula['NOMBRE'];
+    nuevaEmpresa['nombre'] = matricula['NOMBRE'].trim();
     // nuevaEmpresa['cuit'] = matricula['CUIT'];
     nuevaEmpresa['fechaInicio'] = utils.getFecha(matricula['FECHAINC_DATE']);
     nuevaEmpresa['tipoEmpresa'] = matricula['TIPOEMPRESA'];
@@ -38,14 +38,14 @@ function createEmpresa(matricula) {
     ['TELFIJO', 'TELCEL', 'EMAIL', 'PAGWEB'].forEach((tipo, i) => {
         if (matricula[tipo] && matricula[tipo].length) {
             nuevaEmpresa.contactos.push({
-                tipo: i + 1, valor: matricula[tipo]
+                tipo: i + 1, valor: matricula[tipo].trim()
             });
         }
     });
 
     //Datos para crear la entidad
     nuevaEmpresa['tipo'] = 'empresa';
-    nuevaEmpresa['cuit'] = matricula['CUIT'];
+    nuevaEmpresa['cuit'] = matricula['CUIT'].trim();
 
     let condafip = matricula['SITAFIP'];
     if (condafip != null) {
@@ -63,14 +63,14 @@ function createEmpresa(matricula) {
 const addMatricula = (matricula) => {
   return createEmpresa(matricula)
          .then(empresa => {
-           let nuevaMatricula = {};
-           nuevaMatricula.entidad = empresa.id;
-           nuevaMatricula.solicitud = null;
-           nuevaMatricula.fechaResolucion = utils.getFecha(matricula['FECHARESOLUCION_DATE']);
-           nuevaMatricula.numeroMatricula = matricula['NROMATRICULA'];
-           nuevaMatricula.numeroActa = matricula['NUMACTA'];
-           nuevaMatricula.observaciones = matricula['OBSERVACIONES'];
-           //nuevaMatricula.notasPrivadas = matricula['NOTASPRIVADAS'];
+            let nuevaMatricula = {};
+            nuevaMatricula.entidad = empresa.id;
+            nuevaMatricula.solicitud = null;
+            nuevaMatricula.fechaResolucion = utils.getFecha(matricula['FECHARESOLUCION_DATE']);
+            nuevaMatricula.numeroMatricula = matricula['NROMATRICULA'].trim();
+            nuevaMatricula.numeroActa = matricula['NUMACTA'].trim();
+            nuevaMatricula.observaciones = matricula['OBSERVACIONES'].trim();
+           //nuevaMatricula.notasPrivadas = matricula['NOTASPRIVADAS'].trim();
            nuevaMatricula.estado = matricula['ESTADO'];
            nuevaMatricula.idMigracion = matricula['ID'];
            return model.Matricula.addMatriculaMigracion(nuevaMatricula);

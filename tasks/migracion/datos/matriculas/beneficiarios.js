@@ -9,9 +9,9 @@ const addBeneficiario = (beneficiario) => {
   .then(matricula => {
     let nuevoBeneficiario = {
       profesional: matricula.entidad,
-      apellido: beneficiario['APELLIDO'],
-      nombre: beneficiario['NOMBRE'],
-      vinculo: beneficiario['VINCULO'],
+      apellido: beneficiario['APELLIDO'].trim(),
+      nombre: beneficiario['NOMBRE'].trim(),
+      vinculo: beneficiario['VINCULO'].trim(),
       dni: beneficiario['NUMDOCU'],
       fechaNacimiento: utils.getFecha(beneficiario['FECHANAC_DATE']),
       invalidez: beneficiario['INVALIDEZ']

@@ -8,7 +8,7 @@ const addPais = (pais) => {
     let table = model.Pais.table;
     let query = table.insert(
                   table.id.value(pais['CODIGO']),
-                  table.nombre.value(pais['DESCRIPCION'])
+                  table.nombre.value(pais['DESCRIPCION'].trim())
                 ).toQuery();
 
     return connector.execQuery(query);
@@ -27,7 +27,7 @@ const addProvincia = (provincia) => {
     let table = model.Provincia.table;
     let query = table.insert(
                   table.id.value(provincia['CODPROVINCIA']),
-                  table.nombre.value(provincia['DESCRIPCION']),
+                  table.nombre.value(provincia['DESCRIPCION'].trim()),
                   table.pais.value(provincia['CODPAIS'])
                 ).toQuery();
 
@@ -47,7 +47,7 @@ const addDepartamento = (departamento) => {
     let table = model.Departamento.table;
     let query = table.insert(
                   table.id.value(departamento['CODDEPARTAMENTO']),
-                  table.nombre.value(departamento['DESCRIPCION']),
+                  table.nombre.value(departamento['DESCRIPCION'].trim()),
                   table.provincia.value(departamento['CODPROVINCIA'])
                 ).toQuery();
 
@@ -66,7 +66,7 @@ const addLocalidad = (localidad) => {
     let table = model.Localidad.table;
     let query = table.insert(
                   table.id.value(localidad['CODIGO']),
-                  table.nombre.value(localidad['DESCRIPCION']),
+                  table.nombre.value(localidad['DESCRIPCION'].trim()),
                   table.departamento.value(localidad['CODDEPARTAMENTO'])
                 ).toQuery();
 

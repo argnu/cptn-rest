@@ -9,8 +9,8 @@ function addBanco(banco) {
   let table = model.Banco.table;
   let query = table.insert(
                 table.id.value(banco['CODIGO']),
-                table.nombre.value(banco['NOMBREBANCO']),
-                table.cuenta.value(banco['CUENTA'])
+                table.nombre.value(banco['NOMBREBANCO'].trim()),
+                table.cuenta.value(banco['CUENTA'].trim())
               ).toQuery();
 
   return connector.execQuery(query);

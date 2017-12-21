@@ -11,7 +11,7 @@ function addBoletaItem(boletaItem) {
              let query = table.insert(
                            table.boleta.value(boleta.id),
                            table.item.value(boletaItem['ITEM']),
-                           table.descripcion.value(boletaItem['DESCRIPCION']),
+                           table.descripcion.value(boletaItem['DESCRIPCION'].trim()),
                            table.importe.value(boletaItem['MONTO'])
                          ).toQuery();
 

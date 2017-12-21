@@ -12,8 +12,8 @@ function addTipoPago(tipo) {
   let table = model.TipoPago.table;
   let query = table.insert(
                 table.id.value(tipo['CODTIPOPAGO']),
-                table.descripcion.value(tipo['DESCRIPCION']),
-                table.cuentaContable.value(tipo['CUENTACONTABLE']),
+                table.descripcion.value(tipo['DESCRIPCION'].trim()),
+                table.cuentaContable.value(tipo['CUENTACONTABLE'].trim()),
                 table.habilitado.value(habilitado)
               ).toQuery();
 

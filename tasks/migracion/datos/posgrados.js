@@ -9,7 +9,7 @@ const addPosgrado = (posgrado) => {
   let query = table.insert(
                 table.idMigracion.value(posgrado['CODIGO']),
                 table.tipo.value(2),  // 2 es 'Posgrado'
-                table.nombre.value(posgrado['DESCRIPCION'])
+                table.nombre.value(posgrado['DESCRIPCION'].trim())
               ).toQuery();
 
   return connector.execQuery(query);

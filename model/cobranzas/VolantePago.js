@@ -1,3 +1,4 @@
+const moment = require('moment');
 const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -149,6 +150,8 @@ function getBoletas(id_volante) {
           })
 }
 
+module.exports.getBoletas = getBoletas;
+
 module.exports.get = function(id) {
   let volante;
   let query = table.select(table.star())
@@ -172,11 +175,14 @@ module.exports.getAll = function(params) {
 
   if (params.matricula) query.where(table.matricula.equals(params.matricula));
   if (params.pagado) query.where(table.pagado.equals(params.pagado == 'true'));
+
   if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
   if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
 
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);  
+
+  query.where(table.fecha_vencimiento.gte(moment()));
 
   return connector.execQuery(query.toQuery())
   .then(r => {
