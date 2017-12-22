@@ -337,7 +337,7 @@ function addBoleta(legajo) {
         items: [{
             item: 1,
             descripcion: `Aportes profesional N° Legajo: ${legajo.numero_legajo} Comitente: ${legajo.comitente.apellido}, ${legajo.comitente.nombres}`,
-            imporet: legajo.aporte_neto
+            importe: legajo.aporte_neto
         }]
     }
 

@@ -199,16 +199,6 @@ module.exports.get = function(id) {
   });
 }
 
-module.exports.setEstado = function(id, estado, client) {
-  let query = table.update({
-                      estado: estado
-                   })
-                   .where(table.id.equals(id))
-                   .toQuery();
-  return connector.execQuery(query, client);
-}
-
-
 
 module.exports.edit = function(id, solicitud) {
   return connector
@@ -252,4 +242,13 @@ module.exports.edit = function(id, solicitud) {
           throw Error(e);
         });       
     })
+}
+
+
+module.exports.patch = function (id, solicitud, client) {
+  let query = table.update(solicitud)
+    .where(table.id.equals(id))
+    .toQuery();
+    
+  return connector.execQuery(query, client);
 }

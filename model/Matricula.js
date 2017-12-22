@@ -6,7 +6,6 @@ const Profesional = require('./profesional/Profesional');
 const Empresa = require('./Empresa');
 const Entidad = require('./Entidad');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
-const errors = require('../errors');
 
 const table = sql.define({
   name: 'matricula',
@@ -21,6 +20,10 @@ const table = sql.define({
     },
     {
       name: 'numeroMatricula',
+      dataType: 'varchar(20)'
+    },
+    {
+      name: 'numeroMatriculaCPAGIN',
       dataType: 'varchar(20)'
     },
     {
@@ -129,11 +132,15 @@ function addMatricula(matricula, client) {
   let query = table.insert(
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
+    table.numeroMatricula.value(matricula.numeroMatricula),
     table.fechaResolucion.value(matricula.fechaResolucion),
     table.numeroActa.value(matricula.numeroActa),
     table.estado.value(matricula.estado)
-  ).returning(table.id, table.entidad,
-    table.solicitud, table.fechaResolucion, table.numeroActa).toQuery()
+  )
+  .returning(table.id, table.entidad, table.numeroMatricula,
+    table.solicitud, table.fechaResolucion, table.numeroActa
+  )
+  .toQuery()
 
   return connector.execQuery(query, client)
     .then(r => r.rows[0]);
@@ -159,7 +166,58 @@ function existMatricula(solicitud) {
   .then(r => r.rows.length != 0);
 }
 
-module.exports.add = function(matricula) {
+function getNumeroMatricula(tipo) {
+  if (tipo == 'profesional') tipo = 'TEC';
+  if (tipo == 'empresa') tipo = 'EMP';
+  if (tipo == 'idoneo') tipo = 'IDO';
+
+  let query = `
+    select max( NULLIF(regexp_replace("numeroMatricula", '\D','','g'), '')::numeric ) as num
+    from matricula
+    where "numeroMatricula" LIKE '${tipo}%';  `
+
+  return connector.execRawQuery(query)
+    .then(r => `${tipo}${r.rows[0].num + 1}`);
+}
+
+function addBoleta(id, pago) {
+  let boleta = {
+    matricula: id,
+    tipo_comprobante: 18,  //18 ES PRI
+    fecha: pago.fecha,  //MISMA FECHA QUE EL PAGO
+    total: pago.importe,
+    estado: 2,   //2 ES CANCELADA
+    fecha_vencimiento: pago.fecha,
+    fecha_update: pago.fecha,
+    delegacion: pago.delegacion,
+    items: [{
+      item: 1,
+      descripcion: `Derecho de inscripción profesional`,
+      importe: pago.importe
+    }]    
+  }
+  
+  return Boleta.add(boleta);
+}
+
+function addComprobante(id, pago) {
+  let comprobante = {
+    matricula: id,
+    boletas: pago.boletas,
+    items_pago: pago.items,
+    fecha: pago.fecha,
+    subtotal: pago.importe,
+    interes_total: 0,
+    importe_total: pago.importe,
+    delegacion: pago.delegacion
+  }  
+}
+
+module.exports.aprobar = function(matricula) {
+  let solicitud;
+  let estado;
+  let matricula_added;
+
   return existMatricula(matricula.solicitud)
   .then(exist => {
       if (!exist) {
@@ -167,34 +225,49 @@ module.exports.add = function(matricula) {
           Solicitud.get(matricula.solicitud),
           getEstadoHabilitada()
         ])
-        .then(([solicitud, estado]) => {
+        .then(([solicitud_get, estado_get]) => {
+          solicitud  = solicitud_get;
+          estado = estado_get;
+          return getNumeroMatricula(solicitud.entidad.tipo);
+        })
+        .then(numero_nueva => {
           return connector
           .beginTransaction()
           .then(connection => {
-              let matricula_added;
-              matricula.entidad = solicitud.entidad.id;
-              matricula.estado = estado.id;
-              return Solicitud.setEstado(matricula.solicitud, 'aprobada', connection.client)
-              .then(r => addMatricula(matricula, connection.client))
-              .then(r => {
-                matricula_added = r;
-                connector.commit(connection.client)
-              })
-              .then(r => {
-                connection.done();
-                return matricula_added;
-              })
-              .catch(e => {
-                connector.rollback(connection.client);
-                connection.done();
-                throw Error(e);
-              });
+            let matricula_added;
+            matricula.entidad = solicitud.entidad.id;
+            matricula.estado = estado.id;
+            matricula.numeroMatricula = numero_nueva;            
+
+            return Solicitud.patch(matricula.solicitud, { estado: 'aprobada' }, connection.client)  
+            .then(r => addMatricula(matricula, connection.client))
+            .then(r => {
+              matricula_added = r;
+              return addBoleta(matricula_added.id, matricula.pago);
+            })
+            .then(boleta => {
+              matricula.pago.boletas = [r.id];
+              return addComprobante(matricula_added.id, matricula.pago)
+            })
+            .then(r => {
+              return connector.commit(connection.client)
+                .then(r => {
+                  connection.done();
+                  return matricula_added;
+                })                            
+            })
+            .catch(e => {
+              connector.rollback(connection.client);
+              connection.done();
+              throw Error(e);
+            });
           })
         });
       }
-      else throw new errors.CustomError(400, "Ya existe una matrícula para dicha solicitud");
+      else throw ({ code: 400, message: "Ya existe una matrícula para dicha solicitud" });
   })
 }
+
 
 const select = {
   atributes: [
@@ -289,7 +362,7 @@ module.exports.get = function (id) {
   return connector.execQuery(query)
     .then(r => {
       matricula = r.rows[0];
-      if (!matricula) throw new errors.CustomError(404, "No existe el recurso solicitado");
+      if (!matricula) throw ({ code: 404, message: "No existe el recurso solicitado" });
       if (matricula.tipoEntidad == 'profesional') return Profesional.get(matricula.entidad)
       else if (matricula.tipoEntidad == 'empresa') return Empresa.get(matricula.entidad);
     })

@@ -1,3 +1,4 @@
+const moment = require('moment');
 const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -234,6 +235,7 @@ module.exports.add = function (boleta) {
 }
 
 module.exports.patch = function(id, boleta, client) {
+  boleta.fecha_update = moment();
   let query = table.update(boleta).where(table.id.equals(id)).toQuery();
 
   return connector.execQuery(query, client);

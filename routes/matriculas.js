@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const model = require('../model');
-const errors = require('../errors');
 const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
@@ -23,7 +22,7 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-  model.Matricula.add(req.body)
+  model.Matricula.aprobar(req.body)
     .then(matricula => res.status(201).json(matricula))
     .catch(e => handler(e, res));
 });
