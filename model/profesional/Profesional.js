@@ -225,10 +225,11 @@ module.exports.getAll = function(params) {
   let query = table.select(...select_atributes)
   .from(select_from)
 
+  if (params.dni) query.where(table.dni.equals(params.dni));
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);
 
-  connector.execQuery(query.toQuery)
+  return connector.execQuery(query.toQuery())
   .then(r => {
     profesionales = r.rows;
     let proms = []
@@ -242,8 +243,8 @@ module.exports.getAll = function(params) {
       [ domicilioReal, domicilioProfesional, domicilioConstituido,
         contactos, formaciones, beneficiarios, subsidiarios ] = value;
       profesionales[index].domicilioReal = domicilioReal || null;
-      profesional.domicilioProfesional = domicilioProfesional || null;
-      profesional.domicilioConstituido = domicilioConstituido || null;
+      profesionales[index].domicilioProfesional = domicilioProfesional || null;
+      profesionales[index].domicilioConstituido = domicilioConstituido || null;
       profesionales[index].contactos = contactos;
       profesionales[index].formaciones = formaciones;
       profesionales[index].beneficiarios = beneficiarios;

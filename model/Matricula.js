@@ -1,3 +1,4 @@
+const moment = require('moment');
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -6,6 +7,7 @@ const Profesional = require('./profesional/Profesional');
 const Empresa = require('./Empresa');
 const Entidad = require('./Entidad');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
+const Boleta = require('./cobranzas/Boleta');
 
 const table = sql.define({
   name: 'matricula',
@@ -146,16 +148,6 @@ function addMatricula(matricula, client) {
     .then(r => r.rows[0]);
 }
 
-function getEstadoHabilitada() {
-  let query = TipoEstadoMatricula.table.select(
-    TipoEstadoMatricula.table.id
-  ).where(TipoEstadoMatricula.table.valor.equals("Habilitado"))
-  .toQuery();
-
-  return connector.execQuery(query)
-  .then(r => r.rows[0]);
-}
-
 function existMatricula(solicitud) {
   let query = table.select(
     table.id
@@ -166,10 +158,18 @@ function existMatricula(solicitud) {
   .then(r => r.rows.length != 0);
 }
 
+
+// NO SE SI CUATRO NUMS O CINCO
+function completarConCeros(numero) {
+    let result = numero.toString();
+    let ceros = '0'.repeat(4 - result.length);
+    return ceros + result;
+}
+
 function getNumeroMatricula(tipo) {
-  if (tipo == 'profesional') tipo = 'TEC';
-  if (tipo == 'empresa') tipo = 'EMP';
-  if (tipo == 'idoneo') tipo = 'IDO';
+  // if (tipo == 'profesional') tipo = 'TECA';
+  // if (tipo == 'empresa') tipo = 'EMP';
+  tipo = 'TECA';
 
   let query = `
     select max( NULLIF(regexp_replace("numeroMatricula", '\D','','g'), '')::numeric ) as num
@@ -177,40 +177,33 @@ function getNumeroMatricula(tipo) {
     where "numeroMatricula" LIKE '${tipo}%';  `
 
   return connector.execRawQuery(query)
-    .then(r => `${tipo}${r.rows[0].num + 1}`);
+    .then(r => {
+      let numero = r.rows.length ? completarConCeros(r.rows[0].num + 1) : '00001';
+      return tipo + numero;
+    });
 }
 
-function addBoleta(id, pago) {
+module.exports.getNumeroMatricula = getNumeroMatricula;
+
+
+function addBoleta(id, fecha, importe, delegacion, client) {
   let boleta = {
     matricula: id,
     tipo_comprobante: 18,  //18 ES PRI
-    fecha: pago.fecha,  //MISMA FECHA QUE EL PAGO
-    total: pago.importe,
-    estado: 2,   //2 ES CANCELADA
-    fecha_vencimiento: pago.fecha,
-    fecha_update: pago.fecha,
-    delegacion: pago.delegacion,
+    fecha: fecha,  //MISMA FECHA QUE EL PAGO
+    total: importe, 
+    estado: 1,   //1 ES 'Pendiente de Pago'
+    fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(15, 'days'),
+    fecha_update: fecha,
+    delegacion: delegacion,
     items: [{
       item: 1,
       descripcion: `Derecho de inscripción profesional`,
-      importe: pago.importe
+      importe: importe
     }]    
   }
   
-  return Boleta.add(boleta);
-}
-
-function addComprobante(id, pago) {
-  let comprobante = {
-    matricula: id,
-    boletas: pago.boletas,
-    items_pago: pago.items,
-    fecha: pago.fecha,
-    subtotal: pago.importe,
-    interes_total: 0,
-    importe_total: pago.importe,
-    delegacion: pago.delegacion
-  }  
+  return Boleta.addBoleta(boleta, client);
 }
 
 module.exports.aprobar = function(matricula) {
@@ -221,33 +214,32 @@ module.exports.aprobar = function(matricula) {
   return existMatricula(matricula.solicitud)
   .then(exist => {
       if (!exist) {
-        return Promise.all([
-          Solicitud.get(matricula.solicitud),
-          getEstadoHabilitada()
-        ])
-        .then(([solicitud_get, estado_get]) => {
+        return Solicitud.get(matricula.solicitud)
+        .then(solicitud_get => {
           solicitud  = solicitud_get;
-          estado = estado_get;
           return getNumeroMatricula(solicitud.entidad.tipo);
         })
         .then(numero_nueva => {
           return connector
           .beginTransaction()
           .then(connection => {
-            let matricula_added;
+            matricula.solicitud = solicitud.id;
             matricula.entidad = solicitud.entidad.id;
-            matricula.estado = estado.id;
+            matricula.estado = 12; // 12 es 'Pendiente de Pago'
             matricula.numeroMatricula = numero_nueva;            
 
-            return Solicitud.patch(matricula.solicitud, { estado: 'aprobada' }, connection.client)  
+            return Solicitud.patch(solicitud.id, { estado: 'aprobada' }, connection.client)  
             .then(r => addMatricula(matricula, connection.client))
             .then(r => {
               matricula_added = r;
-              return addBoleta(matricula_added.id, matricula.pago);
-            })
-            .then(boleta => {
-              matricula.pago.boletas = [r.id];
-              return addComprobante(matricula_added.id, matricula.pago)
+              //EL IMPORTE POR AHORA ES 7200, DEBERIA TOMARLO DE ALGUNA TABLA
+              return addBoleta(
+                  matricula_added.id, 
+                  matricula.fechaResolucion, 
+                  7200, 
+                  matricula.delegacion, 
+                  connection.client
+              );
             })
             .then(r => {
               return connector.commit(connection.client)
@@ -384,4 +376,12 @@ module.exports.getMigracion = function (id, empresa) {
     .toQuery();
   return connector.execQuery(query)
     .then(r => r.rows[0]);
+}
+
+module.exports.patch = function (id, matricula, client) {
+  let query = table.update(matricula)
+    .where(table.id.equals(id))
+    .toQuery();
+    
+  return connector.execQuery(query, client);
 }

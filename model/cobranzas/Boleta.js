@@ -57,14 +57,6 @@ const table = sql.define({
             dataType: 'int',
         },
         {
-            name: 'tipo_pago',
-            dataType: 'int',
-        },
-        {
-            name: 'fecha_pago',
-            dataType: 'date',
-        },
-        {
             name: 'fecha_update',
             dataType: 'date',
         },
@@ -177,7 +169,7 @@ function getNumeroBoleta(numero) {
     } else return Promise.resolve(numero);
 }
 
-function addBoleta(boleta, client) {
+function addDatosBoleta(boleta, client) {
     return getNumeroBoleta(boleta.numero)
         .then(numero_boleta => {
             let query = table.insert(
@@ -191,8 +183,6 @@ function addBoleta(boleta, client) {
                     table.numero_comprobante.value(boleta.numero_comprobante),
                     table.numero_solicitud.value(boleta.numero_solicitud),
                     table.numero_condonacion.value(boleta.numero_condonacion),
-                    table.tipo_pago.value(boleta.tipo_pago),
-                    table.fecha_pago.value(boleta.fecha_pago),
                     table.fecha_update.value(boleta.fecha_update),
                     table.delegacion.value(boleta.delegacion)
                 )
@@ -204,12 +194,31 @@ function addBoleta(boleta, client) {
         })
 }
 
+function addBoleta(boleta, client) {
+    let boleta_nueva;
+
+    return addDatosBoleta(boleta, client)
+    .then(boleta_added => {
+        boleta_nueva = boleta_added;
+        let proms_items = boleta.items.map(item => {
+            item.boleta = boleta_nueva.id;
+            return BoletaItem.add(item, client);
+        })
+        return Promise.all(proms_items);
+    })
+    .then(items => {
+        boleta_nueva.items = items;
+        return boleta_nueva;
+    });
+}
+module.exports.addBoleta = addBoleta;
+
 module.exports.add = function (boleta) {
     let boleta_nueva;
     return connector
         .beginTransaction()
         .then(connection => {
-            return addBoleta(boleta, connection.client)
+            return addDatosBoleta(boleta, connection.client)
                 .then(boleta_added => {
                     boleta_nueva = boleta_added;
                     let proms_items = boleta.items.map(item => {

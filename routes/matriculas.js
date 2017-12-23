@@ -15,6 +15,12 @@ router.get('/', function(req, res) {
     .catch(e => handler(e, res));
 });
 
+router.get('/nuevo_numero', function(req, res) {
+  model.Matricula.getNumeroMatricula()
+    .then(numero => res.json(numero))
+    .catch(e => handler(e, res));
+});
+
 router.get('/:id', function(req, res) {
   model.Matricula.get(req.params.id)
     .then(matricula => res.json(matricula))
@@ -30,6 +36,12 @@ router.post('/', function(req, res) {
 router.post('/total', function(req, res) {
   model.Matricula.count()
     .then(total => res.status(200).json(total))
+    .catch(e => handler(e, res));
+});
+
+router.patch('/:id', function(req, res) {
+  model.Matricula.patch(req.params.id, req.body)
+    .then(r => res.status(200).json(r))
     .catch(e => handler(e, res));
 });
 
