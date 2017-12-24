@@ -162,7 +162,7 @@ function existMatricula(solicitud) {
 // NO SE SI CUATRO NUMS O CINCO
 function completarConCeros(numero) {
     let result = numero.toString();
-    let ceros = '0'.repeat(4 - result.length);
+    let ceros = '0'.repeat(5 - result.length);
     return ceros + result;
 }
 
@@ -172,14 +172,15 @@ function getNumeroMatricula(tipo) {
   tipo = 'TECA';
 
   let query = `
-    select max( NULLIF(regexp_replace("numeroMatricula", '\D','','g'), '')::numeric ) as num
+    select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
     from matricula
     where "numeroMatricula" LIKE '${tipo}%';  `
 
   return connector.execRawQuery(query)
     .then(r => {
-      let numero = r.rows.length ? completarConCeros(r.rows[0].num + 1) : '00001';
-      return tipo + numero;
+      console.log(r.rows[0].num)
+      let numero = r.rows.length ? +r.rows[0].num + 1 : 1;
+      return tipo + completarConCeros(numero);
     });
 }
 
@@ -232,14 +233,17 @@ module.exports.aprobar = function(matricula) {
             .then(r => addMatricula(matricula, connection.client))
             .then(r => {
               matricula_added = r;
+              if (matricula.generar_boleta) {
               //EL IMPORTE POR AHORA ES 7200, DEBERIA TOMARLO DE ALGUNA TABLA
-              return addBoleta(
+                return addBoleta(
                   matricula_added.id, 
                   matricula.fechaResolucion, 
                   7200, 
                   matricula.delegacion, 
                   connection.client
-              );
+                );
+              }
+              else Promise.resolve();
             })
             .then(r => {
               return connector.commit(connection.client)
