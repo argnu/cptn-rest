@@ -8,7 +8,7 @@ const addInstitucion = (universidad) => {
   let table = model.Institucion.table;
   let query = table.insert(
                 table.id.value(universidad['CODIGO']),
-                table.nombre.value(universidad['DESCRIPCION'].trim())
+                table.nombre.value(.utils.checkString(universidad['DESCRIPCION']))
               ).toQuery();
 
   return connector.execQuery(query);

@@ -9,7 +9,7 @@ const addItem = (item)  => {
     let id_item = `${item['CODIGOPREGUNTA']}${item['NUMEROPREGUNTA']}`;
     let query = table.insert(
                   table.item.value(id_item),
-                  table.valor.value(item['DESCRIPCION'].trim())
+                  table.valor.value(.utils.checkString(item['DESCRIPCION']))
                 ).toQuery();
 }
 

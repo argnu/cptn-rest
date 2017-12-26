@@ -8,7 +8,7 @@ const addSubcategoria = (subcategoria)  => {
     let table = model.tareas.Subcategoria.table;
     let query = table.insert(
                   table.id.value(subcategoria['CODIGO']),
-                  table.descripcion.value(subcategoria['DESCRIPCION'].trim()),
+                  table.descripcion.value(.utils.checkString(subcategoria['DESCRIPCION'])),
                   table.categoria.value(subcategoria['CODTAREAN1'])
                 ).toQuery();
 

@@ -8,7 +8,7 @@ const addDelegacion = (delegacion)  => {
     let table = model.Delegacion.table;
     let query = table.insert(
                   table.id.value(delegacion['CODIGO']),
-                  table.nombre.value(delegacion['DESCRIPCION'].trim())
+                  table.nombre.value(.utils.checkString(delegacion['DESCRIPCION']))
                 ).toQuery();
 
     return connector.execQuery(query);

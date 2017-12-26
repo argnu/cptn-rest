@@ -17,7 +17,7 @@ function addPagos(pago) {
                     table.forma_pago.value(pago['FormaPago']),
                     table.numero_cheque.value(pago['NroCheque']),
                     table.codigo_banco.value(pago['CodBanco']),
-                    table.titular_cuenta.value(pago['TitularCuenta'].trim()),
+                    table.titular_cuenta.value(.utils.checkString(pago['TitularCuenta'])),
                     table.fecha_vto_cheque.value(utils.getFecha(pago['FECHA_VTO'])),
                     table.compensado.value(pago['Compensado'])
                 ).toQuery();
