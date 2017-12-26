@@ -66,14 +66,6 @@ const table = sql.define({
       dataType: 'varchar(20)'
     },
     {
-      name: 'nombreArchivoFoto',
-      dataType: 'varchar(254)',
-    },
-    {
-      name: 'nombreArchivoFirma',
-      dataType: 'varchar(254)',
-    },
-    {
       name: 'estado',
       dataType: 'int',
       notNull: true

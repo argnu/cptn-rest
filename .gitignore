@@ -2,3 +2,7 @@
 config.private.js
 node_modules
 npm-debug.log
+files/fotos/*
+!files/fotos/.gitkeep
+files/firmas/*
+!files/firmas/.gitkeep

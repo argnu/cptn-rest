@@ -87,6 +87,14 @@ const table = sql.define({
       name: 'publicar',
       dataType: 'boolean'
     },
+    {
+      name: 'foto',
+      dataType: 'varchar(254)',
+    },
+    {
+      name: 'firma',
+      dataType: 'varchar(254)',
+    }
   ],
 
   foreignKeys: [
@@ -123,7 +131,9 @@ function addProfesional(profesional, client) {
       table.serviciosPrestados.value(profesional.serviciosPrestados),
       table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
       table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional),
-      table.publicar.value(profesional.publicar)
+      table.publicar.value(profesional.publicar),
+      table.foto.value(profesional.foto),
+      table.firma.value(profesional.firma)
     ).toQuery();
 
     return connector.execQuery(query, client);
