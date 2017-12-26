@@ -110,8 +110,6 @@ function addMatriculaMigracion(matricula, client) {
     table.notasPrivadas.value(matricula.notasPrivadas),
     table.asientoBajaF.value(matricula.asientoBajaF),
     table.codBajaF.value(matricula.codBajaF),
-    table.nombreArchivoFoto.value(matricula.nombreArchivoFoto),
-    table.nombreArchivoFirma.value(matricula.nombreArchivoFirma),
     table.estado.value(matricula.estado)
   ).returning(table.id).toQuery()
 
@@ -265,8 +263,7 @@ const select = {
     table.entidad, table.solicitud,
     table.fechaBaja, table.observaciones,
     table.notasPrivadas, table.asientoBajaF,
-    table.codBajaF, table.nombreArchivoFoto,
-    table.nombreArchivoFirma,
+    table.codBajaF,
     Entidad.table.tipo.as('tipoEntidad')
   ],
 

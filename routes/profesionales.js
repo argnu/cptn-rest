@@ -1,3 +1,4 @@
+const path = require('path');
 const router = require('express').Router();
 const model = require('../model');
 const bodyParser = require('body-parser');
@@ -5,15 +6,6 @@ router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
   model.Profesional.getAll(req.query)
-    .then(r => res.json(r))
-    .catch(e => {
-      console.error(e);
-      res.status(500).json({ msg: 'Error en el servidor' });
-    });
-});
-
-router.get('/:id', function(req, res) {
-  model.Profesional.get(req.params.id)
     .then(r => res.json(r))
     .catch(e => {
       console.error(e);
@@ -50,6 +42,33 @@ router.get('/:id/beneficiarios', function(req, res) {
 
 router.get('/:id/subsidiarios', function(req, res) {
   model.Subsidiario.getAll(req.params.id)
+    .then(r => res.json(r))
+    .catch(e => {
+      console.error(e);
+      res.status(500).json({ msg: 'Error en el servidor' });
+    });
+});
+
+router.get('/:id/foto', function (req, res) {
+  model.Profesional.getFoto(req.params.id)
+    .then(r => res.sendFile(path.join(__base, 'files/fotos', r)))
+    .catch(e => {
+      console.error(e);
+      res.status(500).json({ msg: 'Error en el servidor' });
+    });
+});
+
+router.get('/:id/firma', function (req, res) {
+  model.Profesional.getFirma(req.params.id)
+    .then(r => res.sendFile(path.join(__base, 'files/firmas', r)))
+    .catch(e => {
+      console.error(e);
+      res.status(500).json({ msg: 'Error en el servidor' });
+    });
+});
+
+router.get('/:id', function (req, res) {
+  model.Profesional.get(req.params.id)
     .then(r => res.json(r))
     .catch(e => {
       console.error(e);

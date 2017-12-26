@@ -18,8 +18,8 @@ function migracion() {
          .then(r => titulos.migrar())
          .then(r => posgrados.migrar())
          .then(r => matriculas.migrar())
-         .then(r => cobranzas.migrar())
          .then(r => legajos.migrar())
+         .then(r => cobranzas.migrar())
          .catch(e => console.error(e));
  }
 

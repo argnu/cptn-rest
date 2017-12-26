@@ -8,7 +8,7 @@ const addCategoria = (categoria)  => {
     let table = model.tareas.Categoria.table;
     let query = table.insert(
                   table.id.value(categoria['CODIGO']),
-                  table.descripcion.value(categoria['DESCRIPCION'].trim())
+                  table.descripcion.value(utils.checkString(categoria['DESCRIPCION']))
                 ).toQuery();
 
     return connector.execQuery(query);

@@ -8,11 +8,11 @@ const utils = require('../../utils');
 function addTipoComprobante(tipo) {
   let table = model.TipoComprobante.table;
   let query = table.insert(
-                table.abreviatura.value(tipo['Tipo_Doc'].trim()),
-                table.descripcion.value(tipo['DESCRIPCION'].trim()),
-                table.cuentaAcreedora.value(tipo['CUENTAACREEDORA'].trim()),
-                table.cuentaDeudora.value(tipo['CUENTADEUDORA'].trim()),
-                table.cuentaADevengar.value(tipo['CUENTAADEVENGAR'].trim())
+                table.abreviatura.value(utils.checkString(tipo['Tipo_Doc'])),
+                table.descripcion.value(utils.checkString(tipo['DESCRIPCION'])),
+                table.cuentaAcreedora.value(utils.checkString(tipo['CUENTAACREEDORA'])),
+                table.cuentaDeudora.value(utils.checkString(tipo['CUENTADEUDORA'])),
+                table.cuentaADevengar.value(utils.checkString(tipo['CUENTAADEVENGAR']))
               ).toQuery();
 
   return connector.execQuery(query);

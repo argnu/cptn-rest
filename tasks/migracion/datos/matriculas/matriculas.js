@@ -8,7 +8,7 @@ const utils = require('../../utils');
 function createDomicilioReal (matricula) {
     if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
         let nuevoDomicilio = {};
-        nuevoDomicilio['calle'] = matricula['DOMICREALCALLE'].trim();
+        nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICREALCALLE']);
         nuevoDomicilio['localidad'] = matricula['DOMICREALLOCALIDAD'];
         return nuevoDomicilio;
     }
@@ -18,7 +18,7 @@ function createDomicilioReal (matricula) {
 function createDomicilioProfesional (matricula) {
     if (matricula['DOMICLEGALCALLE'] && matricula['DOMICLEGALLOCALIDAD'] ){
         let nuevoDomicilio = {};
-        nuevoDomicilio['calle'] = matricula['DOMICLEGALCALLE'].trim();
+        nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICLEGALCALLE']);
         nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
         return nuevoDomicilio;
     }
@@ -27,26 +27,26 @@ function createDomicilioProfesional (matricula) {
 
 function createProfesional(matricula) {
     let nuevoProfesional = {};
-    nuevoProfesional['dni'] = matricula['NUMDOCU'].trim();
-    nuevoProfesional['apellido'] = matricula['APELLIDO'].trim();
-    nuevoProfesional['nombre'] = matricula['NOMBRE'].trim();
+    nuevoProfesional['dni'] = utils.checkString(matricula['NUMDOCU']);
+    nuevoProfesional['apellido'] = utils.checkString(matricula['APELLIDO']);
+    nuevoProfesional['nombre'] = utils.checkString(matricula['NOMBRE']);
     nuevoProfesional['fechaNacimiento'] = utils.getFecha(matricula['FECNAC_DATE']);
     nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] + 1;
-    nuevoProfesional['observaciones'] = matricula['OBSERVACIONES'].trim();
-    nuevoProfesional['lugarNacimiento'] = matricula['lugarNacimiento'].trim();
+    nuevoProfesional['observaciones'] = utils.checkString(matricula['OBSERVACIONES']);
+    nuevoProfesional['lugarNacimiento'] = utils.checkString(matricula['lugarNacimiento']);
 
     nuevoProfesional.contactos = [];
     ['TELFIJO', 'TELCEL', 'EMAIL', 'PAGWEB'].forEach((tipo, i) => {
         if (matricula[tipo] && matricula[tipo].length) {
             nuevoProfesional.contactos.push({
-                tipo: i + 1, valor: matricula[tipo].trim()
+                tipo: i + 1, valor: utils.checkString(matricula[tipo])
             });
         }
     });
 
     nuevoProfesional['relacionDependencia'] = matricula['RELACIONLABORAL'];
-    nuevoProfesional['empresa'] = matricula['EMPRESA'].trim();
-    nuevoProfesional['serviciosPrestados'] = matricula['SERVICIOSPRESTADOS'].trim();
+    nuevoProfesional['empresa'] = utils.checkString(matricula['EMPRESA']);
+    nuevoProfesional['serviciosPrestados'] = utils.checkString(matricula['SERVICIOSPRESTADOS']);
     if (matricula['SERVICIOSPRESTADOS']) {
         nuevoProfesional['independiente'] = 1;
     } else {
@@ -56,7 +56,7 @@ function createProfesional(matricula) {
     nuevoProfesional['publicar'] = matricula['PUBLICARDATOS'];
     //Datos para crear la entidad
     nuevoProfesional['tipo'] = 'profesional';
-    nuevoProfesional['cuit'] = matricula['CUIT'].trim();
+    nuevoProfesional['cuit'] = utils.checkString(matricula['CUIT']);
 
     let condafip = matricula['SITAFIP'];
     if (condafip != null) {
@@ -79,15 +79,13 @@ const addMatricula = (matricula) => {
             nuevaMatricula.entidad = profesional.id;
             nuevaMatricula.solicitud = null;
             nuevaMatricula.fechaResolucion = utils.getFecha(matricula['FECHARESOLUCION_DATE']);
-            nuevaMatricula.numeroMatricula = matricula['NROMATRICULA'].trim();
-            nuevaMatricula.numeroActa = matricula['NUMACTA'].trim();
+            nuevaMatricula.numeroMatricula = utils.checkString(matricula['NROMATRICULA']);
+            nuevaMatricula.numeroActa = utils.checkString(matricula['NUMACTA']);
             nuevaMatricula.fechaBaja = utils.getFecha(matricula['FECHABAJA_DATE']);
-            nuevaMatricula.observaciones = matricula['OBSERVACIONES'].trim();
-            nuevaMatricula.notasPrivadas = matricula['NOTASPRIVADAS'].trim();
-            nuevaMatricula.asientoBajaF = matricula['ASIENTOBAJAF'].trim();
-            nuevaMatricula.codBajaF = matricula['CODBAJAF'].trim();
-            nuevaMatricula.nombreArchivoFoto = matricula['NOMBREARCHIVOFOTO'].trim();
-            nuevaMatricula.nombreArchivoFirma = matricula['NombreArchivoFirma'].trim();
+            nuevaMatricula.observaciones = utils.checkString(matricula['OBSERVACIONES']);
+            nuevaMatricula.notasPrivadas = utils.checkString(matricula['NOTASPRIVADAS']);
+            nuevaMatricula.asientoBajaF = utils.checkString(matricula['ASIENTOBAJAF']);
+            nuevaMatricula.codBajaF = utils.checkString(matricula['CODBAJAF']);
             nuevaMatricula.estado = matricula['ESTADO'];
             nuevaMatricula.idMigracion = matricula['ID'];
             nuevaMatricula.legajo = matricula['LEGAJO'];

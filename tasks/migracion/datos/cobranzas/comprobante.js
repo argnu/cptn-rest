@@ -19,7 +19,7 @@ function addComprobantes(comprobante) {
         table.bonificacion_total.value(comprobante['BonificacionTotal']),
         table.importe_total.value(comprobante['ImporteTotal']),
         table.importe_cancelado.value(comprobante['ImporteCancelado']),
-        table.observaciones.value(comprobante['Observaciones'].trim()),
+        table.observaciones.value(utils.checkString(comprobante['Observaciones'])),
         table.delegacion.value(comprobante['CodSucursal']),
         table.operador.value(comprobante['CodOperador']),
         table.anulado.value(comprobante['Anulado']),

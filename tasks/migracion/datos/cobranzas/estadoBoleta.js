@@ -8,7 +8,7 @@ const addEstadoBoleta = (estado) => {
     let table = model.TipoEstadoBoleta.table;
     let query = table.insert(
                   table.id.value(estado['CODIGO']),
-                  table.valor.value(estado['DESCRIPCION'].trim())
+                  table.valor.value(utils.checkString(estado['DESCRIPCION']))
                 ).toQuery();
 
     return connector.execQuery(query);
