@@ -219,7 +219,8 @@ table.serviciosPrestados, table.poseeCajaPrevisional,
 table.nombreCajaPrevisional, table.publicar,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioProfesional.as('domicilioProfesional'),
-Entidad.table.domicilioConstituido.as('domicilioConstituido')
+Entidad.table.domicilioConstituido.as('domicilioConstituido'),
+table.foto, table.firma
 ];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .join(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
@@ -259,6 +260,12 @@ module.exports.getAll = function(params) {
       profesionales[index].formaciones = formaciones;
       profesionales[index].beneficiarios = beneficiarios;
       profesionales[index].subsidiarios = subsidiarios;
+      if (profesionales[index].foto) {
+        profesionales[index].foto = `http://localhost:3400/api/profesionales/${profesionales[index].id}/foto`;
+      }
+      if (profesionales[index].firma) {
+        profesionales[index].firma = `http://localhost:3400/api/profesionales/${profesionales[index].id}/firma`;
+      }      
     });
     return profesionales;
   })
@@ -288,6 +295,12 @@ module.exports.get = function(id) {
   return connector.execQuery(query)
   .then(r => {
     profesional = r.rows[0];
+    if (profesional.foto) {
+      profesional.foto = `http://localhost:3400/api/profesionales/${profesional.id}/foto`;
+    }
+    if (profesional.firma) {
+      profesional.firma = `http://localhost:3400/api/profesionales/${profesional.id}/firma`;
+    }
     return getDatosProfesional(profesional);
   })
   .then(([
@@ -303,6 +316,16 @@ module.exports.get = function(id) {
       profesional.subsidiarios = subsidiarios;
       return profesional;
     });
+}
+
+module.exports.getFoto = function(id) {
+  let query = table.select(table.foto).where(table.id.equals(id)).toQuery();
+  return connector.execQuery(query).then(r => r.rows[0].foto);
+}
+
+module.exports.getFirma = function(id) {
+  let query = table.select(table.firma).where(table.id.equals(id)).toQuery();
+  return connector.execQuery(query).then(r => r.rows[0].firma);
 }
 
 

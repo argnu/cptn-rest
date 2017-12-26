@@ -78,40 +78,43 @@ function addSolicitud(solicitud, client) {
 }
 
 module.exports.add = function(solicitud) {
-    return connector
-    .beginTransaction()
-    .then(connection => {
-        if (solicitud.entidad.tipo == 'profesional') {
-          if (solicitud.entidad.id) {
-            return Profesional.edit(solicitud.entidad, connection.client)
-            .then(r => Profesional.get(solicitud.entidad.id));
-          }
-          else {
-            return Profesional.addProfesional(solicitud.entidad, connection.client);
-          }
+  let connection;
+
+  return connector
+  .beginTransaction()
+  .then(con => {
+      connection = con;
+      if (solicitud.entidad.tipo == 'profesional') {
+        if (solicitud.entidad.id) {
+          return Profesional.edit(solicitud.entidad, connection.client)
+          .then(r => Profesional.get(solicitud.entidad.id));
         }
-        else if (solicitud.entidad.tipo == 'empresa') {
-          return Empresa.addEmpresa(solicitud.entidad, connection.client)
+        else {
+          return Profesional.addProfesional(solicitud.entidad, connection.client);
         }
-    })
-    .then(entidad_added => {
-      solicitud.entidad = entidad_added;
-      return addSolicitud(solicitud, connection.client)
-        .then(solicitud_added => {
-          return connector
-          .commit(connection.client)
-          .then(r => {
-            connection.done();
-            solicitud_added.entidad = entidad_added;
-            return solicitud_added;
-          });
-        })
-    })
-    .catch(e => {
-      connector.rollback(connection.client);
-      connection.done();
-      throw Error(e);
-    });          
+      }
+      else if (solicitud.entidad.tipo == 'empresa') {
+        return Empresa.addEmpresa(solicitud.entidad, connection.client)
+      }
+  })
+  .then(entidad_added => {
+    solicitud.entidad = entidad_added;
+    return addSolicitud(solicitud, connection.client)
+      .then(solicitud_added => {
+        return connector
+        .commit(connection.client)
+        .then(r => {
+          connection.done();
+          solicitud_added.entidad = entidad_added;
+          return solicitud_added;
+        });
+      })
+  })
+  .catch(e => {
+    connector.rollback(connection.client);
+    connection.done();
+    throw Error(e);
+  });          
 }
 
 const select = {

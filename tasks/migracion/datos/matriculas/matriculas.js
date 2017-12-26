@@ -86,8 +86,6 @@ const addMatricula = (matricula) => {
             nuevaMatricula.notasPrivadas = matricula['NOTASPRIVADAS'].trim();
             nuevaMatricula.asientoBajaF = matricula['ASIENTOBAJAF'].trim();
             nuevaMatricula.codBajaF = matricula['CODBAJAF'].trim();
-            nuevaMatricula.nombreArchivoFoto = matricula['NOMBREARCHIVOFOTO'].trim();
-            nuevaMatricula.nombreArchivoFirma = matricula['NombreArchivoFirma'].trim();
             nuevaMatricula.estado = matricula['ESTADO'];
             nuevaMatricula.idMigracion = matricula['ID'];
             nuevaMatricula.legajo = matricula['LEGAJO'];

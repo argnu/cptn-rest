@@ -3,6 +3,7 @@ const router = require('express').Router();
 router.use((req, res, next) => {
   if (req.method != 'OPTIONS') {
     if (req.path == '/usuarios/auth' || !!req.user) next();
+    else if (req.path.match(/^\/profesionales\/\d+\/(foto|firma)$/)) next();
     else return res.status(401).json({ msg: 'Usuario sin autorización' });
   }
   else next();
