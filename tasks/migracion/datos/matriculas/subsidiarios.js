@@ -9,9 +9,9 @@ const addSubsidiario = (subsidiario) => {
   .then(matricula => {
     let nuevoSubsidiario = {};
     nuevoSubsidiario.profesional = matricula.entidad;
-    nuevoSubsidiario.nombre = .utils.checkString(subsidiario['NOMBRE']);
-    nuevoSubsidiario.apellido = .utils.checkString(subsidiario['APELLIDO']);
-    nuevoSubsidiario.dni = .utils.checkString(subsidiario['NUMDOCU']);
+    nuevoSubsidiario.nombre = utils.checkString(subsidiario['NOMBRE']);
+    nuevoSubsidiario.apellido = utils.checkString(subsidiario['APELLIDO']);
+    nuevoSubsidiario.dni = utils.checkString(subsidiario['NUMDOCU']);
     nuevoSubsidiario.porcentaje = subsidiario['PORCENTAJE'];
     return model.Subsidiario.addSubsidiario(nuevoSubsidiario);
   });

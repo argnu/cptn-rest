@@ -13,7 +13,7 @@ function addLegajoItem(item) {
             let query = table.insert(
                 table.legajo.value(legajo.id),
                 table.item.value(id_item),
-                table.valor.value(.utils.checkString(item['valorRespuesta']))
+                table.valor.value(utils.checkString(item['valorRespuesta']))
             ).toQuery();
 
             return connector.execQuery(query);

@@ -8,7 +8,7 @@ const utils = require('../../utils');
 function createDomicilioReal (matricula) {
     if (matricula['DOMICREALCALLE'] && matricula['DOMICREALLOCALIDAD'] ){
         let nuevoDomicilio = {};
-        nuevoDomicilio['calle'] = .utils.checkString(matricula['DOMICREALCALLE']);
+        nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICREALCALLE']);
         nuevoDomicilio['localidad'] = matricula['DOMICREALLOCALIDAD'];
         return nuevoDomicilio;
     }
@@ -18,7 +18,7 @@ function createDomicilioReal (matricula) {
 function createDomicilioProfesional (matricula) {
     if (matricula['DOMICLEGALCALLE'] && matricula['DOMICLEGALLOCALIDAD'] ){
         let nuevoDomicilio = {};
-        nuevoDomicilio['calle'] = .utils.checkString(matricula['DOMICLEGALCALLE']);
+        nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICLEGALCALLE']);
         nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
         return nuevoDomicilio;
     }
@@ -27,26 +27,26 @@ function createDomicilioProfesional (matricula) {
 
 function createProfesional(matricula) {
     let nuevoProfesional = {};
-    nuevoProfesional['dni'] = .utils.checkString(matricula['NUMDOCU']);
-    nuevoProfesional['apellido'] = .utils.checkString(matricula['APELLIDO']);
-    nuevoProfesional['nombre'] = .utils.checkString(matricula['NOMBRE']);
+    nuevoProfesional['dni'] = utils.checkString(matricula['NUMDOCU']);
+    nuevoProfesional['apellido'] = utils.checkString(matricula['APELLIDO']);
+    nuevoProfesional['nombre'] = utils.checkString(matricula['NOMBRE']);
     nuevoProfesional['fechaNacimiento'] = utils.getFecha(matricula['FECNAC_DATE']);
     nuevoProfesional['estadoCivil'] = matricula['ESTADOCIVIL'] + 1;
-    nuevoProfesional['observaciones'] = .utils.checkString(matricula['OBSERVACIONES']);
-    nuevoProfesional['lugarNacimiento'] = .utils.checkString(matricula['lugarNacimiento']);
+    nuevoProfesional['observaciones'] = utils.checkString(matricula['OBSERVACIONES']);
+    nuevoProfesional['lugarNacimiento'] = utils.checkString(matricula['lugarNacimiento']);
 
     nuevoProfesional.contactos = [];
     ['TELFIJO', 'TELCEL', 'EMAIL', 'PAGWEB'].forEach((tipo, i) => {
         if (matricula[tipo] && matricula[tipo].length) {
             nuevoProfesional.contactos.push({
-                tipo: i + 1, valor: .utils.checkString(matricula[tipo])
+                tipo: i + 1, valor: utils.checkString(matricula[tipo])
             });
         }
     });
 
     nuevoProfesional['relacionDependencia'] = matricula['RELACIONLABORAL'];
-    nuevoProfesional['empresa'] = .utils.checkString(matricula['EMPRESA']);
-    nuevoProfesional['serviciosPrestados'] = .utils.checkString(matricula['SERVICIOSPRESTADOS']);
+    nuevoProfesional['empresa'] = utils.checkString(matricula['EMPRESA']);
+    nuevoProfesional['serviciosPrestados'] = utils.checkString(matricula['SERVICIOSPRESTADOS']);
     if (matricula['SERVICIOSPRESTADOS']) {
         nuevoProfesional['independiente'] = 1;
     } else {
@@ -56,7 +56,7 @@ function createProfesional(matricula) {
     nuevoProfesional['publicar'] = matricula['PUBLICARDATOS'];
     //Datos para crear la entidad
     nuevoProfesional['tipo'] = 'profesional';
-    nuevoProfesional['cuit'] = .utils.checkString(matricula['CUIT']);
+    nuevoProfesional['cuit'] = utils.checkString(matricula['CUIT']);
 
     let condafip = matricula['SITAFIP'];
     if (condafip != null) {
@@ -79,13 +79,13 @@ const addMatricula = (matricula) => {
             nuevaMatricula.entidad = profesional.id;
             nuevaMatricula.solicitud = null;
             nuevaMatricula.fechaResolucion = utils.getFecha(matricula['FECHARESOLUCION_DATE']);
-            nuevaMatricula.numeroMatricula = .utils.checkString(matricula['NROMATRICULA']);
-            nuevaMatricula.numeroActa = .utils.checkString(matricula['NUMACTA']);
+            nuevaMatricula.numeroMatricula = utils.checkString(matricula['NROMATRICULA']);
+            nuevaMatricula.numeroActa = utils.checkString(matricula['NUMACTA']);
             nuevaMatricula.fechaBaja = utils.getFecha(matricula['FECHABAJA_DATE']);
-            nuevaMatricula.observaciones = .utils.checkString(matricula['OBSERVACIONES']);
-            nuevaMatricula.notasPrivadas = .utils.checkString(matricula['NOTASPRIVADAS']);
-            nuevaMatricula.asientoBajaF = .utils.checkString(matricula['ASIENTOBAJAF']);
-            nuevaMatricula.codBajaF = .utils.checkString(matricula['CODBAJAF']);
+            nuevaMatricula.observaciones = utils.checkString(matricula['OBSERVACIONES']);
+            nuevaMatricula.notasPrivadas = utils.checkString(matricula['NOTASPRIVADAS']);
+            nuevaMatricula.asientoBajaF = utils.checkString(matricula['ASIENTOBAJAF']);
+            nuevaMatricula.codBajaF = utils.checkString(matricula['CODBAJAF']);
             nuevaMatricula.estado = matricula['ESTADO'];
             nuevaMatricula.idMigracion = matricula['ID'];
             nuevaMatricula.legajo = matricula['LEGAJO'];

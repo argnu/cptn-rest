@@ -9,8 +9,8 @@ const addTitulo = (titulo) => {
   let query = table.insert(
                 table.idMigracion.value(titulo['CODIGO']),
                 table.tipo.value(1),  // 1 es 'Grado'
-                table.libro.value(.utils.checkString(titulo['LIBRO'])),
-                table.nombre.value(.utils.checkString(titulo['DESCRIPCION']))
+                table.libro.value(utils.checkString(titulo['LIBRO'])),
+                table.nombre.value(utils.checkString(titulo['DESCRIPCION']))
               ).toQuery();
 
   return connector.execQuery(query);

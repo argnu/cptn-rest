@@ -8,7 +8,7 @@ const addTipoIncumbencia = (delegacion)  => {
     let table = model.TipoIncumbencia.table;
     let query = table.insert(
                   table.id.value(delegacion['CODINCUMBENCIA']),
-                  table.valor.value(.utils.checkString(delegacion['NOMBREINCUMBENCIA'])),
+                  table.valor.value(utils.checkString(delegacion['NOMBREINCUMBENCIA'])),
                   table.acreditacomo.value(delegacion['ACREDITACOMO'])
                 ).toQuery();
 

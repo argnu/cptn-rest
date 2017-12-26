@@ -42,7 +42,6 @@ function createEntidades() {
 function init() {
     Promise.all([
       createDatosGeograficos(),
-      createDatosTareas(),
       createTable(model.TipoSexo.table),
       createTable(model.TipoCondicionAfip.table),
       createTable(model.TipoContacto.table),
@@ -67,6 +66,7 @@ function init() {
                   createTable(model.TipoFormaPago.table)
                 ]))
     .then(r => Promise.all([
+                  createDatosTareas(),
                   createTable(model.Contacto.table),
                   createTable(model.Formacion.table),
                   createTable(model.BeneficiarioCaja.table),

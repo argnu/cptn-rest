@@ -9,7 +9,7 @@ const addEstadoMatricula = (estado) => {
     let table = model.TipoEstadoMatricula.table;
     let query = table.insert(
         table.id.value(estado['CODIGO']),
-        table.valor.value(.utils.checkString(estado['DESCRIPCION']))
+        table.valor.value(utils.checkString(estado['DESCRIPCION']))
     ).toQuery();
 
     return connector.execQuery(query);
