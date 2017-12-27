@@ -19,18 +19,21 @@ router.get('/', function(req, res) {
     model.TipoEstadoBoleta.getAll(req.query),
     model.TipoComprobante.getAll(req.query),
     model.TipoFormaPago.getAll(req.query),
-    model.TipoPago.getAll(req.query)
+    model.TipoPago.getAll(req.query),
+    model.TipoVinculo.getAll(req.query)
   ])
   .then(([
     condicionafip, contacto, empresa, estadocivil,
     formacion, sexo, sociedad,
     incumbencia, estadoMatricula,
-    estadoBoleta, comprobante, formaPago, pago
+    estadoBoleta, comprobante, formaPago, pago,
+    vinculo
   ]) => res.json({
         condicionafip, contacto, empresa, estadocivil,
         formacion, sexo, sociedad,
         incumbencia, estadoMatricula,
-        estadoBoleta, comprobante, formaPago, pago
+        estadoBoleta, comprobante, formaPago, pago,
+        vinculo
       })
   )
   .catch(e => {

@@ -4,6 +4,7 @@ sql.setDialect('postgres');
 const model = require('../../../../model');
 const utils = require('../../utils');
 
+
 const addBeneficiario = (beneficiario) => {
   return model.Matricula.getMigracion(beneficiario['ID'])
   .then(matricula => {
@@ -11,7 +12,7 @@ const addBeneficiario = (beneficiario) => {
       profesional: matricula.entidad,
       apellido: utils.checkString(beneficiario['APELLIDO']),
       nombre: utils.checkString(beneficiario['NOMBRE']),
-      vinculo: utils.checkString(beneficiario['VINCULO']),
+      vinculo: beneficiario['VINCULO'],
       dni: beneficiario['NUMDOCU'],
       fechaNacimiento: utils.getFecha(beneficiario['FECHANAC_DATE']),
       invalidez: beneficiario['INVALIDEZ']

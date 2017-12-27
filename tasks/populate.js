@@ -52,6 +52,15 @@ function populateContacto() {
   return querysSecuencial(querys);
 }
 
+function populateVinculo() {
+  let querys = [];
+  querys.push(model.TipoVinculo.table.insert(model.TipoVinculo.table.valor.value('Esposa/o')).toQuery());
+  querys.push(model.TipoVinculo.table.insert(model.TipoVinculo.table.valor.value('Hija/o')).toQuery());
+  querys.push(model.TipoVinculo.table.insert(model.TipoVinculo.table.valor.value('Padre/o')).toQuery());
+  querys.push(model.TipoVinculo.table.insert(model.TipoVinculo.table.valor.value('Madre/o')).toQuery());  
+  return querysSecuencial(querys);
+}
+
 function populateEmpresa() {
   let querys = [];
   querys.push(model.TipoEmpresa.table.insert(model.TipoEmpresa.table.valor.value('Unipersonal')).toQuery());
@@ -96,6 +105,7 @@ function populate() {
     populateSexo(),
     populateFormacion(),
     populateContacto(),
+    populateVinculo(),
     populateSociedad(),
     populateEmpresa(),
     populateAfip(),

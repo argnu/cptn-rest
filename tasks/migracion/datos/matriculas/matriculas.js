@@ -27,7 +27,9 @@ function createDomicilioProfesional (matricula) {
 
 function createProfesional(matricula) {
     let nuevoProfesional = {};
-    nuevoProfesional['dni'] = utils.checkString(matricula['NUMDOCU']);
+    let dni = matricula['NUMDOCU'];
+    if (dni.length > 10) dni = matricula['CUIT'].substring(3, 11);
+    nuevoProfesional['dni'] = utils.checkString(dni);
     nuevoProfesional['apellido'] = utils.checkString(matricula['APELLIDO']);
     nuevoProfesional['nombre'] = utils.checkString(matricula['NOMBRE']);
     nuevoProfesional['fechaNacimiento'] = utils.getFecha(matricula['FECNAC_DATE']);

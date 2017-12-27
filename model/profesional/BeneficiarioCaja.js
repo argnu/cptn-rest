@@ -30,7 +30,7 @@ const table = sql.define({
     },
     {
       name: 'vinculo',
-      dataType: 'varchar(45)'
+      dataType: 'int'
     },
     {
       name: 'invalidez',
@@ -43,11 +43,18 @@ const table = sql.define({
     }
   ],
 
-  foreignKeys: {
-    table: 'profesional',
-    columns: [ 'profesional' ],
-    refColumns: [ 'id' ]
-  }
+  foreignKeys: [
+    {
+      table: 'profesional',
+      columns: [ 'profesional' ],
+      refColumns: [ 'id' ]
+    },
+    {
+      table: 't_vinculo',
+      columns: [ 'vinculo' ],
+      refColumns: [ 'id' ]
+    },    
+  ] 
 });
 
 module.exports.table = table;

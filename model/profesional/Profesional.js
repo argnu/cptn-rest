@@ -89,11 +89,11 @@ const table = sql.define({
     },
     {
       name: 'foto',
-      dataType: 'varchar(254)',
+      dataType: 'varchar(255)',
     },
     {
       name: 'firma',
-      dataType: 'varchar(254)',
+      dataType: 'varchar(255)',
     }
   ],
 
@@ -223,9 +223,9 @@ Entidad.table.domicilioConstituido.as('domicilioConstituido'),
 table.foto, table.firma
 ];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
-                         .join(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
+                         .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
-                         .join(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
+                         .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
                          
 
 

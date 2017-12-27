@@ -25,6 +25,7 @@ module.exports.TipoEstadoBoleta = require('./tipos/TipoEstadoBoleta');
 module.exports.TipoMoneda = require('./tipos/TipoMoneda');
 module.exports.TipoPago = require('./tipos/TipoPago');
 module.exports.TipoFormaPago = require('./tipos/TipoFormaPago');
+module.exports.TipoVinculo = require('./tipos/TipoVinculo');
 
 module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
