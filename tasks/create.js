@@ -51,6 +51,7 @@ function init() {
       createTable(model.TipoSociedad.table),
       createTable(model.TipoIncumbencia.table),
       createTable(model.TipoEstadoMatricula.table),
+      createTable(model.TipoEstadoLegajo.table),
       createTable(model.TipoVinculo.table),
       createTable(model.Institucion.table),
       createTable(model.Delegacion.table),

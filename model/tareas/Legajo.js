@@ -304,7 +304,7 @@ function addLegajo(legajo, client) {
                     table.informacion_adicional.value(legajo.informacion_adicional),
                     table.nomenclatura.value(legajo.nomenclatura),
                     table.numero_legajo.value(numero_legajo),
-                    table.solicitud.value(legajo.solicitud),
+                    table.solicitud.value(numero_legajo),
                     table.observaciones.value(legajo.observaciones),
                     table.plazo_cumplimiento.value(utils.checkNull(legajo.plazo_cumplimiento)),
                     table.porcentaje_cumplimiento.value(utils.checkNull(legajo.porcentaje_cumplimiento)),

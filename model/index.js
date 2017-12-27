@@ -20,6 +20,7 @@ module.exports.TipoEmpresa = require('./tipos/TipoEmpresa');
 module.exports.TipoSociedad = require('./tipos/TipoSociedad');
 module.exports.TipoIncumbencia = require('./tipos/TipoIncumbencia');
 module.exports.TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
+module.exports.TipoEstadoLegajo = require('./tipos/TipoEstadoLegajo');
 module.exports.TipoComprobante = require('./tipos/TipoComprobante');
 module.exports.TipoEstadoBoleta = require('./tipos/TipoEstadoBoleta');
 module.exports.TipoMoneda = require('./tipos/TipoMoneda');

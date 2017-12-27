@@ -99,6 +99,20 @@ function populateEstadoBoleta () {
   return querysSecuencial(querys);
 }
 
+function populateEstadoLegajo () {
+  let querys = [];
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(0), model.TipoEstadoLegajo.table.valor.value('Eliminada')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(1), model.TipoEstadoLegajo.table.valor.value('Pendiente')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(2), model.TipoEstadoLegajo.table.valor.value('Pendiente')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(3), model.TipoEstadoLegajo.table.valor.value('Aprobada')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(4), model.TipoEstadoLegajo.table.valor.value('Pendiente de Pago')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(5), model.TipoEstadoLegajo.table.valor.value('Publicada en Acervo')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(6), model.TipoEstadoLegajo.table.valor.value('Rechazada')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(7), model.TipoEstadoLegajo.table.valor.value('Anulada')).toQuery());
+  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.indexes.value(8), model.TipoEstadoLegajo.table.valor.value('Aprobada por Acta')).toQuery());
+  return querysSecuencial(querys);
+}
+
 function populate() {
   return Promise.all([
     populateEstadoCivil(),
@@ -109,7 +123,8 @@ function populate() {
     populateSociedad(),
     populateEmpresa(),
     populateAfip(),
-    populateEstadoBoleta()
+    populateEstadoBoleta(),
+    populateEstadoLegajo()
   ]);
 }
 
