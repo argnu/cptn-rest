@@ -42,7 +42,7 @@ function addLegajo(legajo_1) {
               model.Domicilio.addDomicilio({
                 localidad: legajo.ciudad,
                 calle: legajo.direccion,
-                numero: ''
+                numero: 0
               }),
               createComitente(legajo)
             ])

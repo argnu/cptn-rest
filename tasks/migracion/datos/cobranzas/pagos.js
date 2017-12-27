@@ -13,7 +13,7 @@ function addTipoPago(tipo) {
   let query = table.insert(
                 table.id.value(tipo['CODTIPOPAGO']),
                 table.descripcion.value(utils.checkString(tipo['DESCRIPCION'])),
-                table.cuentaContable.value(utils.checkString(tipo['CUENTACONTABLE'])),
+                table.cuentaContable.value(tipo['CUENTACONTABLE']),
                 table.habilitado.value(habilitado)
               ).toQuery();
 

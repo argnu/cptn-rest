@@ -10,7 +10,7 @@ function addFormaPago(tipo) {
   let query = table.insert(
                 table.id.value(tipo['CODIGOFORMAPAGO']),
                 table.nombre.value(utils.checkString(tipo['NOMBREFORMAPAGO'])),
-                table.cuenta.value(utils.checkString(tipo['CUENTA'])),
+                table.cuenta.value(tipo['CUENTA']),
                 table.moneda.value(tipo['CODMONEDA']),
                 table.pago.value(tipo['TIPOPAGO']),
                 table.senia.value(tipo['SENIA']),

@@ -65,6 +65,14 @@ const table = sql.define({
             dataType: 'int',
             // Agregar foreign key una vez que se confirmen los datos
         },
+        {
+            name: 'tipo_pago',
+            dataType: 'int',
+        },
+        {
+            name: 'fecha_pago',
+            dataType: 'date',
+        },                
     ],
 
     foreignKeys: [{

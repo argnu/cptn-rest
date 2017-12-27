@@ -10,9 +10,9 @@ function addTipoComprobante(tipo) {
   let query = table.insert(
                 table.abreviatura.value(utils.checkString(tipo['Tipo_Doc'])),
                 table.descripcion.value(utils.checkString(tipo['DESCRIPCION'])),
-                table.cuentaAcreedora.value(utils.checkString(tipo['CUENTAACREEDORA'])),
-                table.cuentaDeudora.value(utils.checkString(tipo['CUENTADEUDORA'])),
-                table.cuentaADevengar.value(utils.checkString(tipo['CUENTAADEVENGAR']))
+                table.cuentaAcreedora.value(tipo['CUENTAACREEDORA']),
+                table.cuentaDeudora.value(tipo['CUENTADEUDORA']),
+                table.cuentaADevengar.value(tipo['CUENTAADEVENGAR'])
               ).toQuery();
 
   return connector.execQuery(query);
@@ -21,7 +21,8 @@ function addTipoComprobante(tipo) {
 
 module.exports.migrar = function() {
     console.log('Migrando tipos de comprobantes...');
-    let q_objetos ='select * from T_TIPOASTO WHERE Tipo_Doc BETWEEN @offset AND @limit';
+    // let q_objetos ='select * from T_TIPOASTO WHERE Tipo_Doc BETWEEN @offset AND @limit';
+    let q_objetos ='select * from T_TIPOASTO';
     let q_limites = 'select MIN(Tipo_Doc) as min, MAX(Tipo_Doc) as max from T_TIPOASTO';
 
     return utils.migrar(q_objetos, q_limites, 100, addTipoComprobante);

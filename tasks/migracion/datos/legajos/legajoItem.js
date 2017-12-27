@@ -8,15 +8,18 @@ const utils = require('../../utils');
 function addLegajoItem(item) {
     return model.tareas.Legajo.getBySolicitud(item['IDSOLICITUD'])
         .then(legajo => {
-            let table = model.tareas.LegajoItem.table;
-            let id_item = `${item['IDPREGUNTA']}${item['NumPregunta']}`;
-            let query = table.insert(
-                table.legajo.value(legajo.id),
-                table.item.value(id_item),
-                table.valor.value(utils.checkString(item['valorRespuesta']))
-            ).toQuery();
+            if (legajo) {   //PUEDE QUE EL LEGAJO NO EXISTA PORQUE LA MATRICULA NO EXISTIA
+                let table = model.tareas.LegajoItem.table;
+                let id_item = `${item['IDPREGUNTA']}${item['NumPregunta']}`;
+                let query = table.insert(
+                    table.legajo.value(legajo.id),
+                    table.item.value(id_item),
+                    table.valor.value(utils.checkString(item['valorRespuesta']))
+                ).toQuery();
 
-            return connector.execQuery(query);
+                return connector.execQuery(query);
+            }
+            else return Promise.resolve(null);
         });
 }
 

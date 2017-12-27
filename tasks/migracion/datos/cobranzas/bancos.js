@@ -10,7 +10,7 @@ function addBanco(banco) {
   let query = table.insert(
                 table.id.value(banco['CODIGO']),
                 table.nombre.value(utils.checkString(banco['NOMBREBANCO'])),
-                table.cuenta.value(utils.checkString(banco['CUENTA']))
+                table.cuenta.value(banco['CUENTA'])
               ).toQuery();
 
   return connector.execQuery(query);
