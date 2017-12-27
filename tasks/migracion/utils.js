@@ -6,7 +6,7 @@ module.exports.getFecha = function(fecha) {
 }
 
 module.exports.checkString = function(str) {
-    return str ? str.trim() : null;
+    return str ? str.trim() : '';
 }
 
 module.exports.migrar = function (q_objeto, q_limites, page_size, addNuevoObjeto) {

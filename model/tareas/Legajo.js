@@ -53,7 +53,7 @@ const table = sql.define({
         },
         {
             name: 'estado',
-            dataType: 'varchar(255)',
+            dataType: 'int',
         },
         {
             name: 'subcategoria',
