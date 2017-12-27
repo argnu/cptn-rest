@@ -46,7 +46,7 @@ function addLegajo(legajo_1) {
               }),
               createComitente(legajo)
             ])
-            .then(([id_domicilio, id_comitente]) => {
+            .then(([domicilio, id_comitente]) => {
                 let table = model.tareas.Legajo.table;
                 let query = table.insert(
                     table.solicitud.value(legajo['ID_Solicitud']),
@@ -55,9 +55,9 @@ function addLegajo(legajo_1) {
                     table.matricula.value(matricula.id),
                     table.fecha_solicitud.value(utils.getFecha(legajo['FECHASOLICITUD_DATE'])),
                     table.comitente.value(id_comitente),
-                    table.domicilio.value(id_domicilio),
+                    table.domicilio.value(domicilio.id),
                     table.nomenclatura.value(utils.checkString(legajo['NOMENCLATURA'])),
-                    table.estado.value(utils.checkString(legajo['ESTADO'])),
+                    table.estado.value(legajo['ESTADO']),
                     table.subcategoria.value(legajo['codTarea']),
                     table.incumbencia.value(legajo['INCUMBENCIAS']),
                     table.honorarios_presupuestados.value(legajo['HONORARIOSPRESUPUESTADOS']),
@@ -79,7 +79,7 @@ function addLegajo(legajo_1) {
                     table.delegacion.value(legajo['CodDelegacion']),
                     table.numero_acta.value(utils.checkString(legajo['NroActa'])),
                     table.operador_carga.value(utils.checkString(legajo['OperadorCarge'])),
-                    table.operador_aprobacion.value(utils.checkString(legajo['OperadorAprobacion']))
+                    table.operador_aprobacion.value(legajo['OperadorAprobacion'])
                 ).toQuery();
 
                 return connector.execQuery(query);

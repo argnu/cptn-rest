@@ -37,7 +37,7 @@ const table = sql.define({
 });
 
 function addDomicilio(domicilio, client) {
-  if (domicilio && domicilio.calle && domicilio.calle.length) {
+  if (domicilio && domicilio.localidad && domicilio.calle && domicilio.calle.length) {
     let query = table.insert(
       table.calle.value(domicilio.calle),
       table.numero.value(domicilio.numero),

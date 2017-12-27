@@ -142,7 +142,7 @@ const table = sql.define({
         },
         {
             name: 'operador_aprobacion',
-            dataType: 'varchar(30)',
+            dataType: 'int',
         }
 
     ],
