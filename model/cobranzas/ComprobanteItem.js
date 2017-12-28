@@ -34,6 +34,10 @@ const table = sql.define({
             name: 'importe',
             dataType: 'float',
         },
+        {
+            name: 'delegacion',
+            dataType: 'int',
+        }
     ],
 
     foreignKeys: [{

@@ -28,6 +28,9 @@ module.exports.comprobante = comprobante;
 const comprobanteItem = require('./comprobanteItem');
 module.exports.comprobanteItem = comprobanteItem;
 
+const comprobantePago = require('./comprobantePago');
+module.exports.comprobantePago = comprobantePago;
+
 module.exports.migrar = function() {
   return bancos.migrar()
   .then(r => pagos.migrar())
@@ -36,5 +39,8 @@ module.exports.migrar = function() {
   .then(r => estadoBoleta.migrar())
   .then(r => tipoComprobante.migrar())
   .then(r => boleta.migrar())
-  .then(r => boletaItem.migrar());
+  .then(r => boletaItem.migrar())
+  .then(r => comprobante.migrar())
+  .then(r => comprobanteItem.migrar())
+  .then(r => comprobantePago.migrar());
 }
