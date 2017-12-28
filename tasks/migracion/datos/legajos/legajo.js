@@ -57,7 +57,7 @@ function addLegajo(legajo_1) {
                     table.comitente.value(id_comitente),
                     table.domicilio.value(domicilio.id),
                     table.nomenclatura.value(utils.checkString(legajo['NOMENCLATURA'])),
-                    table.estado.value(legajo['ESTADO']),
+                    table.estado.value(legajo['ESTADO'] == 2 ? 1 : legajo['ESTADO']),
                     table.subcategoria.value(legajo['codTarea']),
                     table.incumbencia.value(legajo['INCUMBENCIAS']),
                     table.honorarios_presupuestados.value(legajo['HONORARIOSPRESUPUESTADOS']),

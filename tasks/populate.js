@@ -45,8 +45,8 @@ function populateFormacion() {
 
 function populateContacto() {
   let querys = [];
-  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Fijo')).toQuery());
-  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Celular')).toQuery());
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Teléfono Fijo')).toQuery());
+  querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Teléfono Celular')).toQuery());
   querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Email')).toQuery());
   querys.push(model.TipoContacto.table.insert(model.TipoContacto.table.valor.value('Web')).toQuery());
   return querysSecuencial(querys);
@@ -93,23 +93,29 @@ function populateAfip() {
   return querysSecuencial(querys);
 }
 
-function populateEstadoBoleta () {
-  let querys = [];
-  querys.push(model.TipoEstadoBoleta.table.insert(model.TipoEstadoLegajo.table.id.value(10), model.TipoEstadoBoleta.table.valor.value('Volante de Pago Generado')).toQuery());
-  return querysSecuencial(querys);
-}
 
 function populateEstadoLegajo () {
   let querys = [];
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(0), model.TipoEstadoLegajo.table.valor.value('Eliminada')).toQuery());
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(1), model.TipoEstadoLegajo.table.valor.value('Pendiente')).toQuery());
-  querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(2), model.TipoEstadoLegajo.table.valor.value('Pendiente')).toQuery());
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(3), model.TipoEstadoLegajo.table.valor.value('Aprobada')).toQuery());
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(4), model.TipoEstadoLegajo.table.valor.value('Pendiente de Pago')).toQuery());
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(5), model.TipoEstadoLegajo.table.valor.value('Publicada en Acervo')).toQuery());
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(6), model.TipoEstadoLegajo.table.valor.value('Rechazada')).toQuery());
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(7), model.TipoEstadoLegajo.table.valor.value('Anulada')).toQuery());
   querys.push(model.TipoEstadoLegajo.table.insert(model.TipoEstadoLegajo.table.id.value(8), model.TipoEstadoLegajo.table.valor.value('Aprobada por Acta')).toQuery());
+  return querysSecuencial(querys);
+}
+
+function populateEstadoBoleta() {
+  let querys = [];
+  querys.push(model.TipoEstadoBoleta.table.insert(model.TipoEstadoBoleta.table.id.value(10), model.TipoEstadoBoleta.table.valor.value('Volante de Pago Generado')).toQuery());
+  return querysSecuencial(querys);
+}
+
+function populateEstadoMatricula() {
+  let querys = [];
+  querys.push(model.TipoEstadoMatricula.table.insert(model.TipoEstadoMatricula.table.valor.value('Inhabilitado por Res. X')).toQuery());
   return querysSecuencial(querys);
 }
 
@@ -123,7 +129,6 @@ function populate() {
     populateSociedad(),
     populateEmpresa(),
     populateAfip(),
-    populateEstadoBoleta(),
     populateEstadoLegajo()
   ]);
 }

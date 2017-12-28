@@ -1,6 +1,9 @@
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+const Matricula = require('./Matricula');
+const Profesional = require('./profesional/Profesional');
+
 
 const table = sql.define({
   name: 'empresa_representante',
@@ -58,7 +61,17 @@ module.exports.add = function(representante, client) {
 }
 
 module.exports.getAll = function(id_empresa) {
-  let query = table.select()
+  let query = table.select(
+    table.fechaInicio, table.fechaFin,
+    Matricula.table.numeroMatricula,
+    Profesional.table.dni,
+    Profesional.table.nombre,
+    Profesional.table.apellido
+  )
+  .from(
+    table.join(Matricula.table).on(table.idMatricula.equals(Matricula.table.id))
+         .join(Profesional.table).on(Matricula.table.entidad.equals(Profesional.table.id))
+  )
   .where(table.idEmpresa.equals(id_empresa))
   .toQuery();
 

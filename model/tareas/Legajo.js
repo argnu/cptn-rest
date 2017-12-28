@@ -290,12 +290,13 @@ function addLegajo(legajo, client) {
                     table.matricula.value(legajo.matricula),
                     table.aporte_bruto.value(utils.checkNull(legajo.aporte_bruto)),
                     table.aporte_neto.value(legajo.aporte_neto),
+                    table.aporte_neto_bonificacion.value(legajo.aporte_neto_bonificacion),
                     table.cantidad_planos.value(utils.checkNull(legajo.cantidad_planos)),
                     table.comitente.value(legajo.comitente.id),
                     table.domicilio.value(legajo.domicilio),
                     table.delegacion.value(legajo.delegacion),
                     table.dependencia.value(legajo.dependencia),
-                    table.estado.value('Pendiente'),
+                    table.estado.value(1), // 1 ES ESTADO PENDIENTE
                     table.fecha_solicitud.value(utils.checkNull(legajo.fecha_solicitud)),
                     table.finalizacion_tarea.value(utils.checkNull(legajo.finalizacion_tarea)),
                     table.forma_pago.value(legajo.forma_pago),
@@ -351,7 +352,7 @@ module.exports.add = function (legajo) {
         .then(connection => {
             return Domicilio.addDomicilio(legajo.domicilio, connection.client)
                 .then(domicilio_nuevo => {
-                    legajo.domicilio = domicilio_nuevo.id;
+                    legajo.domicilio = domicilio_nuevo ? domicilio_nuevo.id : null;
                     return Comitente.add(legajo.comitente, connection.client)
                 })
                 .then(comitente_nuevo => {

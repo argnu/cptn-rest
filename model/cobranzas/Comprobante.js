@@ -153,6 +153,7 @@ function addComprobante(comprobante, client) {
                     table.numero.value(numero_comprobante),
                     table.matricula.value(comprobante.matricula),
                     table.fecha.value(comprobante.fecha),
+                    table.fecha_vencimiento.value(comprobante.fecha_vencimiento),
                     table.subtotal.value(comprobante.subtotal),
                     table.interes_total.value(comprobante.interes_total),
                     table.bonificacion_total.value(comprobante.bonificacion_total),

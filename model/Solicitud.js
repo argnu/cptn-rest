@@ -86,7 +86,7 @@ module.exports.add = function(solicitud) {
       connection = con;
       if (solicitud.entidad.tipo == 'profesional') {
         if (solicitud.entidad.id) {
-          return Profesional.edit(solicitud.entidad, connection.client)
+          return Profesional.edit(solicitud.entidad.id, solicitud.entidad, connection.client)
           .then(r => Profesional.get(solicitud.entidad.id));
         }
         else {
@@ -138,9 +138,9 @@ module.exports.getAll = function(params) {
     if (params.exencionArt10) query.where(table.exencionArt10.equals(params.exencionArt10));
 
     if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
-    if (params.nombreEmpresa) query.where(Empresa.table.nombre.like(`%${params.nombreEmpresa}%`));
+    if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
     if (params.dni) query.where(Profesional.table.dni.like(`%${params.dni}%`));
-    if (params.apellido) query.where(Profesional.table.apellido.like(`%${params.apellido}%`));
+    if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
 
     /* ---------------- SORTING ------------------ */
     if (params.sort && params.sort.estado) query.order(table.valor[params.estado.valor]);
@@ -194,12 +194,16 @@ module.exports.edit = function(id, solicitud) {
   return connector
     .beginTransaction()
     .then(connection => {
-        let query = table.update({
+        let datos_solicitud = {
           fecha: solicitud.fecha,
           exencionArt10: solicitud.exencionArt10,
           exencionArt6: solicitud.exencionArt6,
           delegacion: solicitud.delegacion
-        })
+        }
+        if (solicitud.foto) datos_solicitud.foto = solicitud.foto;
+        if (solicitud.firma) datos_solicitud.firma = solicitud.firma;
+
+        let query = table.update(datos_solicitud)
         .where(table.id.equals(id))
         .toQuery();
 

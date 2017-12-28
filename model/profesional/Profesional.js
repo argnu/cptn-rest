@@ -207,9 +207,9 @@ module.exports.add = function(profesional) {
 }
 
 const select_atributes = [table.id,
-Entidad.table.tipo,
+Entidad.table.tipo, Entidad.table.cuit,
 table.nombre, table.apellido, table.dni,
-table.fechaNacimiento, table.nacionalidad,
+table.fechaNacimiento, table.lugarNacimiento, table.nacionalidad,
 table.relacionDependencia, table.independiente,
 TipoSexo.table.valor.as('sexo'),
 TipoEstadoCivil.table.valor.as('estadoCivil'),
@@ -386,7 +386,7 @@ module.exports.edit = function(id, profesional, client) {
           let proms_formaciones = [];
           for (let f of profesional.formaciones) {
             if (!f.id) {
-              f.entidad = id;
+              f.profesional = id;
               proms_formaciones.push(Formacion.addFormacion(f, client));
             }
           }
@@ -401,14 +401,14 @@ module.exports.edit = function(id, profesional, client) {
           let proms_beneficiarios = [];
           for (let b of profesional.beneficiarios) {
             if (!b.id) {
-              b.entidad = id;
+              b.profesional = id;
               proms_beneficiarios.push(Beneficiario.addBeneficiario(b, client));
             }
           }
           
           for (let beneficiario of beneficiarios) {
             if (!profesional.beneficiarios.find(c => c.id && c.id == beneficiario.id))
-              proms_beneficiarios.push(Beneficiario.delete(formacion.id, client));
+              proms_beneficiarios.push(Beneficiario.delete(beneficiario.id, client));
           }
 
 
@@ -416,7 +416,7 @@ module.exports.edit = function(id, profesional, client) {
           let proms_subsidiarios = [];
           for (let s of profesional.subsidiarios) {
             if (!s.id) {
-              s.entidad = id;
+              s.profesional = id;
               proms_subsidiarios.push(Subsidiario.addSubsidiario(s, client));
             }
           }

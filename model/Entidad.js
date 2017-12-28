@@ -114,11 +114,11 @@ module.exports.edit = function(id, entidad, client) {
   return Promise.all(proms_domicilios)  
   .then(([domicilioReal, domicilioProfesional, domicilioConstituido]) => {
       let query = table.update({
-        domicilioReal,
-        domicilioProfesional,
-        domicilioConstituido,
+        domicilioReal: domicilioReal ? domicilioReal.id : null,
+        domicilioProfesional: domicilioProfesional ? domicilioProfesional.id : null,
+        domicilioConstituido: domicilioConstituido ? domicilioConstituido.id : null,
         condafip: entidad.condafip,
-        cuil: entidad.cuil
+        cuit: entidad.cuit
       })
       .where(table.id.equals(id))
       .toQuery();

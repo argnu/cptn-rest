@@ -118,7 +118,7 @@ function addEmpresa(empresa, client) {
                 empresa.incumbencias.map(i => EmpresaIncumbencia.add({
                   idEmpresa: empresa_added.id,
                   incumbencia: i
-                }), client)
+                }, client))
               : [];
 
             return Promise.all([
@@ -175,15 +175,15 @@ Entidad.table.domicilioProfesional.as('domicilioProfesional'),
 Entidad.table.domicilioConstituido.as('domicilioConstituido')
 ];
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
-                         .join(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
-                         .join(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
-                         .join(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
+                         .leftJoin(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
+                         .leftJoin(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
+                         .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
 
 module.exports.getAll = function() {
   let empresas = [];
   let query = table.select(...select_atributes)
-  .from(select_from)
-  .toQuery();
+                  .from(select_from)
+                  .toQuery();
 
   return connector.execQuery(query)
   .then(r => {
@@ -222,11 +222,11 @@ function getDatosEmpresa(empresa) {
 }
 
 module.exports.get = function(id) {
-  let empresa = {};
+  let empresa;
   let query = table.select(...select_atributes)
-  .from(select_from)
-  .where(table.id.equals(id))
-  .toQuery();
+                  .from(select_from)
+                  .where(table.id.equals(id))
+                  .toQuery();
 
   return connector.execQuery(query)
   .then(r => {
