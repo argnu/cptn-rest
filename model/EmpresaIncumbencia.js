@@ -55,6 +55,6 @@ module.exports.add = function(data, client) {
   .returning(table.id, table.idEmpresa, table.incumbencia)
   .toQuery();
 
-  return connector.execQuery(query)
+  return connector.execQuery(query, client)
         .then(r => r.rows[0]);  
 }

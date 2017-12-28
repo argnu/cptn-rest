@@ -159,7 +159,7 @@ function completarConCeros(numero) {
 function getNumeroMatricula(tipo) {
   // if (tipo == 'profesional') tipo = 'TECA';
   // if (tipo == 'empresa') tipo = 'EMP';
-  tipo = 'TECA';
+  tipo = tipo ? tipo : 'TECA';
 
   let query = `
     select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
@@ -168,8 +168,7 @@ function getNumeroMatricula(tipo) {
 
   return connector.execRawQuery(query)
     .then(r => {
-      console.log(r.rows[0].num)
-      let numero = r.rows.length ? +r.rows[0].num + 1 : 1;
+      let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
       return tipo + completarConCeros(numero);
     });
 }
@@ -208,7 +207,7 @@ module.exports.aprobar = function(matricula) {
         return Solicitud.get(matricula.solicitud)
         .then(solicitud_get => {
           solicitud  = solicitud_get;
-          return getNumeroMatricula(solicitud.entidad.tipo);
+          return getNumeroMatricula(matricula.tipo);
         })
         .then(numero_nueva => {
           return connector
@@ -290,7 +289,7 @@ function getTotal(params) {
     if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
     if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
     if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
-    if (params.cuit) query.where(Profesional.table.cuit.ilike(`%${params.cuit}%`));
+    if (params.cuit) query.where(Entidad.table.cuit.ilike(`%${params.cuit}%`));
   }
 
   return connector.execQuery(query.toQuery())
@@ -310,7 +309,7 @@ module.exports.getAll = function (params) {
   if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
   if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
   if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
-  if (params.cuit) query.where(Profesional.table.cuit.ilike(`%${params.cuit}%`));
+  if (params.cuit) query.where(Entidad.table.cuit.ilike(`%${params.cuit}%`));
 
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);

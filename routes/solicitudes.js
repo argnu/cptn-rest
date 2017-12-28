@@ -46,9 +46,14 @@ router.post('/',
     name: 'firma', maxCount: 1
   }]), 
   function(req, res) {
-    let solicitud = JSON.parse(req.body.solicitud);
-    solicitud.entidad.foto = req.body.foto || null;
-    solicitud.entidad.firma = req.body.firma || null;
+    let solicitud;
+
+    if (req.body.solicitud) {
+      solicitud = JSON.parse(req.body.solicitud);
+      solicitud.entidad.foto = req.body.foto || null;
+      solicitud.entidad.firma = req.body.firma || null;
+    }
+    else solicitud = req.body;
 
     model.Solicitud.add(solicitud)
       .then(id => res.status(201).json({ id }))
@@ -58,8 +63,23 @@ router.post('/',
       });
 });
 
-router.put('/:id', function(req, res) {
+router.put('/:id',          
+  upload.fields([{
+    name: 'foto', maxCount: 1
+  }, {
+    name: 'firma', maxCount: 1
+  }]), 
+  function(req, res) {
+    let solicitud = JSON.parse(req.body.solicitud);
+    solicitud.entidad.foto = req.body.foto || null;
+    solicitud.entidad.firma = req.body.firma || null;
 
+    model.Solicitud.edit(req.params.id, solicitud)
+      .then(id => res.status(201).json({ id }))
+      .catch(e => {
+        console.error(e);
+        res.status(500).json({ msg: 'Error en el servidor' });
+      });
 });
 
 router.delete('/:id', function(req, res) {

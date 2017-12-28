@@ -16,7 +16,7 @@ router.get('/', function(req, res) {
 });
 
 router.get('/nuevo_numero', function(req, res) {
-  model.Matricula.getNumeroMatricula()
+  model.Matricula.getNumeroMatricula(req.query.tipo)
     .then(numero => res.json(numero))
     .catch(e => handler(e, res));
 });

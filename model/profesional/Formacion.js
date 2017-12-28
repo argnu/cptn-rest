@@ -74,9 +74,8 @@ module.exports.getAll = function(id_profesional) {
   let query = table.select(
     table.id,
     Titulo.table.nombre.as('titulo'),
-    Titulo.table.tipo.as('tipo'),
     table.fecha, Institucion.table.nombre.as('institucion'),
-    TipoFormacion.table.valor.as('tipoFormacion')
+    TipoFormacion.table.valor.as('tipo')
   )
   .from(
      table.join(Institucion.table).on(table.institucion.equals(Institucion.table.id))
@@ -90,6 +89,6 @@ module.exports.getAll = function(id_profesional) {
 }
 
 module.exports.delete = function (id, client) {
-  let query = table.delete().where(table.id.value(id)).toQuery();
+  let query = table.delete().where(table.id.equals(id)).toQuery();
   return connector.execQuery(query, client);
 }

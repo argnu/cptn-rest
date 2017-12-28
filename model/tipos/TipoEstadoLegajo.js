@@ -6,7 +6,7 @@ const table = sql.define({
     name: 't_estadolegajo',
     columns: [{
         name: 'id',
-        dataType: 'int',
+        dataType: 'serial',
         primaryKey: true
     },
     {

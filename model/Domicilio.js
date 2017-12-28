@@ -85,5 +85,5 @@ module.exports.edit = function(id, domicilio, client) {
   .where(table.id.equals(id))
   .toQuery();
 
-  return connector.execQuery(query);
+  return connector.execQuery(query).then(r => ({ id }));
 }
