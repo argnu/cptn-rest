@@ -95,7 +95,7 @@ function populateAfip() {
 
 function populateEstadoBoleta () {
   let querys = [];
-  querys.push(model.TipoEstadoBoleta.table.insert(model.TipoEstadoBoleta.table.valor.value('Volante de Pago Generado')).toQuery());
+  querys.push(model.TipoEstadoBoleta.table.insert(model.TipoEstadoLegajo.table.id.value(10), model.TipoEstadoBoleta.table.valor.value('Volante de Pago Generado')).toQuery());
   return querysSecuencial(querys);
 }
 
@@ -128,7 +128,7 @@ function populate() {
   ]);
 }
 
-populate()
+populateEstadoBoleta()
 .then(r => {
   console.log('Datos agregados!');
   process.exit();
