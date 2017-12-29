@@ -119,6 +119,7 @@ function populateEstadoMatricula() {
   return querysSecuencial(querys);
 }
 
+
 function populate() {
   return Promise.all([
     populateEstadoCivil(),

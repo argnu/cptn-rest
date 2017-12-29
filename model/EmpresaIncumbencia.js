@@ -63,3 +63,10 @@ module.exports.add = function(data, client) {
   return connector.execQuery(query, client)
         .then(r => r.rows[0]);  
 }
+
+module.exports.delete = function (empresa, incumbencia, client) {
+  let query = table.delete()
+  .where(table.incumbencia.equals(incumbencia).and(table.idEmpresa.equals(empresa)))
+  .toQuery();
+  return connector.execQuery(query, client);
+}

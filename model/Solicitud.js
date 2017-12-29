@@ -206,7 +206,7 @@ module.exports.edit = function(id, solicitud) {
         let query = table.update(datos_solicitud)
         .where(table.id.equals(id))
         .toQuery();
-
+      
         return connector.execQuery(query, connection.client)
         .then(r => {
             if (solicitud.entidad.tipo == 'profesional') {

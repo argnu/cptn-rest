@@ -8,6 +8,8 @@ const Empresa = require('./Empresa');
 const Entidad = require('./Entidad');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 const Boleta = require('./cobranzas/Boleta');
+const ValoresGlobales = require('./ValoresGlobales');
+
 
 const table = sql.define({
   name: 'matricula',
@@ -202,12 +204,15 @@ module.exports.aprobar = function(matricula) {
   return existMatricula(matricula.solicitud)
   .then(exist => {
       if (!exist) {
-        return Solicitud.get(matricula.solicitud)
-        .then(solicitud_get => {
-          solicitud  = solicitud_get;
-          return getNumeroMatricula(matricula.tipo);
-        })
-        .then(numero_nueva => {
+        Promise.all([
+          Solicitud.get(matricula.solicitud),
+          getNumeroMatricula(matricula.tipo),
+          ValoresGlobales.getAll({ nombre: 'inscripcion_matricula' })
+        ])
+        .then(([solicitud_get, numero_nueva, valores_inscripcion]) => {
+          solicitud = solicitud_get;
+          let valor_inscripcion = valores_inscripcion[0].valor;
+
           return connector
           .beginTransaction()
           .then(connection => {
@@ -221,11 +226,10 @@ module.exports.aprobar = function(matricula) {
             .then(r => {
               matricula_added = r;
               if (matricula.generar_boleta) {
-              //EL IMPORTE POR AHORA ES 7200, DEBERIA TOMARLO DE ALGUNA TABLA
                 return addBoleta(
                   matricula_added.id, 
                   matricula.fechaResolucion, 
-                  7200, 
+                  valor_inscripcion, 
                   matricula.delegacion, 
                   connection.client
                 );

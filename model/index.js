@@ -50,3 +50,5 @@ module.exports.ComprobanteItem = require('./cobranzas/ComprobanteItem');
 module.exports.ComprobantePago = require('./cobranzas/ComprobantePago');
 module.exports.VolantePago = require('./cobranzas/VolantePago');
 module.exports.VolantePagoBoleta = require('./cobranzas/VolantePagoBoleta');
+
+module.exports.ValoresGlobales = require('./ValoresGlobales');

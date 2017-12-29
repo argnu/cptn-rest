@@ -42,6 +42,7 @@ function createEntidades() {
 function init() {
     Promise.all([
       createDatosGeograficos(),
+      createTable(model.ValoresGlobales.table),
       createTable(model.TipoSexo.table),
       createTable(model.TipoCondicionAfip.table),
       createTable(model.TipoContacto.table),

@@ -273,7 +273,6 @@ module.exports.edit = function (id, empresa, client) {
         .then(([contactos, representantes, incumbencias]) => {
           return connector.execQuery(query, client)
             .then(r => {
-
               let proms_contactos = [];
               for (let c of empresa.contactos) {
                 if (!c.id) {
@@ -289,44 +288,45 @@ module.exports.edit = function (id, empresa, client) {
               }
 
               let proms_representantes = [];
-              for (let r of empresa.representantes) {
-                if (!r.id) {
+              for (let representante of empresa.representantes) {
+                if (!representantes.find(r => r.idMatricula == representante)) {
                   proms_representantes.push(EmpresaRepresentante.add({ 
-                    idEmpresa: id, 
-                    idMatricula: r.matricula,
-                    fechaInicio: r.fechaInicio ? r.fechaInicio : moment(),
-                    fechaFin: r.fechaFin ? r.fechaFin : null                    
+                    empresa: id, 
+                    matricula: representante,
+                    fechaInicio: moment()
                    }, client));
                 }
               }
 
               for (let representante of representantes) {
-                if (!empresa.representantes.find(c => c.id && c.id == representante.id))
-                  proms_representantes.push(EmpresaRepresentante.delete(representante.id, client));
+                if (!empresa.representantes.find(r => r == representante.idMatricula))
+                  proms_representantes.push(EmpresaRepresentante.delete(id, representante.idMatricula, client));
               }
 
+
               let proms_incumbencias = [];
-              for (let i of empresa.incumbencias) {
-                if (!i.id) {
+              for (let incumbencia of empresa.incumbencias) {
+                if (!incumbencias.find(i => i.id == incumbencia)) {
                   proms_incumbencias.push(EmpresaIncumbencia.add({ 
-                    empresa: id, 
-                    incumbencia: i,
+                    idEmpresa: id, 
+                    incumbencia: incumbencia,
                    }, client));
                 }
               }
 
               for (let incumbencia of incumbencias) {
-                if (!empresa.incumbencias.find(c => c.id && c.id == incumbencia.id))
-                  proms_incumbencias.push(EmpresaIncumbencia.delete(incumbencia.id, client));
+                if (!empresa.incumbencias.find(i => i == incumbencia.id)) {
+                  proms_incumbencias.push(EmpresaIncumbencia.delete(id, incumbencia.id, client));
+                }
               }
 
 
               return Promise.all([
-                Promise.all(proms_formaciones),
+                Promise.all(proms_contactos),
                 Promise.all(proms_representantes),
                 Promise.all(proms_incumbencias)
               ])
-                .then(rs => id);
+              .then(rs => id);
             })
         })
     })

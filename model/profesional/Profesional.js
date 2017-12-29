@@ -88,6 +88,22 @@ const table = sql.define({
       dataType: 'boolean'
     },
     {
+      name: 'publicarEmail',
+      dataType: 'boolean'
+    },
+    {
+      name: 'publicarCelular',
+      dataType: 'boolean'
+    },
+    {
+      name: 'publicarAcervo',
+      dataType: 'boolean'
+    },
+    {
+      name: 'publicarDireccion',
+      dataType: 'boolean'
+    },
+    {
       name: 'foto',
       dataType: 'varchar(255)',
     },
@@ -132,6 +148,10 @@ function addProfesional(profesional, client) {
       table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
       table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional),
       table.publicar.value(profesional.publicar),
+      table.publicarCelular.value(profesional.publicarCelular),
+      table.publicarEmail.value(profesional.publicarEmail),
+      table.publicarAcervo.value(profesional.publicarAcervo),
+      table.publicarDireccion.value(profesional.publicarDireccion),
       table.foto.value(profesional.foto),
       table.firma.value(profesional.firma)
     ).toQuery();
@@ -220,8 +240,11 @@ table.nombreCajaPrevisional, table.publicar,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioProfesional.as('domicilioProfesional'),
 Entidad.table.domicilioConstituido.as('domicilioConstituido'),
-table.foto, table.firma
+table.foto, table.firma,
+table.publicarAcervo, table.publicarCelular,
+table.publicarDireccion, table.publicarEmail
 ];
+
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
@@ -354,6 +377,10 @@ module.exports.edit = function(id, profesional, client) {
       serviciosPrestados: profesional.serviciosPrestados,
       poseeCajaPrevisional: profesional.poseeCajaPrevisional,
       nombreCajaPrevisional: profesional.nombreCajaPrevisional,
+      publicarAcervo: profesional.publicarAcervo,
+      publicarCelular: profesional.publicarCelular,
+      publicarDireccion: profesional.publicarDireccion,
+      publicarEmail: profesional.publicarEmail
     })
       .where(table.id.equals(id))
       .toQuery();

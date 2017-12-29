@@ -63,6 +63,7 @@ module.exports.add = function(representante, client) {
 module.exports.getAll = function(id_empresa) {
   let query = table.select(
     table.fechaInicio, table.fechaFin,
+    table.idMatricula,
     Matricula.table.numeroMatricula,
     Profesional.table.dni,
     Profesional.table.nombre,
@@ -79,7 +80,8 @@ module.exports.getAll = function(id_empresa) {
         .then(r => r.rows);
 }
 
-module.exports.delete = function (id, client) {
-  let query = table.delete().where(table.id.value(id)).toQuery();
+module.exports.delete = function (empresa, representante, client) {
+  let query = table.delete().where(table.idEmpresa.equals(empresa).and(table.idMatricula.equals(representante))).toQuery();
+  console.log(query.text)
   return connector.execQuery(query, client);
 }

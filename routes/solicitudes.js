@@ -70,9 +70,13 @@ router.put('/:id',
     name: 'firma', maxCount: 1
   }]), 
   function(req, res) {
-    let solicitud = JSON.parse(req.body.solicitud);
-    solicitud.entidad.foto = req.body.foto || null;
-    solicitud.entidad.firma = req.body.firma || null;
+    let solicitud;
+    if (req.body.solicitud) {
+      solicitud = JSON.parse(req.body.solicitud);
+      solicitud.entidad.foto = req.body.foto || null;
+      solicitud.entidad.firma = req.body.firma || null;
+    }
+    else solicitud = req.body;    
 
     model.Solicitud.edit(req.params.id, solicitud)
       .then(id => res.status(201).json({ id }))
