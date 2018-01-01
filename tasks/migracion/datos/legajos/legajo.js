@@ -55,7 +55,7 @@ function addLegajo(legajo_1) {
                     table.matricula.value(matricula.id),
                     table.fecha_solicitud.value(utils.getFecha(legajo['FECHASOLICITUD_DATE'])),
                     table.comitente.value(id_comitente),
-                    table.domicilio.value(domicilio.id),
+                    table.domicilio.value(domicilio ? domicilio.id : null),
                     table.nomenclatura.value(utils.checkString(legajo['NOMENCLATURA'])),
                     table.estado.value(legajo['ESTADO'] == 2 ? 1 : legajo['ESTADO']),
                     table.subcategoria.value(legajo['codTarea']),
