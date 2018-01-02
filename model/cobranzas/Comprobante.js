@@ -76,14 +76,34 @@ const table = sql.define({
         {
             name: 'contable',
             dataType: 'int',
+        },
+        {
+            name: 'created_by',
+            dataType: 'varchar(45)',
+        },
+        {
+            name: 'updated_by',
+            dataType: 'varchar(45)',
         }
     ],
 
-    foreignKeys: [{
-        table: 'matricula',
-        columns: ['matricula'],
-        refColumns: ['id']
-    }]
+    foreignKeys: [
+        {
+            table: 'matricula',
+            columns: ['matricula'],
+            refColumns: ['id']
+        },
+        {
+            table: 'usuario',
+            columns: ['created_by'],
+            refColumns: ['id']
+        },
+        {
+            table: 'usuario',
+            columns: ['updated_by'],
+            refColumns: ['id']
+        }
+    ]
 });
 
 module.exports.table = table;
@@ -150,6 +170,8 @@ function addComprobante(comprobante, client) {
     return getNumeroComprobante(comprobante.numero)
         .then(numero_comprobante => {
             let query = table.insert(
+                    table.created_by.value(comprobante.operador),
+                    table.updated_by.value(comprobante.operador),
                     table.numero.value(numero_comprobante),
                     table.matricula.value(comprobante.matricula),
                     table.fecha.value(comprobante.fecha),
@@ -227,7 +249,7 @@ module.exports.add = function (comprobante) {
                                 })
                             });
 
-                            proms_volante_pagado.push(VolantePago.patch(volante.id, { pagado: true }, connection.client));
+                            proms_volante_pagado.push(VolantePago.patch(volante.id, { pagado: true, updated_by: comprobante.operador }, connection.client));
                         }
                         else {
                             proms_boleta_estado.push(Boleta.patch(boleta.id, { estado: 2 }, connection.client));

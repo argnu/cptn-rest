@@ -44,7 +44,15 @@ const table = sql.define({
     {
       name: 'entidad',
       dataType: 'int'
-    }
+    },
+    {
+      name: 'created_by',
+      dataType: 'varchar(45)',
+    },
+    {
+      name: 'updated_by',
+      dataType: 'varchar(45)',
+    }     
   ],
 
   foreignKeys: [
@@ -58,6 +66,16 @@ const table = sql.define({
       columns: [ 'entidad' ],
       refColumns: [ 'id' ]
     },
+    {
+      table: 'usuario',
+      columns: ['created_by'],
+      refColumns: ['id']
+    },
+    {
+      table: 'usuario',
+      columns: ['updated_by'],
+      refColumns: ['id']
+    }     
   ]
 });
 
@@ -65,6 +83,8 @@ module.exports.table = table;
 
 function addSolicitud(solicitud, client) {
   let query = table.insert(
+    table.created_by.value(solicitud.operador),
+    table.updated_by.value(solicitud.operador),
     table.fecha.value(solicitud.fecha),
     table.estado.value('pendiente'),
     table.delegacion.value(solicitud.delegacion),
@@ -198,7 +218,8 @@ module.exports.edit = function(id, solicitud) {
           fecha: solicitud.fecha,
           exencionArt10: solicitud.exencionArt10,
           exencionArt6: solicitud.exencionArt6,
-          delegacion: solicitud.delegacion
+          delegacion: solicitud.delegacion,
+          updated_by: solicitud.operador
         }
         if (solicitud.foto) datos_solicitud.foto = solicitud.foto;
         if (solicitud.firma) datos_solicitud.firma = solicitud.firma;

@@ -75,7 +75,15 @@ const table = sql.define({
     {
       name: 'idMigracion',
       dataType: 'int'
-    }
+    },
+    {
+      name: 'created_by',
+      dataType: 'varchar(45)',
+    },
+    {
+      name: 'updated_by',
+      dataType: 'varchar(45)',
+    }     
   ],
 
   foreignKeys: [{
@@ -93,6 +101,16 @@ const table = sql.define({
       columns: ['estado'],
       refColumns: ['id']
     },
+    {
+      table: 'usuario',
+      columns: ['created_by'],
+      refColumns: ['id']
+    },
+    {
+      table: 'usuario',
+      columns: ['updated_by'],
+      refColumns: ['id']
+    }     
   ]
 });
 
@@ -124,6 +142,8 @@ module.exports.addMatriculaMigracion = addMatriculaMigracion;
 
 function addMatricula(matricula, client) {
   let query = table.insert(
+    table.created_by.value(matricula.operador),
+    table.updated_by.value(matricula.operador),
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
     table.numeroMatricula.value(matricula.numeroMatricula),

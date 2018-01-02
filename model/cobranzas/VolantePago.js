@@ -52,7 +52,15 @@ const table = sql.define({
         {
           name: 'pagado',
           dataType: 'boolean'
-        }
+        },
+        {
+          name: 'created_by',
+          dataType: 'varchar(45)',
+        },
+        {
+          name: 'updated_by',
+          dataType: 'varchar(45)',
+        }       
     ],
 
     foreignKeys: [
@@ -60,7 +68,17 @@ const table = sql.define({
         table: 'matricula',
         columns: ['matricula'],
         refColumns: ['id']
-      }
+      },
+      {
+        table: 'usuario',
+        columns: ['created_by'],
+        refColumns: ['id']
+      },
+      {
+        table: 'usuario',
+        columns: ['updated_by'],
+        refColumns: ['id']
+      }      
   ]    
 })
 
@@ -68,6 +86,8 @@ module.exports.table = table;
 
 function addVolante(volante, client) {
   let query = table.insert(
+    table.created_by.value(volante.operador),
+    table.updated_by.value(volante.operador),    
     table.matricula.value(volante.matricula),
     table.fecha.value(volante.fecha),
     table.fecha_vencimiento.value(volante.fecha_vencimiento),

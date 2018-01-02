@@ -143,7 +143,15 @@ const table = sql.define({
         {
             name: 'operador_aprobacion',
             dataType: 'int',
-        }
+        },
+        {
+            name: 'created_by',
+            dataType: 'varchar(45)',
+        },
+        {
+            name: 'updated_by',
+            dataType: 'varchar(45)',
+        }          
 
     ],
 
@@ -171,7 +179,17 @@ const table = sql.define({
             table: 'domicilio',
             columns: ['domicilio'],
             refColumns: ['id']
-        }
+        },
+        {
+            table: 'usuario',
+            columns: ['created_by'],
+            refColumns: ['id']
+        },
+        {
+            table: 'usuario',
+            columns: ['updated_by'],
+            refColumns: ['id']
+        }         
     ]
 });
 
@@ -287,6 +305,8 @@ function addLegajo(legajo, client) {
     return getNumeroLegajo(legajo.numero_legajo)
         .then(numero_legajo => {
             let query = table.insert(
+                    table.created_by.value(legajo.operador),
+                    table.updated_by.value(legajo.operador),
                     table.matricula.value(legajo.matricula),
                     table.aporte_bruto.value(utils.checkNull(legajo.aporte_bruto)),
                     table.aporte_neto.value(legajo.aporte_neto),
@@ -386,4 +406,12 @@ module.exports.add = function (legajo) {
                     throw Error(e);
                 });
         });
+}
+
+module.exports.patch = function (id, legajo, client) {
+    let query = table.update(legajo)
+        .where(table.id.equals(id))
+        .toQuery();
+
+    return connector.execQuery(query, client);
 }
