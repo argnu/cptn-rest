@@ -84,6 +84,10 @@ const table = sql.define({
       dataType: 'varchar(45)'
     },
     {
+      name: 'solicitaCajaPrevisional',
+      dataType: 'boolean'
+    },
+    {
       name: 'publicar',
       dataType: 'boolean'
     },
@@ -147,6 +151,7 @@ function addProfesional(profesional, client) {
       table.serviciosPrestados.value(profesional.serviciosPrestados),
       table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
       table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional),
+      table.solicitaCajaPrevisional.value(profesional.solicitaCajaPrevisional),
       table.publicar.value(profesional.publicar),
       table.publicarCelular.value(profesional.publicarCelular),
       table.publicarEmail.value(profesional.publicarEmail),
@@ -236,6 +241,7 @@ TipoEstadoCivil.table.valor.as('estadoCivil'),
 TipoCondicionAfip.table.valor.as('condafip'),
 table.observaciones, table.empresa,
 table.serviciosPrestados, table.poseeCajaPrevisional,
+table.solicitaCajaPrevisional,
 table.nombreCajaPrevisional, table.publicar,
 Entidad.table.domicilioReal.as('domicilioReal'),
 Entidad.table.domicilioProfesional.as('domicilioProfesional'),
@@ -377,6 +383,7 @@ module.exports.edit = function(id, profesional, client) {
       serviciosPrestados: profesional.serviciosPrestados,
       poseeCajaPrevisional: profesional.poseeCajaPrevisional,
       nombreCajaPrevisional: profesional.nombreCajaPrevisional,
+      solicitaCajaPrevisional: profesional.solicitaCajaPrevisional,
       publicarAcervo: profesional.publicarAcervo,
       publicarCelular: profesional.publicarCelular,
       publicarDireccion: profesional.publicarDireccion,

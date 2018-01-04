@@ -28,6 +28,10 @@ module.exports.TipoPago = require('./tipos/TipoPago');
 module.exports.TipoFormaPago = require('./tipos/TipoFormaPago');
 module.exports.TipoVinculo = require('./tipos/TipoVinculo');
 
+module.exports.Persona = require('./Persona');
+module.exports.PersonaFisica = require('./PersonaFisica');
+module.exports.PersonaJuridica = require('./PersonaJuridica');
+
 module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
 module.exports.Entidad = require('./Entidad');

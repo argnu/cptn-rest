@@ -19,6 +19,10 @@ const table = sql.define({
       dataType: 'varchar(255)'
     },
     {
+      name: 'whatsapp',
+      dataType: 'boolean'
+    },
+    {
       name: 'entidad',
       dataType: 'int'
     }
@@ -42,7 +46,9 @@ module.exports.table = table;
 
 function addContacto(contacto, client) {
   let query = table.insert(
-    table.tipo.value(contacto.tipo), table.valor.value(contacto.valor),
+    table.tipo.value(contacto.tipo), 
+    table.valor.value(contacto.valor),
+    table.whatsapp.value(contacto.whatsapp),
     table.entidad.value(contacto.entidad)
   ).returning(table.id, table.tipo, table.valor).toQuery();
 

@@ -14,11 +14,13 @@ const table = sql.define({
     },
     {
       name: 'nombre',
-      dataType: 'varchar(100)'
+      dataType: 'varchar(100)',
+      notNull: true
     },
     {
       name: 'departamento',
-      dataType: 'int'
+      dataType: 'int',
+      notNull: true
     }
   ],
 

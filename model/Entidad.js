@@ -37,6 +37,10 @@ const table = sql.define({
     {
       name: 'cuit',
       dataType: 'varchar(20)'
+    },
+    {
+      name: 'recibirActualizaciones',
+      dataType: 'boolean'
     }
   ],
 
@@ -77,10 +81,12 @@ function addEntidad(entidad, client) {
       table.tipo.value(entidad.tipo),
       table.cuit.value(entidad.cuit), 
       table.condafip.value(entidad.condafip),
+      table.recibirNotificaciones.value(entidad.recibirNotificaciones),
       table.domicilioReal.value(domicilioReal ? domicilioReal.id : null),
       table.domicilioProfesional.value(domicilioProfesional ? domicilioProfesional.id : null),
       table.domicilioConstituido.value(domicilioConstituido ? domicilioConstituido.id : null)
     ).returning(table.id, table.cuit, table.condafip).toQuery();
+    
     return connector.execQuery(query, client)
            .then(r => {
              let entidad_added = r.rows[0];

@@ -10,7 +10,8 @@
     "create": "node ./tasks/create.js",
     "drop": "node ./tasks/droptables.js",
     "populate": "node ./tasks/populate.js",
-    "addinvitado": "node ./tasks/addinvitado.js"
+    "addinvitado": "node ./tasks/addinvitado.js",
+    "genchange": "node ./esquema_cambios/generar.js"
   },
   "keywords": [
     "rest",

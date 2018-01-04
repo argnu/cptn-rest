@@ -4,7 +4,6 @@ const sql = require('sql');
 sql.setDialect('postgres');
 const LegajoItem = require('./LegajoItem')
 const Item = require('./Item')
-const Comitente = require('./Comitente')
 const Domicilio = require(`${__base}/model/Domicilio`);
 const Boleta = require(`${__base}/model/cobranzas/Boleta`);
 const utils = require(`${__base}/utils`);
@@ -38,10 +37,6 @@ const table = sql.define({
         {
             name: 'fecha_solicitud',
             dataType: 'date',
-        },
-        {
-            name: 'comitente',
-            dataType: 'int',
         },
         {
             name: 'domicilio',
@@ -234,15 +229,6 @@ function getItemData(id_item) {
         .then(r => r.rows[0]);
 }
 
-function getComitente(id_comitente) {
-    let table = Comitente.table;
-    let query = table.select(table.star()).from(table)
-        .where(table.id.equals(id_comitente))
-        .toQuery();
-
-    return connector.execQuery(query)
-        .then(r => r.rows[0]);
-}
 
 module.exports.getAll = function (params) {
     let legajos = [];
@@ -277,7 +263,7 @@ module.exports.get = function (id) {
             legajo = r.rows[0];
             return Promise.all([
                 getItems(legajo.id),
-                getComitente(legajo.comitente),
+                LegajoComitente.getComitentes(legajo.comitente),
                 Domicilio.getDomicilio(legajo.domicilio)
             ])
         })
@@ -373,6 +359,8 @@ module.exports.add = function (legajo) {
             return Domicilio.addDomicilio(legajo.domicilio, connection.client)
                 .then(domicilio_nuevo => {
                     legajo.domicilio = domicilio_nuevo ? domicilio_nuevo.id : null;
+                    // CAMBIAR, AGREGAR A 'PERSONA' SI NO EXISTEN TODOS LOS COMITENTES
+                    //Y AGREGAR A LEGAJOCOMITENTE
                     return Comitente.add(legajo.comitente, connection.client)
                 })
                 .then(comitente_nuevo => {
