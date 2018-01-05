@@ -121,6 +121,8 @@ function addEmpresa(empresa, client) {
                 }, client))
               : [];
 
+              console.log('llega')
+
             return Promise.all([
               Promise.all(proms_contactos),
               Promise.all(proms_representantes),
@@ -319,7 +321,6 @@ module.exports.edit = function (id, empresa, client) {
                   proms_incumbencias.push(EmpresaIncumbencia.delete(id, incumbencia.id, client));
                 }
               }
-
 
               return Promise.all([
                 Promise.all(proms_contactos),

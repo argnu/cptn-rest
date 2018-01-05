@@ -3,9 +3,11 @@ const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const LegajoItem = require('./LegajoItem')
+const LegajoComitente = require('./LegajoComitente')
 const Item = require('./Item')
 const Domicilio = require(`${__base}/model/Domicilio`);
 const Boleta = require(`${__base}/model/cobranzas/Boleta`);
+const Persona = require(`${__base}/model/Persona`);
 const utils = require(`${__base}/utils`);
 
 
@@ -161,11 +163,6 @@ const table = sql.define({
             refColumns: ['id']
         },
         {
-            table: 'comitente',
-            columns: ['comitente'],
-            refColumns: ['id']
-        },
-        {
             table: 't_incumbencia',
             columns: ['incumbencia'],
             refColumns: ['id']
@@ -242,10 +239,14 @@ module.exports.getAll = function (params) {
     return connector.execQuery(query.toQuery())
         .then(r => {
             legajos = r.rows;
-            return Promise.all(r.rows.map(m => getItems(m.id)))
+            return Promise.all([
+                Promise.all(r.rows.map(legajo => LegajoComitente.getByLegajo(legajo.id))),
+                Promise.all(r.rows.map(legajo => getItems(legajo.id)))
+            ]);
         })
-        .then(items => {
+        .then(([comitentes, items]) => {
             legajos.forEach((legajo, i) => {
+                legajo.comitentes = comitentes[i];
                 legajo.items = items[i];
             });
             return legajos;
@@ -263,13 +264,13 @@ module.exports.get = function (id) {
             legajo = r.rows[0];
             return Promise.all([
                 getItems(legajo.id),
-                LegajoComitente.getComitentes(legajo.comitente),
+                LegajoComitente.getByLegajo(legajo.id),
                 Domicilio.getDomicilio(legajo.domicilio)
             ])
         })
-        .then(([items, comitente, domicilio]) => {
+        .then(([items, comitentes, domicilio]) => {
             legajo.items = items;
-            legajo.comitente = comitente;
+            legajo.comitentes = comitentes;
             legajo.domicilio = domicilio;
             return legajo;
         })
@@ -298,7 +299,6 @@ function addLegajo(legajo, client) {
                     table.aporte_neto.value(legajo.aporte_neto),
                     table.aporte_neto_bonificacion.value(legajo.aporte_neto_bonificacion),
                     table.cantidad_planos.value(utils.checkNull(legajo.cantidad_planos)),
-                    table.comitente.value(legajo.comitente.id),
                     table.domicilio.value(legajo.domicilio),
                     table.delegacion.value(legajo.delegacion),
                     table.dependencia.value(legajo.dependencia),
@@ -353,22 +353,34 @@ function addBoleta(legajo) {
 
 module.exports.add = function (legajo) {
     let legajo_nuevo;
+    let personas;
+
     return connector
         .beginTransaction()
         .then(connection => {
             return Domicilio.addDomicilio(legajo.domicilio, connection.client)
                 .then(domicilio_nuevo => {
                     legajo.domicilio = domicilio_nuevo ? domicilio_nuevo.id : null;
-                    // CAMBIAR, AGREGAR A 'PERSONA' SI NO EXISTEN TODOS LOS COMITENTES
-                    //Y AGREGAR A LEGAJOCOMITENTE
-                    return Comitente.add(legajo.comitente, connection.client)
+                    let proms = legajo.comitentes.map(c => {
+                        if (!c.persona.id) return Persona.add(c.persona, connection.client);
+                        else return Promise.resolve(c.persona);
+                    })
+                    return Promise.all(proms);
                 })
-                .then(comitente_nuevo => {
-                    legajo.comitente.id = comitente_nuevo.id;
+                .then(comitentes => {
+                    personas = comitentes;
                     return addLegajo(legajo, connection.client);
                 })
                 .then(legajo_added => {
                     legajo_nuevo = legajo_added;
+                    let proms_comitentes = legajo.comitentes.map((comitente, index) => {
+                        comitente.legajo = legajo_nuevo.id;
+                        comitente.persona = personas[index].id;
+                        return LegajoComitente.add(comitente, connection.client);
+                    })
+                    return Promise.all(proms_comitentes);
+                })
+                .then(comitentes => {
                     let proms_items = legajo.items.map(item => {
                         item.legajo = legajo_nuevo.id;
                         return LegajoItem.add(item, connection.client);
