@@ -162,7 +162,7 @@ function addQuery(file, query) {
     return new Promise(function(resolve, reject) {
         fs.appendFile(file, query + ';\n', (err) => {
             if (err) reject(err);
-            else resolve(query + '\n');
+            else resolve(query + ';\n');
         });
     });
 }

@@ -7,13 +7,12 @@ const table = sql.define({
     columns: [
         {
             name: 'id',
-            dataType: 'serial',
+            dataType: 'int',
             primaryKey: true
         },
         {
-            name: 'persona',
-            dataType: 'int',
-            notNull: true
+            name: 'apellido',
+            dataType: 'varchar(100)'
         },
         {
             name: 'apellido',
@@ -27,10 +26,30 @@ const table = sql.define({
     foreignKeys: [
         {
             table: 'persona',
-            columns: ['persona'],
+            columns: ['id'],
             refColumns: ['id']
         }
     ]
 });
 
 module.exports.table = table;
+
+module.exports.get = function(id) {
+    let query = table.select(table.star())
+                     .where(table.id.equals(id))
+                     .toQuery();
+    
+    return connector.execQuery(query).then(r => r.rows[0]);
+}
+
+module.exports.add = function (persona, client) {
+    let query = table.insert(
+        table.id.value(persona.id),
+        table.apellido.value(persona.apellido),
+        table.dni.value(persona.dni)
+    )
+    .returning(table.star())
+    .toQuery();
+
+    return connector.execQuery(query, client).then(r => r.rows[0]);
+}

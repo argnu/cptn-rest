@@ -77,11 +77,12 @@ function addEntidad(entidad, client) {
     Domicilio.addDomicilio(entidad.domicilioConstituido, client)
   ])
   .then(([domicilioReal, domicilioProfesional, domicilioConstituido]) => {
+    console.log(entidad.recibirActualizaciones)
     let query = table.insert(
       table.tipo.value(entidad.tipo),
       table.cuit.value(entidad.cuit), 
       table.condafip.value(entidad.condafip),
-      table.recibirNotificaciones.value(entidad.recibirNotificaciones),
+      table.recibirActualizaciones.value(entidad.recibirActualizaciones),
       table.domicilioReal.value(domicilioReal ? domicilioReal.id : null),
       table.domicilioProfesional.value(domicilioProfesional ? domicilioProfesional.id : null),
       table.domicilioConstituido.value(domicilioConstituido ? domicilioConstituido.id : null)

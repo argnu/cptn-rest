@@ -46,4 +46,6 @@ router.use('/usuarios', require('./usuarios'));
 router.use('/legajos', require('./legajos'));
 router.use('/tareas', require('./tareas'));
 
+router.use('/personas', require('./personas'));
+
 module.exports = router;
