@@ -54,23 +54,27 @@ function getTables() {
 createDir(moment().format('YYYY-DD-MM'))
 .then(dirname => Promise.all([openFile(path.join(dirname, 'cambios_bd.sql')), getTables()]))
 .then(([file, tables_bd]) => {
-    function diffTypes(column, column_bd) {
-        if (column.dataType == 'serial') return false; //POR EL MOMENTO LOS AUTOINCREMENT NO LOS TOCO
+
+    function checkTypes(column, column_bd) {
+        if (column.dataType == 'serial') return; //POR EL MOMENTO LOS AUTOINCREMENT NO LOS TOCO
         
-        if (column.dataType == 'float' && !column_bd.type == 'double precision') return true;
-        else if (column_bd.type == 'double precision') return false;
+        if (column.dataType == 'float' && !column_bd.type == 'double precision') 
+            addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE double precision USING "${column.name}"::double precision`);
 
-        if (column.dataType == 'int' && !column_bd.type == 'integer') return true;
-        else if (column_bd.type == 'integer') return false;
+        if (column.dataType == 'int' && !column_bd.type == 'integer') 
+            addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE integer USING "${column.name}"::integer`);
 
-        if (column.dataType.toLowerCase().includes('varchar') && !column_bd.type == "character varying") return true;
+        if (column.dataType.toLowerCase().includes('varchar') && !column_bd.type == "character varying")
+            addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+
         if (column.dataType.toLowerCase().includes('varchar') && column_bd.type == "character varying") {
             let longitud = +column.dataType.match(/\d+/)[0];
-            if (longitud != column_bd.length) return true;
-            else return false;
+            if (longitud != column_bd.length) 
+               addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
         }
 
-        return column.dataType != column_bd.type;
+        if (column.dataType != column_bd.type)
+            addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
     }
 
     function checkForeignKeys(tablename, foreignKeys, constraints_bd) {
@@ -82,7 +86,8 @@ createDir(moment().format('YYYY-DD-MM'))
     }
 
     function checkColumn(column, column_bd) {
-        if (diffTypes(column, column_bd)) addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType}`);
+        checkTypes(column, column_bd);
+
         if (column.notNull && column_bd.nullable)
             addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET NOT NULL`);
         else if (!column.dataType == 'serial' && !column.notNull && !column_bd.nullable)
@@ -155,7 +160,7 @@ function openFile(file) {
 
 function addQuery(file, query) {
     return new Promise(function(resolve, reject) {
-        fs.appendFile(file, query + '\n', (err) => {
+        fs.appendFile(file, query + ';\n', (err) => {
             if (err) reject(err);
             else resolve(query + '\n');
         });

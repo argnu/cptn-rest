@@ -16,6 +16,10 @@ const table = sql.define({
             notNull: true
         },
         {
+            name: 'apellido',
+            dataType: 'varchar(100)'
+        },
+        {
             name: 'dni',
             dataType: 'varchar(20)'
         }

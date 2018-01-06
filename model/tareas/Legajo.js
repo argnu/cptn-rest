@@ -161,11 +161,6 @@ const table = sql.define({
             refColumns: ['id']
         },
         {
-            table: 'comitente',
-            columns: ['comitente'],
-            refColumns: ['id']
-        },
-        {
             table: 't_incumbencia',
             columns: ['incumbencia'],
             refColumns: ['id']
