@@ -202,8 +202,6 @@ module.exports.get = function(id) {
   })
   .then(([ domicilios, contactos, incumbencias, representantes ]) => {
       empresa.domicilios = domicilios;
-      empresa.domicilioProfesional = domicilioProfesional;
-      empresa.domicilioConstituido = domicilioConstituido;
       empresa.contactos = contactos;
       empresa.incumbencias = incumbencias;
       empresa.representantes = representantes;

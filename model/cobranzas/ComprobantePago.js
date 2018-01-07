@@ -3,6 +3,8 @@ const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
+const ComprobantePagoCheque = require('./ComprobantePagoCheque');
+
 const table = sql.define({
     name: 'comprobante_pago',
     columns: [
@@ -87,7 +89,7 @@ module.exports.add = function(comprobante_pago, client) {
         .then(r => {
             if (esCheque(comprobante_pago.forma_pago)) {
                 comprobante_pago.id = r.rows[0].id;
-                return ComprobantePagoCheque.add(comprobante_pago);
+                return ComprobantePagoCheque.add(comprobante_pago, client);
             }
             return Promise.resolve(r.rows[0]);
     });

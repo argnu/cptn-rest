@@ -58,10 +58,10 @@ function addComitente(legajo) {
 
 
 function addDomicilio(legajo) {
-    if (legajo.ciudad && legajo.direccion) {
+    if (legajo['CIUDAD'] && legajo['DIRECCION']) {
         return model.Domicilio.add({
-            localidad: legajo.ciudad,
-            calle: legajo.direccion,
+            localidad: legajo['CIUDAD'],
+            calle: legajo['DIRECCION'],
             numero: 0
         }).then(d => d.id);
     }
