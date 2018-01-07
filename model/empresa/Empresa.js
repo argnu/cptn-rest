@@ -105,7 +105,9 @@ module.exports.add = function(empresa, client) {
             let proms_representantes = empresa.representantes ?
               empresa.representantes.map(r => EmpresaRepresentante.add({
                 empresa: empresa_added.id,
-                matricula: r,
+                matricula: r.matricula,
+                matricula_externa: r.matricula_externa,
+                tipo: r.tipo,
                 fechaInicio: r.fechaInicio ? r.fechaInicio : moment(),
                 fechaFin: r.fechaFin ? r.fechaFin : null
               }, client))
