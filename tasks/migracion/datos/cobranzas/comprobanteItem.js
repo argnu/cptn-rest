@@ -20,7 +20,7 @@ function addComprobantesItems(comprobante_item) {
           table.descripcion.value(utils.checkString(comprobante_item['DESCRIPCION'])),
           table.cuenta_contable.value(comprobante_item['CUENTACONTABLE']),
           table.importe.value(comprobante_item['IMPORTE']),
-          table.delegacion.value(comprobante_item['CODDELEGACIONCMPTE'] > 0 ? comprobante_item['CODDELEGACIONCMPTE'] : null)
+          table.delegacion.value(comprobante_item['CODDELEGACIONCMPTE'] ? comprobante_item['CODDELEGACIONCMPTE'] : null)
         ).toQuery();
         return connector.execQuery(query);
       } else {

@@ -20,7 +20,7 @@ function addComprobantes(comprobante) {
         table.importe_total.value(comprobante['ImporteTotal']),
         table.importe_cancelado.value(comprobante['ImporteCancelado']),
         table.observaciones.value(utils.checkString(comprobante['Observaciones'])),
-        table.delegacion.value(legajo['CodSucursal'] > 0 ? legajo['CodSucursal'] : null),
+        table.delegacion.value(legajo['CodSucursal'] ? legajo['CodSucursal'] : null),
         table.operador.value(comprobante['CodOperador']),
         table.anulado.value(comprobante['Anulado']),
         table.contable.value(comprobante['EnContable'])

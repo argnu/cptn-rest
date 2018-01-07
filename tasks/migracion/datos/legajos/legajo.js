@@ -103,7 +103,7 @@ function addLegajo(legajo_1) {
                     table.observaciones_internas.value(utils.checkString(legajo['OBSERVACIONESINTERNAS'])),
                     table.informacion_adicional.value(utils.checkString(legajo['INFOADICIONAL'])),
                     table.evaluador.value(utils.checkString(legajo['EVALUADOR'])),
-                    table.delegacion.value(legajo['CodDelegacion'] > 0 ? legajo['CodDelegacion'] : null),
+                    table.delegacion.value(legajo['CodDelegacion'] ? legajo['CodDelegacion'] : null),
                     table.numero_acta.value(utils.checkString(legajo['NroActa'])),
                     table.operador_carga.value(utils.checkString(legajo['OperadorCarge'])),
                     table.operador_aprobacion.value(legajo['OperadorAprobacion'])
