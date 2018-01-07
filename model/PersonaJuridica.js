@@ -23,9 +23,14 @@ const table = sql.define({
 module.exports.table = table;
 
 module.exports.get = function (id) {
-    let query = table.select(table.star())
-        .where(table.id.equals(id))
-        .toQuery();
+    let query = table.select(
+        table.id,
+        Persona.table.nombre, Persona.table.cuit,
+        Persona.table.telefono, Persona.table.tipo
+    )   
+    .from(table.join(Persona.table).on(table.id.equals(Persona.table.id)))
+    .where(table.id.equals(id))
+    .toQuery();
 
     return connector.execQuery(query).then(r => r.rows[0]);
 }

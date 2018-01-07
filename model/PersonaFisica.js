@@ -32,17 +32,27 @@ const table = sql.define({
 module.exports.table = table;
 
 module.exports.get = function(id) {
-    let query = table.select(table.star())
-                     .where(table.id.equals(id))
-                     .toQuery();
+    let query = table.select(
+                    table.id, table.apellido, table.dni,
+                    Persona.table.nombre, Persona.table.cuit,
+                    Persona.table.telefono, Persona.table.tipo
+                )   
+                .from(table.join(Persona.table).on(table.id.equals(Persona.table.id)))
+                .where(table.id.equals(id))
+                .toQuery();
     
     return connector.execQuery(query).then(r => r.rows[0]);
 }
 
 module.exports.getByDni = function(dni) {
-    let query = table.select(table.star())
-                     .where(table.dni.equals(dni))
-                     .toQuery();
+    let query = table.select(
+        table.id, table.apellido, table.dni,
+        Persona.table.nombre, Persona.table.cuit,
+        Persona.table.telefono, Persona.table.tipo
+    )   
+    .from(table.join(Persona.table).on(table.id.equals(Persona.table.id)))
+    .where(table.dni.equals(dni))
+    .toQuery();
     
     return connector.execQuery(query).then(r => {
         if (!r.rows.length) return null;

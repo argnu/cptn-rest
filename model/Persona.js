@@ -45,16 +45,13 @@ module.exports.getAll = function(params) {
 
     return connector.execQuery(query.toQuery())
     .then(r => {
-        persona = r.rows[0];
-        if (persona.tipo == 'fisica') return PersonaFisica.get(id)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
-    })
-    .then(data => {
-        for (let col in data) {
-            if (col != 'id') persona[col] = data[col];
-        }
-        return persona;
-    })
+        personas = r.rows;
+        let proms = personas.map(p => {
+            if (persona.tipo == 'fisica') return PersonaFisica.get(p.id)
+            else if (persona.tipo == 'juridica') return PersonaJuridica.get(p.id);
+        })
+        return Promise.all(proms);
+    });
 }
 
 module.exports.get = function(id) {
@@ -67,12 +64,6 @@ module.exports.get = function(id) {
         persona = r.rows[0];
         if (persona.tipo == 'fisica') return PersonaFisica.get(id)
         else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
-    })
-    .then(data => {
-        for (let col in data) {
-            if (col != 'id') persona[col] = data[col];
-        }
-        return persona;
     })
 }
 
@@ -87,11 +78,6 @@ module.exports.getByCuit = function(cuit) {
         persona = r.rows[0];
         if (persona.tipo == 'fisica') return PersonaFisica.get(id)
         else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
-    })
-    .then(data => {
-        if (!data) return data;
-        for (let col in data) if (col != 'id') persona[col] = data[col];
-        return persona;
     })
 }
 
