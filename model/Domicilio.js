@@ -36,21 +36,26 @@ const table = sql.define({
   }
 });
 
-function addDomicilio(domicilio, client) {
+
+module.exports.table = table;
+
+module.exports.add = function(domicilio, client) {
   if (domicilio && domicilio.localidad && domicilio.calle && domicilio.calle.length) {
     let query = table.insert(
       table.calle.value(domicilio.calle),
       table.numero.value(domicilio.numero),
       table.localidad.value(domicilio.localidad)
-    ).returning(table.id, table.calle, table.numero, table.localidad).toQuery()
+    )
+    .returning(table.star())
+    .toQuery();
+
     return connector.execQuery(query, client)
     .then(r => r.rows[0]);
   }
   else return Promise.resolve(null);
 }
 
-
-function getDomicilio(id) {
+module.exports.get = function(id) {
   let query = table.select(
                       table.id, table.calle, table.numero,
                       Localidad.table.nombre.as('localidad'),
@@ -70,12 +75,6 @@ function getDomicilio(id) {
          .then(r => r.rows[0]);
 }
 
-
-module.exports.table = table;
-module.exports.addDomicilio = addDomicilio;
-module.exports.add = addDomicilio;
-module.exports.getDomicilio = getDomicilio;
-
 module.exports.edit = function(id, domicilio, client) {
   let query = table.update({
     calle: domicilio.calle,
@@ -86,4 +85,9 @@ module.exports.edit = function(id, domicilio, client) {
   .toQuery();
 
   return connector.execQuery(query).then(r => ({ id }));
+}
+
+module.exports.delete = function(id, client) {
+  let query = table.delete().where(table.id.equals(id)).toQuery();
+  return connector.execQuery(query, client);
 }

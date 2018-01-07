@@ -17,15 +17,18 @@ const table = sql.define({
   ]
 });
 
-function addInstitucion(institucion, client) {
+module.exports.add = function(institucion, client) {
   if (institucion && institucion.nombre) {
     let query = table.insert(
       table.nombre.value(domicilio.nombre)
-    ).returning(table.id, table.nombre).toQuery();
+    )
+    .returning(table.star())
+    .toQuery();
+    
     return connector.execQuery(query, client)
     .then(r => r.rows[0]);
   }
-  else return;
+  else Promise.resolve();
 }
 
 module.exports.table = table;

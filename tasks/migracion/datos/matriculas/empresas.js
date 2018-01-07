@@ -15,11 +15,21 @@ function createDomicilioReal (matricula) {
     else return null;
 }
 
-function createDomicilioProfesional (matricula) {
+function createDomicilioLegal (matricula) {
     if (matricula['DOMICLEGALCALLE'] && matricula['DOMICLEGALLOCALIDAD'] ){
         let nuevoDomicilio = {};
         nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICLEGALCALLE']);
         nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
+        return nuevoDomicilio;
+    }
+    else return null;
+}
+
+function createDomicilioEspecial (matricula) {
+    if (matricula['DOMICESPCALLE'] && matricula['DOMICESPLOCALIDAD'] ){
+        let nuevoDomicilio = {};
+        nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICESPCALLE']);
+        nuevoDomicilio['localidad'] = matricula['DOMICESPLOCALIDAD'];
         return nuevoDomicilio;
     }
     else return null;
@@ -55,8 +65,30 @@ function createEmpresa(matricula) {
 
     nuevaEmpresa['condafip'] = condafip;
 
-    nuevaEmpresa['domicilioReal'] = createDomicilioReal(matricula);
-    nuevaEmpresa['domicilioProfesional'] = createDomicilioProfesional(matricula);
+    
+    nuevaEmpresa['domicilios'] = [];
+    let dom = createDomicilioReal(matricula);
+    if (dom) {
+        nuevaEmpresa['domicilios'].push({
+            tipo: 'real',
+            domicilio: dom
+        })
+    };
+    dom = createDomicilioLegal(matricula);
+    if (dom) {
+        nuevaEmpresa['domicilios'].push({
+            tipo: 'legal',
+            domicilio: dom
+        })
+    };
+    dom = createDomicilioEspecial(matricula);
+    if (dom) {
+        nuevaEmpresa['domicilios'].push({
+            tipo: 'especial',
+            domicilio: dom
+        })
+    };
+
     return model.Empresa.add(nuevaEmpresa);
 }
 

@@ -1,15 +1,16 @@
 const moment = require('moment');
-const connector = require('../connector');
-const Domicilio = require('./Domicilio');
-const Entidad = require('./Entidad');
-const Contacto = require('./Contacto');
-const EmpresaRepresentante = require('./EmpresaRepresentante');
-const EmpresaIncumbencia = require('./EmpresaIncumbencia');
-const TipoEmpresa = require('./tipos/TipoEmpresa');
-const TipoSociedad = require('./tipos/TipoSociedad');
-const TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
 const sql = require('sql');
 sql.setDialect('postgres');
+
+const connector = require(`${__base}/connector`);
+const Domicilio = require(`${__base}/model/Domicilio`);
+const Entidad = require(`${__base}/model/Entidad`);
+const Contacto = require(`${__base}/model/Contacto`);
+const TipoEmpresa = require(`${__base}/model/tipos/TipoEmpresa`);
+const TipoSociedad = require(`${__base}/model/tipos/TipoSociedad`);
+const TipoCondicionAfip = require(`${__base}/model/tipos/TipoCondicionAfip`);
+const EmpresaRepresentante = require('./EmpresaRepresentante');
+const EmpresaIncumbencia = require('./EmpresaIncumbencia');
 
 
 const table = sql.define({
@@ -64,9 +65,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-
-function addEmpresa(empresa, client) {
-
+module.exports.add = function(empresa, client) {
   function addDatosBasicos(empresa) {
     let query = table.insert(
       table.id.value(empresa.id),
@@ -86,13 +85,11 @@ function addEmpresa(empresa, client) {
     return connector.execQuery(query, client);
   }
 
-  return Entidad.addEntidad({
+  return Entidad.add({
     tipo: empresa.tipo,
     cuit: empresa.cuit,
     condafip: empresa.condafip,
-    domicilioReal: empresa.domicilioReal,
-    domicilioProfesional: empresa.domicilioProfesional,
-    domicilioConstituido: empresa.domicilioConstituido
+    domicilios: empresa.domicilios
   }, client)
   .then(entidad => {
     empresa.id = entidad.id;
@@ -102,7 +99,7 @@ function addEmpresa(empresa, client) {
 
             let proms_contactos = empresa.contactos.map(c => {
               c.entidad = empresa_added.id;
-              return Contacto.addContacto(c, client);
+              return Contacto.add(c, client);
             });
 
             let proms_representantes = empresa.representantes ?
@@ -116,7 +113,7 @@ function addEmpresa(empresa, client) {
 
               let proms_incumbencias = empresa.incumbencias ? 
                 empresa.incumbencias.map(i => EmpresaIncumbencia.add({
-                  idEmpresa: empresa_added.id,
+                  empresa: empresa_added.id,
                   incumbencia: i
                 }, client))
               : [];
@@ -138,31 +135,6 @@ function addEmpresa(empresa, client) {
   })
 }
 
-module.exports.addEmpresa = addEmpresa;
-
-module.exports.add = function(empresa) {
-  return new Promise(function(resolve, reject) {
-    connector
-    .beginTransaction()
-    .then(connection => {
-      addEmpresa(empresa, connection.client)
-        .then(empresa_added => {
-          connector
-          .commit(connection.client)
-          .then(r => {
-            connection.done();
-            resolve(empresa_added);
-          });
-        })
-        .catch(e => {
-          connector.rollback(connection.client);
-          connection.done();
-          reject(e);
-        });
-    })
-  });
-}
-
 
 const select_atributes = [table.id,
 Entidad.table.tipo,
@@ -172,10 +144,8 @@ TipoEmpresa.table.valor.as('tipoEmpresa'),
 TipoSociedad.table.valor.as('tipoSociedad'),
 TipoCondicionAfip.table.valor.as('condafip'),
 Entidad.table.cuit,
-Entidad.table.domicilioReal.as('domicilioReal'),
-Entidad.table.domicilioProfesional.as('domicilioProfesional'),
-Entidad.table.domicilioConstituido.as('domicilioConstituido')
 ];
+
 const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
                          .leftJoin(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
@@ -198,11 +168,8 @@ module.exports.getAll = function() {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilioReal, domicilioProfesional, domicilioConstituido, 
-        contactos, incumbencias, representantes ] = value;
-      empresas[index].domicilioReal = domicilioReal;
-      empresas[index].domicilioProfesional = domicilioProfesional;
-      empresas[index].domicilioConstituido = domicilioConstituido;
+      [ domicilios, contactos, incumbencias, representantes ] = value;
+      empresas[index].domicilios = domicilios;
       empresas[index].contactos = contactos;
       empresas[index].incumbencias = incumbencias;
       empresas[index].representantes = representantes;
@@ -214,9 +181,7 @@ module.exports.getAll = function() {
 
 function getDatosEmpresa(empresa) {
   return Promise.all([
-      Domicilio.getDomicilio(empresa.domicilioReal),
-      Domicilio.getDomicilio(empresa.domicilioProfesional),
-      Domicilio.getDomicilio(empresa.domicilioConstituido),
+      EntidadDomicilio.getByEntidad(empresa.id),
       Contacto.getAll(empresa.id),
       EmpresaIncumbencia.getAll(empresa.id),
       EmpresaRepresentante.getAll(empresa.id)
@@ -235,9 +200,8 @@ module.exports.get = function(id) {
     empresa = r.rows[0];
     return getDatosEmpresa(empresa);
   })
-  .then(([ domicilioReal, domicilioProfesional, domicilioConstituido, 
-           contactos, incumbencias, representantes ]) => {
-      empresa.domicilioReal = domicilioReal;
+  .then(([ domicilios, contactos, incumbencias, representantes ]) => {
+      empresa.domicilios = domicilios;
       empresa.domicilioProfesional = domicilioProfesional;
       empresa.domicilioConstituido = domicilioConstituido;
       empresa.contactos = contactos;
@@ -252,9 +216,7 @@ module.exports.edit = function (id, empresa, client) {
   return Entidad.edit(id, {
     cuit: empresa.cuit,
     condafip: empresa.condafip,
-    domicilioReal: empresa.domicilioReal,
-    domicilioProfesional: empresa.domicilioProfesional,
-    domicilioConstituido: empresa.domicilioConstituido
+    domicilios: empresa.domicilios,
   }, client)
     .then(r => {
       let query = table.update({
@@ -279,7 +241,7 @@ module.exports.edit = function (id, empresa, client) {
               for (let c of empresa.contactos) {
                 if (!c.id) {
                   c.entidad = id;
-                  proms_contactos.push(Contacto.addContacto(c, client));
+                  proms_contactos.push(Contacto.add(c, client));
                 }
               }
 
@@ -289,28 +251,33 @@ module.exports.edit = function (id, empresa, client) {
                   proms_contactos.push(Contacto.delete(contacto.id, client));
               }
 
-              let proms_representantes = [];
-              for (let representante of empresa.representantes) {
-                if (!representantes.find(r => r.idMatricula == representante)) {
-                  proms_representantes.push(EmpresaRepresentante.add({ 
-                    empresa: id, 
-                    matricula: representante,
-                    fechaInicio: moment()
-                   }, client));
-                }
-              }
+              // let proms_representantes = [];
+              // for (let representante of empresa.representantes) {
+              //   if (!representantes.find(r => r.matricula == representante)) {
+              //     proms_representantes.push(EmpresaRepresentante.add({ 
+              //       empresa: id, 
+              //       matricula: representante,
+              //       fechaInicio: moment()
+              //      }, client));
+              //   }
+              // }
 
-              for (let representante of representantes) {
-                if (!empresa.representantes.find(r => r == representante.idMatricula))
-                  proms_representantes.push(EmpresaRepresentante.delete(id, representante.idMatricula, client));
-              }
+              // for (let representante of representantes) {
+              //   if (!empresa.representantes.find(r => r == representante.matricula))
+              //     proms_representantes.push(
+              //       EmpresaRepresentante.delete({
+              //         empresa: id, 
+              //         representante.matricula                      
+              //       }, client)
+              //     );
+              // }
 
 
               let proms_incumbencias = [];
               for (let incumbencia of empresa.incumbencias) {
                 if (!incumbencias.find(i => i.id == incumbencia)) {
                   proms_incumbencias.push(EmpresaIncumbencia.add({ 
-                    idEmpresa: id, 
+                    empresa: id, 
                     incumbencia: incumbencia,
                    }, client));
                 }
@@ -318,7 +285,9 @@ module.exports.edit = function (id, empresa, client) {
 
               for (let incumbencia of incumbencias) {
                 if (!empresa.incumbencias.find(i => i == incumbencia.id)) {
-                  proms_incumbencias.push(EmpresaIncumbencia.delete(id, incumbencia.id, client));
+                  proms_incumbencias.push(
+                    EmpresaIncumbencia.delete(id, incumbencia.id, client)
+                  );
                 }
               }
 

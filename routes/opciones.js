@@ -21,6 +21,7 @@ router.get('/', function(req, res) {
     model.TipoFormaPago.getAll(req.query),
     model.TipoPago.getAll(req.query),
     model.TipoVinculo.getAll(req.query)
+    // model.TipoTarjeta.getAll(req.query)
   ])
   .then(([
     condicionafip, contacto, empresa, estadocivil,

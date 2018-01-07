@@ -8,20 +8,18 @@ function addPagos(pago) {
     return model.Comprobante.getByNumero(pago['NumRecibo'])
         .then(comprobante => {
             if (comprobante) {
-                let table = model.ComprobantePago.table;
-                let query = table.insert(
-                    table.comprobante.value(comprobante.id),
-                    table.item.value(pago['Item']),
-                    table.fecha_pago.value(utils.getFecha(pago['FechaPago_DATE'])),
-                    table.importe.value(pago['Importe']),
-                    table.forma_pago.value(pago['FormaPago']),
-                    table.numero_cheque.value(pago['NroCheque']),
-                    table.codigo_banco.value(pago['CodBanco']),
-                    table.titular_cuenta.value(utils.checkString(pago['TitularCuenta'])),
-                    table.fecha_vto_cheque.value(utils.getFecha(pago['FECHA_VTO'])),
-                    table.compensado.value(pago['Compensado'])
-                ).toQuery();
-                return connector.execQuery(query);
+                return model.ComprobantePago.add({
+                    comprobante: comprobante.id,
+                    item: pago['Item'],
+                    fecha_pago: utils.getFecha(pago['FechaPago_DATE']),
+                    importe: pago['Importe'],
+                    forma_pago: pago['FormaPago'],
+                    numero_cheque: pago['NroCheque'],
+                    banco: pago['CodBanco'],
+                    titular_cuenta: utils.checkString(pago['TitularCuenta']),
+                    fecha_vto_cheque: utils.getFecha(pago['FECHA_VTO']),
+                    compensado: pago['Compensado']
+                });
             } else {
                 return Promise.resolve();
             }

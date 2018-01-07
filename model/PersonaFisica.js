@@ -15,12 +15,9 @@ const table = sql.define({
             dataType: 'varchar(100)'
         },
         {
-            name: 'apellido',
-            dataType: 'varchar(100)'
-        },
-        {
             name: 'dni',
-            dataType: 'varchar(20)'
+            dataType: 'varchar(20)',
+            notNull: true
         }
     ],
     foreignKeys: [
@@ -37,6 +34,14 @@ module.exports.table = table;
 module.exports.get = function(id) {
     let query = table.select(table.star())
                      .where(table.id.equals(id))
+                     .toQuery();
+    
+    return connector.execQuery(query).then(r => r.rows[0]);
+}
+
+module.exports.getByDni = function(dni) {
+    let query = table.select(table.star())
+                     .where(table.dni.equals(dni))
                      .toQuery();
     
     return connector.execQuery(query).then(r => r.rows[0]);

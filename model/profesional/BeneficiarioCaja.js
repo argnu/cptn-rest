@@ -59,7 +59,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addBeneficiario(beneficiario, client) {
+module.exports.add = function(beneficiario, client) {
   let query = table.insert(
     table.dni.value(beneficiario.dni), table.nombre.value(beneficiario.nombre),
     table.apellido.value(beneficiario.apellido), table.fechaNacimiento.value(beneficiario.fechaNacimiento),
@@ -72,9 +72,7 @@ function addBeneficiario(beneficiario, client) {
            beneficiario.id = r.rows[0].id;
            return beneficiario;
          });
-}
-
-module.exports.addBeneficiario = addBeneficiario;
+};
 
 module.exports.getAll = function(id_profesional) {
   let query = table.select(

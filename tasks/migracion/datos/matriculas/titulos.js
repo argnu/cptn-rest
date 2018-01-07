@@ -31,7 +31,7 @@ const addFormacion = (formacion) => {
       nuevaFormacion.fecha = utils.getFecha(formacion['FECHATITULO_DATE']);
       nuevaFormacion.titulo = titulo.id;
       nuevaFormacion.institucion = formacion['CODIGO'];
-      return model.Formacion.addFormacion(nuevaFormacion);
+      return model.Formacion.add(nuevaFormacion);
     }
     else return Promise.resolve();
   });

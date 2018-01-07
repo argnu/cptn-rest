@@ -11,7 +11,7 @@ function addIncumbencia(item) {
             if (matricula_empresa) {
                 let table = model.EmpresaIncumbencia.table;
                 let query = table.insert(
-                    table.idEmpresa.value(matricula_empresa.entidad),
+                    table.empresa.value(matricula_empresa.entidad),
                     table.incumbencia.value(item['IDINC'])
                 ).toQuery();
                 return connector.execQuery(query);

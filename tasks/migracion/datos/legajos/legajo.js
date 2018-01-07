@@ -13,22 +13,47 @@ for(let att in legajo) {
 return nuevo;
 }
 
-function createComitente(legajo) {
-    let table = model.tareas.Comitente.table;
-    let query = table.insert(
-      table.apellido.value(utils.checkString(legajo['APELLIDO'])),
-      table.nombres.value(utils.checkString(legajo['NOMBRES'])),
-      table.empresa.value(utils.checkString(legajo['EMPRESA'])),
-      table.idempresa.value(legajo['IDEMPRESA']),
-      table.tipo_documento.value(utils.checkString(legajo['TIPODOC'])),
-      table.numero_documento.value(legajo['NUMDOC']),
-      table.telefono.value(utils.checkString(legajo['TELEFONOCOMITENTE']))
-    )
-    .returning(table.id)
-    .toQuery()
-
-    return connector.execQuery(query)
-           .then(r => r.rows[0].id);
+function addComitente(legajo) {
+    if (legajo['IDEMPRESA']) {
+        return Persona.getByCuit(legajo['CUIT_EMPRESA'])
+        .then(persona_juridica => {
+            if (persona_juridica) return Promise.resolve(persona_juridica);
+            else {
+                return Persona.add({
+                    tipo: 'juridica',
+                    nombre: utils.checkString(legajo['NOMBRE_EMPRESA']),
+                    cuit: utils.checkString(legajo['CUIT_EMPRESA']),
+                    telefono: utils.checkString(legajo['TELEFONOCOMITENTE'])
+                })
+            }
+        })
+        .then(persona_juridica => LegajoComitente.add({
+            legajo: legajo['id'],
+            comitente: persona_juridica.id,
+            porcentaje: 100
+        }))
+    }
+    else {
+        return PersonaFisica.getByDni(legajo['NUMDOC'])
+        .then(persona_fisica => {
+            if (persona_fisica) return Promise.resolve(persona_fisica);
+            else {
+                return Persona.add({
+                    tipo: 'fisica',
+                    nombre: utils.checkString(legajo['NOMBRES']),
+                    cuit: utils.checkString(legajo['NUMDOC']),
+                    dni: utils.checkString(legajo['NUMDOC']),
+                    apellido: utils.checkString(legajo['APELLIDO']),
+                    telefono: utils.checkString(legajo['TELEFONOCOMITENTE'])
+                })
+            }
+        })
+        .then(persona_fisica => LegajoComitente.add({
+            legajo: legajo['id'],
+            comitente: persona_fisica.id,
+            porcentaje: 100
+        }))
+    }
 }
 
 
@@ -38,15 +63,12 @@ function addLegajo(legajo_1) {
     return model.Matricula.getMigracion(legajo['IDMATRICULADO'], legajo['MATRICEMP'] == 'E')
         .then(matricula => {
           if (matricula) {
-            return Promise.all([
-              model.Domicilio.addDomicilio({
+            return model.Domicilio.add({
                 localidad: legajo.ciudad,
                 calle: legajo.direccion,
                 numero: 0
-              }),
-              createComitente(legajo)
-            ])
-            .then(([domicilio, id_comitente]) => {
+            })
+            .then(domicilio => {
                 let table = model.tareas.Legajo.table;
                 let query = table.insert(
                     table.solicitud.value(legajo['ID_Solicitud']),
@@ -54,7 +76,6 @@ function addLegajo(legajo_1) {
                     table.tipo.value(legajo['TIPO']),
                     table.matricula.value(matricula.id),
                     table.fecha_solicitud.value(utils.getFecha(legajo['FECHASOLICITUD_DATE'])),
-                    table.comitente.value(id_comitente),
                     table.domicilio.value(domicilio ? domicilio.id : null),
                     table.nomenclatura.value(utils.checkString(legajo['NOMENCLATURA'])),
                     table.estado.value(legajo['ESTADO'] == 2 ? 1 : legajo['ESTADO']),
@@ -80,10 +101,16 @@ function addLegajo(legajo_1) {
                     table.numero_acta.value(utils.checkString(legajo['NroActa'])),
                     table.operador_carga.value(utils.checkString(legajo['OperadorCarge'])),
                     table.operador_aprobacion.value(legajo['OperadorAprobacion'])
-                ).toQuery();
+                )
+                .returning(table.id)
+                .toQuery();
 
                 return connector.execQuery(query);
-            });
+            })
+            .then(r => {
+                legajo.id = r.rows[0].id;
+                return addComitente(legajo);                
+            })
         }
         else Promise.resolve();
       })
@@ -93,7 +120,11 @@ function addLegajo(legajo_1) {
 
 module.exports.migrar = function () {
     console.log('Migrando legajos...');
-    let q_objetos = `select L.*, codTarea=T.codigo from LEGTECNICOS L LEFT JOIN Tareas_N2 T ON (L.CODTAREAN2= T.CODIGO) WHERE ID_Solicitud BETWEEN @offset AND @limit`;
+    let q_objetos = `select L.*, E.CUIT AS CUIT_EMPRESA, E.NOMBRE AS NOMBRE_EMPRESA,
+    codTarea=T.codigo 
+    from LEGTECNICOS L LEFT JOIN Tareas_N2 T ON (L.CODTAREAN2= T.CODIGO) 
+    LEFT JOIN EMPRESA E ON (E.ID=L.IDEMPRESA)
+    WHERE ID_Solicitud BETWEEN @offset AND @limit`;
     let q_limites = `select MIN(ID_Solicitud) as min, MAX(ID_Solicitud) as max from LEGTECNICOS`;
 
     return utils.migrar(q_objetos, q_limites, 100, addLegajo);

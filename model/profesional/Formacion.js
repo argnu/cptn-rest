@@ -55,19 +55,19 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addFormacion(formacion, client) {
+module.exports.add = function (formacion, client) {
   let query = table.insert(
     table.titulo.value(formacion.titulo),
     table.fecha.value(formacion.fecha),
     table.institucion.value(formacion.institucion),
     table.profesional.value(formacion.profesional)
-  ).returning(table.id, table.titulo, table.fecha, table.institucion, table.profesional).toQuery();
+  )
+  .returning(table.star())
+  .toQuery();
 
   return connector.execQuery(query, client)
          .then(r => r.rows[0]);
-}
-
-module.exports.addFormacion = addFormacion;
+};
 
 
 module.exports.getAll = function(id_profesional) {

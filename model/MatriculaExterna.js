@@ -1,12 +1,9 @@
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const PersonaFisica = require(`${__base}/model/PersonaFisica`);
-const PersonaJuridica = require(`${__base}/model/PersonaJuridica`);
-
 
 const table = sql.define({
-    name: 'persona',
+    name: 'matricula_externa',
     columns: [
         {
             name: 'id',
@@ -14,24 +11,36 @@ const table = sql.define({
             primaryKey: true
         },
         {
-            name: 'tipo',
-            dataType: 'varchar(15)',
+            name: 'persona',
+            dataType: 'int',
+            notNull: true
+        },        
+        {
+            name: 'numeroMatricula',
+            dataType: 'varchar(20)',
             notNull: true
         },
         {
-            name: 'nombre',
+            name: 'nombreInstitucion',
             dataType: 'varchar(100)',
-            notNull: true
         },
         {
-            name: 'cuit',
-            dataType: 'varchar(20)',
-            notNull: true
+            name: 'localidad',
+            dataType: 'int'
+        }
+    ],
+
+    foreignKeys: [
+        {
+            table: 'persona',
+            columns: ['persona'],
+            refColumns: ['id']
         },
         {
-            name: 'telefono',
-            dataType: 'varchar(20)',
-        }        
+            table: 'localidad',
+            columns: ['localidad'],
+            refColumns: ['id']
+        },
     ]
 });
 
@@ -72,23 +81,6 @@ module.exports.get = function(id) {
         for (let col in data) {
             if (col != 'id') persona[col] = data[col];
         }
-        return persona;
-    })
-}
-
-module.exports.getByCuit = function(cuit) {
-    let persona;
-    let query = table.select(table.star())
-                     .where(table.cuit.equals(cuit))
-                     .toQuery();
-    return connector.execQuery(query)
-    .then(r => {
-        persona = r.rows[0];
-        if (persona.tipo == 'fisica') return PersonaFisica.get(id)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
-    })
-    .then(data => {
-        for (let col in data) if (col != 'id') persona[col] = data[col];
         return persona;
     })
 }

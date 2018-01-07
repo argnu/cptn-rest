@@ -1,6 +1,7 @@
 const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
+
 const model = require(`${__base}/model`);
 const ComprobanteItem = require('./ComprobanteItem');
 const ComprobantePago = require('./ComprobantePago');
@@ -63,7 +64,6 @@ const table = sql.define({
         {
             name: 'delegacion',
             dataType: 'int',
-            // Agregar foreign key una vez que se confirmen los datos
         },
         {
             name: 'operador',
@@ -91,6 +91,11 @@ const table = sql.define({
         {
             table: 'matricula',
             columns: ['matricula'],
+            refColumns: ['id']
+        },
+        {
+            table: 'delegacion',
+            columns: ['delegacion'],
             refColumns: ['id']
         },
         {

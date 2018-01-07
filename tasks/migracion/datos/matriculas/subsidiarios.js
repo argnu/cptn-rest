@@ -13,7 +13,7 @@ const addSubsidiario = (subsidiario) => {
     nuevoSubsidiario.apellido = utils.checkString(subsidiario['APELLIDO']);
     nuevoSubsidiario.dni = utils.checkString(subsidiario['NUMDOCU']);
     nuevoSubsidiario.porcentaje = subsidiario['PORCENTAJE'];
-    return model.Subsidiario.addSubsidiario(nuevoSubsidiario);
+    return model.Subsidiario.add(nuevoSubsidiario);
   });
 }
 

@@ -3,7 +3,7 @@ const Contacto = require('../Contacto');
 const Formacion = require('./Formacion');
 const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
-const Domicilio = require('../Domicilio');
+const EntidadDomicilio = require('../EntidadDomicilio');
 const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
@@ -133,44 +133,41 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addProfesional(profesional, client) {
+function addDatosBasicos(profesional) {
+  let query = table.insert(
+    table.id.value(profesional.id),
+    table.dni.value(profesional.dni), table.nombre.value(profesional.nombre),
+    table.apellido.value(profesional.apellido),
+    table.fechaNacimiento.value(profesional.fechaNacimiento),
+    table.lugarNacimiento.value(profesional.lugarNacimiento),
+    table.sexo.value(profesional.sexo), table.estadoCivil.value(profesional.estadoCivil),
+    table.nacionalidad.value(profesional.nacionalidad),
+    table.observaciones.value(profesional.observaciones),
+    table.relacionDependencia.value(profesional.relacionDependencia),
+    table.independiente.value(profesional.independiente),
+    table.empresa.value(profesional.empresa),
+    table.serviciosPrestados.value(profesional.serviciosPrestados),
+    table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
+    table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional),
+    table.solicitaCajaPrevisional.value(profesional.solicitaCajaPrevisional),
+    table.publicar.value(profesional.publicar),
+    table.publicarCelular.value(profesional.publicarCelular),
+    table.publicarEmail.value(profesional.publicarEmail),
+    table.publicarAcervo.value(profesional.publicarAcervo),
+    table.publicarDireccion.value(profesional.publicarDireccion),
+    table.foto.value(profesional.foto),
+    table.firma.value(profesional.firma)
+  ).toQuery();
 
-  function addDatosBasicos(profesional) {
-    let query = table.insert(
-      table.id.value(profesional.id),
-      table.dni.value(profesional.dni), table.nombre.value(profesional.nombre),
-      table.apellido.value(profesional.apellido),
-      table.fechaNacimiento.value(profesional.fechaNacimiento),
-      table.lugarNacimiento.value(profesional.lugarNacimiento),
-      table.sexo.value(profesional.sexo), table.estadoCivil.value(profesional.estadoCivil),
-      table.nacionalidad.value(profesional.nacionalidad),
-      table.observaciones.value(profesional.observaciones),
-      table.relacionDependencia.value(profesional.relacionDependencia),
-      table.independiente.value(profesional.independiente),
-      table.empresa.value(profesional.empresa),
-      table.serviciosPrestados.value(profesional.serviciosPrestados),
-      table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
-      table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional),
-      table.solicitaCajaPrevisional.value(profesional.solicitaCajaPrevisional),
-      table.publicar.value(profesional.publicar),
-      table.publicarCelular.value(profesional.publicarCelular),
-      table.publicarEmail.value(profesional.publicarEmail),
-      table.publicarAcervo.value(profesional.publicarAcervo),
-      table.publicarDireccion.value(profesional.publicarDireccion),
-      table.foto.value(profesional.foto),
-      table.firma.value(profesional.firma)
-    ).toQuery();
+  return connector.execQuery(query, client);
+}
 
-    return connector.execQuery(query, client);
-  }
-
-  return Entidad.addEntidad({
+module.exports.add = function (profesional, client) {
+  return Entidad.add({
     tipo: profesional.tipo,
     cuit: profesional.cuit,
     condafip: profesional.condafip,
-    domicilioReal: profesional.domicilioReal,
-    domicilioProfesional: profesional.domicilioProfesional,
-    domicilioConstituido: profesional.domicilioConstituido
+    domicilios: profesional.domicilios,
   }, client)
   .then(entidad => {
     profesional.id = entidad.id;
@@ -178,22 +175,22 @@ function addProfesional(profesional, client) {
           .then(r => {
             let proms_contactos = (profesional.contactos && profesional.contactos.length) ? profesional.contactos.map(c => {
               c.entidad = entidad.id;
-              return Contacto.addContacto(c, client);
+              return Contacto.add(c, client);
             }) : [];
 
             let proms_formaciones = (profesional.formaciones && profesional.formaciones.length) ? profesional.formaciones.map(f => {
               f.profesional = profesional.id;
-              return Formacion.addFormacion(f, client);
+              return Formacion.add(f, client);
             }) : [];
 
             let proms_beneficiarios = (profesional.beneficiarios && profesional.beneficiarios.length) ? profesional.beneficiarios.map(b => {
               b.profesional = profesional.id;
-              return Beneficiario.addBeneficiario(b, client);
+              return Beneficiario.add(b, client);
             }) : [];
 
             let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
               s.profesional = profesional.id;
-              return Subsidiario.addSubsidiario(s, client);
+              return Subsidiario.add(s, client);
             }) : [];
 
 
@@ -204,31 +201,6 @@ function addProfesional(profesional, client) {
             .then(rs => profesional);
           });
   })
-}
-
-module.exports.addProfesional = addProfesional;
-
-module.exports.add = function(profesional) {
-  return new Promise(function(resolve, reject) {
-    connector
-    .beginTransaction()
-    .then(connection => {
-      addProfesional(profesional, connection.client)
-        .then(profesional_added => {
-          connector
-          .commit(connection.client)
-          .then(r => {
-            connection.done();
-            resolve(profesional_added);
-          });
-        })
-        .catch(e => {
-          connector.rollback(connection.client);
-          connection.done();
-          reject(e);
-        });
-    })
-  });
 }
 
 const select_atributes = [table.id,
@@ -243,9 +215,6 @@ table.observaciones, table.empresa,
 table.serviciosPrestados, table.poseeCajaPrevisional,
 table.solicitaCajaPrevisional,
 table.nombreCajaPrevisional, table.publicar,
-Entidad.table.domicilioReal.as('domicilioReal'),
-Entidad.table.domicilioProfesional.as('domicilioProfesional'),
-Entidad.table.domicilioConstituido.as('domicilioConstituido'),
 table.foto, table.firma,
 table.publicarAcervo, table.publicarCelular,
 table.publicarDireccion, table.publicarEmail
@@ -280,11 +249,8 @@ module.exports.getAll = function(params) {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilioReal, domicilioProfesional, domicilioConstituido,
-        contactos, formaciones, beneficiarios, subsidiarios ] = value;
-      profesionales[index].domicilioReal = domicilioReal || null;
-      profesionales[index].domicilioProfesional = domicilioProfesional || null;
-      profesionales[index].domicilioConstituido = domicilioConstituido || null;
+      [ domicilios, contactos, formaciones, beneficiarios, subsidiarios ] = value;
+      profesionales[index].domicilios = domicilios;
       profesionales[index].contactos = contactos;
       profesionales[index].formaciones = formaciones;
       profesionales[index].beneficiarios = beneficiarios;
@@ -303,9 +269,7 @@ module.exports.getAll = function(params) {
 
 function getDatosProfesional(profesional) {
   return Promise.all([
-      Domicilio.getDomicilio(profesional.domicilioReal),
-      Domicilio.getDomicilio(profesional.domicilioProfesional),
-      Domicilio.getDomicilio(profesional.domicilioConstituido),
+      EntidadDomicilio.getByEntidad(profesional.id),
       Contacto.getAll(profesional.id),
       Formacion.getAll(profesional.id),
       Beneficiario.getAll(profesional.id),
@@ -333,12 +297,9 @@ module.exports.get = function(id) {
     return getDatosProfesional(profesional);
   })
   .then(([
-      domicilioReal, domicilioProfesional, domicilioConstituido,
-      contactos, formaciones, beneficiarios, subsidiarios
+      domicilios, contactos, formaciones, beneficiarios, subsidiarios
     ]) => {
-      profesional.domicilioReal = domicilioReal || null;
-      profesional.domicilioProfesional = domicilioProfesional || null;
-      profesional.domicilioConstituido = domicilioConstituido || null;
+      profesional.domicilios = domicilios;
       profesional.contactos = contactos;
       profesional.formaciones = formaciones;
       profesional.beneficiarios = beneficiarios;
@@ -362,9 +323,7 @@ module.exports.edit = function(id, profesional, client) {
   return Entidad.edit(id, {
     cuit: profesional.cuit,
     condafip: profesional.condafip,
-    domicilioReal: profesional.domicilioReal,
-    domicilioProfesional: profesional.domicilioProfesional,
-    domicilioConstituido: profesional.domicilioConstituido
+    domicilios: profesional.domicilios
   }, client)
   .then(r => {
     let query = table.update({
@@ -405,7 +364,7 @@ module.exports.edit = function(id, profesional, client) {
           for(let c of profesional.contactos) {
             if (!c.id) {
               c.entidad = id;
-              proms_contactos.push(Contacto.addContacto(c, client));
+              proms_contactos.push(Contacto.add(c, client));
             }
           }
           
@@ -421,7 +380,7 @@ module.exports.edit = function(id, profesional, client) {
           for (let f of profesional.formaciones) {
             if (!f.id) {
               f.profesional = id;
-              proms_formaciones.push(Formacion.addFormacion(f, client));
+              proms_formaciones.push(Formacion.add(f, client));
             }
           }
           
@@ -436,7 +395,7 @@ module.exports.edit = function(id, profesional, client) {
           for (let b of profesional.beneficiarios) {
             if (!b.id) {
               b.profesional = id;
-              proms_beneficiarios.push(Beneficiario.addBeneficiario(b, client));
+              proms_beneficiarios.push(Beneficiario.add(b, client));
             }
           }
           
@@ -451,7 +410,7 @@ module.exports.edit = function(id, profesional, client) {
           for (let s of profesional.subsidiarios) {
             if (!s.id) {
               s.profesional = id;
-              proms_subsidiarios.push(Subsidiario.addSubsidiario(s, client));
+              proms_subsidiarios.push(Subsidiario.add(s, client));
             }
           }
           

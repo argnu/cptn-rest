@@ -15,11 +15,21 @@ function createDomicilioReal (matricula) {
     else return null;
 }
 
-function createDomicilioProfesional (matricula) {
+function createDomicilioLegal (matricula) {
     if (matricula['DOMICLEGALCALLE'] && matricula['DOMICLEGALLOCALIDAD'] ){
         let nuevoDomicilio = {};
         nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICLEGALCALLE']);
         nuevoDomicilio['localidad'] = matricula['DOMICLEGALLOCALIDAD'];
+        return nuevoDomicilio;
+    }
+    else return null;
+}
+
+function createDomicilioEspecial (matricula) {
+    if (matricula['DOMICESPCALLE'] && matricula['DOMICESPLOCALIDAD'] ){
+        let nuevoDomicilio = {};
+        nuevoDomicilio['calle'] = utils.checkString(matricula['DOMICESPCALLE']);
+        nuevoDomicilio['localidad'] = matricula['DOMICESPLOCALIDAD'];
         return nuevoDomicilio;
     }
     else return null;
@@ -69,9 +79,31 @@ function createProfesional(matricula) {
     nuevoProfesional['condafip'] = condafip;
     // Se crean los contactos del profesional
 
-    nuevoProfesional['domicilioReal'] = createDomicilioReal(matricula);
-    nuevoProfesional['domicilioProfesional'] = createDomicilioProfesional(matricula);
-    return model.Profesional.addProfesional(nuevoProfesional);
+
+    nuevoProfesional['domicilios'] = [];
+    let dom = createDomicilioReal(matricula);
+    if (dom) {
+        nuevoProfesional['domicilios'].push({
+            tipo: 'real',
+            domicilio: dom
+        })
+    };
+    dom = createDomicilioLegal(matricula);
+    if (dom) {
+        nuevoProfesional['domicilios'].push({
+            tipo: 'legal',
+            domicilio: dom
+        })
+    };
+    dom = createDomicilioEspecial(matricula);
+    if (dom) {
+        nuevoProfesional['domicilios'].push({
+            tipo: 'especial',
+            domicilio: dom
+        })
+    };
+
+    return model.Profesional.add(nuevoProfesional);
 }
 
 const addMatricula = (matricula) => {

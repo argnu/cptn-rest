@@ -1,7 +1,7 @@
-const connector = require('../connector');
+const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
-const TipoIncumbencia = require('./tipos/TipoIncumbencia');
+const TipoIncumbencia = require(`${__base}/model/tipos/TipoIncumbencia`);
 
 const table = sql.define({
   name: 'empresa_incumbencia',
@@ -11,7 +11,7 @@ const table = sql.define({
       primaryKey: true
     },
     {
-      name: 'idEmpresa',
+      name: 'empresa',
       dataType: 'int',
       notNull: true
     },
@@ -26,7 +26,7 @@ const table = sql.define({
   foreignKeys: [
     {
       table: 'empresa',
-      columns: [ 'idEmpresa' ],
+      columns: [ 'empresa' ],
       refColumns: [ 'id' ]
     },
     {
@@ -45,7 +45,7 @@ module.exports.getAll = function(id_empresa) {
     TipoIncumbencia.table.valor
   )
   .from(table.join(TipoIncumbencia.table).on(table.incumbencia.equals(TipoIncumbencia.table.id)))
-  .where(table.idEmpresa.equals(id_empresa))
+  .where(table.empresa.equals(id_empresa))
   .toQuery();
 
   return connector.execQuery(query)
@@ -54,10 +54,10 @@ module.exports.getAll = function(id_empresa) {
 
 module.exports.add = function(data, client) {
   let query = table.insert(
-    table.idEmpresa.value(data.idEmpresa),
+    table.empresa.value(data.empresa),
     table.incumbencia.value(data.incumbencia)
   )
-  .returning(table.id, table.idEmpresa, table.incumbencia)
+  .returning(table.id, table.empresa, table.incumbencia)
   .toQuery();
 
   return connector.execQuery(query, client)
@@ -66,7 +66,7 @@ module.exports.add = function(data, client) {
 
 module.exports.delete = function (empresa, incumbencia, client) {
   let query = table.delete()
-  .where(table.incumbencia.equals(incumbencia).and(table.idEmpresa.equals(empresa)))
+  .where(table.incumbencia.equals(incumbencia).and(table.empresa.equals(empresa)))
   .toQuery();
   return connector.execQuery(query, client);
 }

@@ -33,7 +33,7 @@ const addPosgrado = (formacion) => {
         institucion: formacion['UNIVERSIDAD']
       };
 
-      return model.Formacion.addFormacion(nuevaFormacion);
+      return model.Formacion.add(nuevaFormacion);
     }
   });
 }

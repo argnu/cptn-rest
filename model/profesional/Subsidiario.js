@@ -47,8 +47,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-
-function addSubsidiario(subsidiario, client) {
+module.exports.add = function(subsidiario, client) {
   let query = table.insert(
     table.dni.value(subsidiario.dni), table.nombre.value(subsidiario.nombre),
     table.apellido.value(subsidiario.apellido), table.porcentaje.value(subsidiario.porcentaje),
@@ -60,9 +59,7 @@ function addSubsidiario(subsidiario, client) {
            subsidiario.id = r.rows[0].id;
            return subsidiario;
          })
-}
-
-module.exports.addSubsidiario = addSubsidiario;
+};
 
 module.exports.getAll = function(id_profesional) {
   let query = table.select(

@@ -4,7 +4,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 const Solicitud = require('./Solicitud');
 const Profesional = require('./profesional/Profesional');
-const Empresa = require('./Empresa');
+const Empresa = require('./empresa/Empresa');
 const Entidad = require('./Entidad');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 const Boleta = require('./cobranzas/Boleta');
@@ -398,6 +398,7 @@ module.exports.getMigracion = function (id, empresa) {
       .and(Entidad.table.tipo.equals(empresa ? 'empresa' : 'profesional'))
     )
     .toQuery();
+    
   return connector.execQuery(query)
     .then(r => r.rows[0]);
 }

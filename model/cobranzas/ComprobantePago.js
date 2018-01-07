@@ -5,7 +5,8 @@ sql.setDialect('postgres');
 
 const table = sql.define({
     name: 'comprobante_pago',
-    columns: [{
+    columns: [
+        {
             name: 'id',
             dataType: 'serial',
             primaryKey: true
@@ -32,31 +33,13 @@ const table = sql.define({
             dataType: 'int'
         },
         {
-            name: 'numero_cheque',
-            dataType: 'int'
-        },
-        {
-            name: 'codigo_banco',
-            dataType: 'int'
-        },
-        {
-            name: 'titular_cuenta',
-            dataType: 'varchar(255)'
-        },
-        {
-            name: 'fecha_vto_cheque',
-            dataType: 'date'
-        },
-        {
             name: 'compensado',
             dataType: 'int'
         }
-
-
-
     ],
 
-    foreignKeys: [{
+    foreignKeys: [
+        {
             table: 'comprobante',
             columns: ['comprobante'],
             refColumns: ['id']
@@ -70,6 +53,14 @@ const table = sql.define({
 });
 
 module.exports.table = table;
+
+function esCheque(id) {
+    return id == 4;
+}
+
+function esTarjeta(id) {
+    return false;
+}
 
 module.exports.getByComprobante = function (id) {
     let query = table.select(table.star())
@@ -87,16 +78,17 @@ module.exports.add = function(comprobante_pago, client) {
             table.item.value(comprobante_pago.item),
             table.fecha_pago.value(comprobante_pago.fecha_pago),
             table.importe.value(comprobante_pago.importe),
-            table.forma_pago.value(comprobante_pago.forma_pago),
-            table.numero_cheque.value(utils.checkNull(comprobante_pago.cheque.numero)),
-            table.codigo_banco.value(utils.checkNull(comprobante_pago.cheque.banco)),
-            table.fecha_vto_cheque.value(utils.checkNull(comprobante_pago.cheque.fecha_vencimiento)),
-            table.titular_cuenta.value(comprobante_pago.cheque.titular)
+            table.forma_pago.value(comprobante_pago.forma_pago)
         )
-        .returning(table.id)
+        .returning(table.star())
         .toQuery()
 
     return connector.execQuery(query, client)
-        .then(r => r.rows[0]);
-
+        .then(r => {
+            if (esCheque(comprobante_pago.forma_pago)) {
+                comprobante_pago.id = r.rows[0].id;
+                return ComprobantePagoCheque.add(comprobante_pago);
+            }
+            return Promise.resolve(r.rows[0]);
+    });
 }

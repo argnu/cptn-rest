@@ -2,7 +2,7 @@ const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 const Profesional = require('./profesional/Profesional');
-const Empresa = require('./Empresa');
+const Empresa = require('./empresa/Empresa');
 const Entidad = require('./Entidad');
 const Delegacion = require('./Delegacion');
 
@@ -110,11 +110,11 @@ module.exports.add = function(solicitud) {
           .then(r => Profesional.get(solicitud.entidad.id));
         }
         else {
-          return Profesional.addProfesional(solicitud.entidad, connection.client);
+          return Profesional.add(solicitud.entidad, connection.client);
         }
       }
       else if (solicitud.entidad.tipo == 'empresa') {
-        return Empresa.addEmpresa(solicitud.entidad, connection.client)
+        return Empresa.add(solicitud.entidad, connection.client)
       }
   })
   .then(entidad_added => {

@@ -44,7 +44,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addContacto(contacto, client) {
+module.exports.add = function (contacto, client) {
   let query = table.insert(
     table.tipo.value(contacto.tipo), 
     table.valor.value(contacto.valor),
@@ -57,9 +57,7 @@ function addContacto(contacto, client) {
            let contacto_added = r.rows[0];
            return contacto_added;
          })
-}
-
-module.exports.addContacto = addContacto;
+};
 
 module.exports.getAll = function(id_entidad) {
   let query = table.select(

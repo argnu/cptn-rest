@@ -13,8 +13,9 @@ function addRepresentante(representante) {
                     .then(matricula => {
                         let table = model.EmpresaRepresentante.table;
                         let query = table.insert(
-                            table.idEmpresa.value(matricula_empresa.entidad),
-                            table.idMatricula.value(matricula.id),
+                            table.tipo.value('primario'),
+                            table.empresa.value(matricula_empresa.entidad),
+                            table.matricula.value(matricula.id),
                             table.fechaInicio.value(utils.getFecha(representante['InicVinc_DATE'])),
                             table.fechaFin.value(utils.getFecha(representante['SeceVinc_DATE']))
                         ).toQuery();

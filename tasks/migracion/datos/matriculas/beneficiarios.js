@@ -17,7 +17,7 @@ const addBeneficiario = (beneficiario) => {
       fechaNacimiento: utils.getFecha(beneficiario['FECHANAC_DATE']),
       invalidez: beneficiario['INVALIDEZ']
     };
-    return model.BeneficiarioCaja.addBeneficiario(nuevoBeneficiario);
+    return model.BeneficiarioCaja.add(nuevoBeneficiario);
   });
 }
 

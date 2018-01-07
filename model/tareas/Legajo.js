@@ -127,7 +127,6 @@ const table = sql.define({
         {
             name: 'delegacion',
             dataType: 'int',
-            // Agregar foreign key una vez que se confirmen los datos
         },
         {
             name: 'numero_acta',
@@ -152,9 +151,15 @@ const table = sql.define({
 
     ],
 
-    foreignKeys: [{
+    foreignKeys: [
+        {
             table: 'matricula',
             columns: ['matricula'],
+            refColumns: ['id']
+        },
+        {
+            table: 'delegacion',
+            columns: ['delegacion'],
             refColumns: ['id']
         },
         {
@@ -265,7 +270,7 @@ module.exports.get = function (id) {
             return Promise.all([
                 getItems(legajo.id),
                 LegajoComitente.getByLegajo(legajo.id),
-                Domicilio.getDomicilio(legajo.domicilio)
+                Domicilio.get(legajo.domicilio)
             ])
         })
         .then(([items, comitentes, domicilio]) => {
@@ -358,7 +363,7 @@ module.exports.add = function (legajo) {
     return connector
         .beginTransaction()
         .then(connection => {
-            return Domicilio.addDomicilio(legajo.domicilio, connection.client)
+            return Domicilio.add(legajo.domicilio, connection.client)
                 .then(domicilio_nuevo => {
                     legajo.domicilio = domicilio_nuevo ? domicilio_nuevo.id : null;
                     let proms = legajo.comitentes.map(c => {

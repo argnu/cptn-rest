@@ -63,7 +63,6 @@ const table = sql.define({
         {
             name: 'delegacion',
             dataType: 'int',
-            // Agregar foreign key una vez que se confirmen los datos
         },
         {
             name: 'tipo_pago',
@@ -75,9 +74,15 @@ const table = sql.define({
         },                
     ],
 
-    foreignKeys: [{
+    foreignKeys: [
+        {
             table: 'matricula',
             columns: ['matricula'],
+            refColumns: ['id']
+        },
+        {
+            table: 'delegacion',
+            columns: ['delegacion'],
             refColumns: ['id']
         },
         {
