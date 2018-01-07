@@ -34,9 +34,29 @@ function createEntidades() {
     .then(r => createTable(model.Empresa.table))
     .then(r => createTable(model.Profesional.table))
     .then(r => createTable(model.Solicitud.table))
+    .then(r => createTable(model.Contacto.table))
+    .then(r => createTable(model.Formacion.table))
+    .then(r => createTable(model.BeneficiarioCaja.table))
+    .then(r => createTable(model.Subsidiario.table))
     .then(r => createTable(model.Matricula.table))
+    .then(r => createTable(model.Persona.table))
+    .then(r => createTable(model.PersonaFisica.table))
+    .then(r => createTable(model.PersonaJuridica.table))
+    .then(r => createTable(model.MatriculaExterna.table))    
     .then(r => createTable(model.EmpresaRepresentante.table))
     .then(r => createTable(model.EmpresaIncumbencia.table))
+}
+
+function createDatosCobranzas() {
+  return  createTable(model.Boleta.table)
+  .then(rs => createTable(model.BoletaItem.table))
+  .then(rs => createTable(model.Comprobante.table))
+  .then(rs => createTable(model.ComprobanteItem.table))
+  .then(rs => createTable(model.ComprobantePago.table))
+  .then(rs => createTable(model.ComprobantePagoCheque.table))
+  .then(rs => createTable(model.ComprobantePagoTarjeta.table))
+  .then(rs => createTable(model.VolantePago.table))
+  .then(rs => createTable(model.VolantePagoBoleta.table))
 }
 
 function init() {
@@ -54,35 +74,24 @@ function init() {
       createTable(model.TipoEstadoMatricula.table),
       createTable(model.TipoEstadoLegajo.table),
       createTable(model.TipoVinculo.table),
-      createTable(model.Institucion.table),
-      createTable(model.Delegacion.table),
       createTable(model.TipoComprobante.table),
       createTable(model.TipoEstadoBoleta.table),
       createTable(model.TipoPago.table),
       createTable(model.TipoMoneda.table),
+      createTable(model.TipoTarjeta.table),
       createTable(model.Banco.table),
-      createTable(model.Usuario.table)
+      createTable(model.Usuario.table),
+      createTable(model.Institucion.table),
+      createTable(model.Delegacion.table)
     ])
     .then(rs => Promise.all([
                   createEntidades(),                  
                   createTable(model.Titulo.table),
-                  createTable(model.TipoFormaPago.table)
+                  createTable(model.TipoFormaPago.table),
+                  createTable(model.UsuarioDelegacion.table)
                 ]))
-    .then(r => Promise.all([
-                  createDatosTareas(),
-                  createTable(model.Contacto.table),
-                  createTable(model.Formacion.table),
-                  createTable(model.BeneficiarioCaja.table),
-                  createTable(model.Subsidiario.table),
-                ]))
-    .then(rs => createTable(model.Boleta.table))
-    .then(rs => createTable(model.BoletaItem.table))
-    .then(rs => createTable(model.Comprobante.table))
-    .then(rs => createTable(model.ComprobanteItem.table))
-    .then(rs => createTable(model.ComprobantePago.table))
-    .then(rs => createTable(model.VolantePago.table))
-    .then(rs => createTable(model.VolantePagoBoleta.table))
-    .then(rs => createTable(model.UsuarioDelegacion.table))
+    .then(r => createDatosTareas())
+    .then(r => createDatosCobranzas())
     .then(r => {
       console.info('Todas las tablas han sido creadas!');
       process.exit();
