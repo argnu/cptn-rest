@@ -40,19 +40,16 @@ const table = sql.define({
 module.exports.table = table;
 
 module.exports.add = function(domicilio, client) {
-  if (domicilio && domicilio.localidad && domicilio.calle && domicilio.calle.length) {
-    let query = table.insert(
-      table.calle.value(domicilio.calle),
-      table.numero.value(domicilio.numero),
-      table.localidad.value(domicilio.localidad)
-    )
-    .returning(table.star())
-    .toQuery();
+  let query = table.insert(
+    table.calle.value(domicilio.calle),
+    table.numero.value(domicilio.numero),
+    table.localidad.value(domicilio.localidad)
+  )
+  .returning(table.star())
+  .toQuery();
 
-    return connector.execQuery(query, client)
-    .then(r => r.rows[0]);
-  }
-  else return Promise.resolve(null);
+  return connector.execQuery(query, client)
+  .then(r => r.rows[0]);
 }
 
 module.exports.get = function(id) {

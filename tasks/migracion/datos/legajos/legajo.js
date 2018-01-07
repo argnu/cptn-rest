@@ -15,11 +15,11 @@ return nuevo;
 
 function addComitente(legajo) {
     if (legajo['IDEMPRESA']) {
-        return Persona.getByCuit(legajo['CUIT_EMPRESA'])
+        return model.Persona.getByCuit(legajo['CUIT_EMPRESA'])
         .then(persona_juridica => {
             if (persona_juridica) return Promise.resolve(persona_juridica);
             else {
-                return Persona.add({
+                return model.Persona.add({
                     tipo: 'juridica',
                     nombre: utils.checkString(legajo['NOMBRE_EMPRESA']),
                     cuit: utils.checkString(legajo['CUIT_EMPRESA']),
@@ -27,18 +27,18 @@ function addComitente(legajo) {
                 })
             }
         })
-        .then(persona_juridica => LegajoComitente.add({
+        .then(persona_juridica => model.tareas.LegajoComitente.add({
             legajo: legajo['id'],
-            comitente: persona_juridica.id,
+            persona: persona_juridica.id,
             porcentaje: 100
         }))
     }
     else {
-        return PersonaFisica.getByDni(legajo['NUMDOC'])
+        return model.PersonaFisica.getByDni(legajo['NUMDOC'])
         .then(persona_fisica => {
             if (persona_fisica) return Promise.resolve(persona_fisica);
             else {
-                return Persona.add({
+                return model.Persona.add({
                     tipo: 'fisica',
                     nombre: utils.checkString(legajo['NOMBRES']),
                     cuit: utils.checkString(legajo['NUMDOC']),
@@ -48,27 +48,33 @@ function addComitente(legajo) {
                 })
             }
         })
-        .then(persona_fisica => LegajoComitente.add({
+        .then(persona_fisica => model.tareas.LegajoComitente.add({
             legajo: legajo['id'],
-            comitente: persona_fisica.id,
+            persona: persona_fisica.id,
             porcentaje: 100
         }))
     }
 }
 
 
+function addDomicilio(legajo) {
+    if (legajo.ciudad && legajo.direccion) {
+        return model.Domicilio.add({
+            localidad: legajo.ciudad,
+            calle: legajo.direccion,
+            numero: 0
+        }).then(d => d.id);
+    }
+    else return Promise.resolve(null);
+}
 
 function addLegajo(legajo_1) {
     let legajo = prepare(legajo_1);
     return model.Matricula.getMigracion(legajo['IDMATRICULADO'], legajo['MATRICEMP'] == 'E')
         .then(matricula => {
           if (matricula) {
-            return model.Domicilio.add({
-                localidad: legajo.ciudad,
-                calle: legajo.direccion,
-                numero: 0
-            })
-            .then(domicilio => {
+            addDomicilio(legajo)
+            .then(id_domicilio => {
                 let table = model.tareas.Legajo.table;
                 let query = table.insert(
                     table.solicitud.value(legajo['ID_Solicitud']),
@@ -76,7 +82,7 @@ function addLegajo(legajo_1) {
                     table.tipo.value(legajo['TIPO']),
                     table.matricula.value(matricula.id),
                     table.fecha_solicitud.value(utils.getFecha(legajo['FECHASOLICITUD_DATE'])),
-                    table.domicilio.value(domicilio ? domicilio.id : null),
+                    table.domicilio.value(id_domicilio),
                     table.nomenclatura.value(utils.checkString(legajo['NOMENCLATURA'])),
                     table.estado.value(legajo['ESTADO'] == 2 ? 1 : legajo['ESTADO']),
                     table.subcategoria.value(legajo['codTarea']),
@@ -109,7 +115,7 @@ function addLegajo(legajo_1) {
             })
             .then(r => {
                 legajo.id = r.rows[0].id;
-                return addComitente(legajo);                
+                return addComitente(legajo);
             })
         }
         else Promise.resolve();
@@ -121,9 +127,9 @@ function addLegajo(legajo_1) {
 module.exports.migrar = function () {
     console.log('Migrando legajos...');
     let q_objetos = `select L.*, E.CUIT AS CUIT_EMPRESA, E.NOMBRE AS NOMBRE_EMPRESA,
-    codTarea=T.codigo 
-    from LEGTECNICOS L LEFT JOIN Tareas_N2 T ON (L.CODTAREAN2= T.CODIGO) 
-    LEFT JOIN EMPRESA E ON (E.ID=L.IDEMPRESA)
+    codTarea=T.codigo
+    from LEGTECNICOS L LEFT JOIN Tareas_N2 T ON (L.CODTAREAN2= T.CODIGO)
+    LEFT JOIN EMPRESAS E ON (E.ID=L.IDEMPRESA)
     WHERE ID_Solicitud BETWEEN @offset AND @limit`;
     let q_limites = `select MIN(ID_Solicitud) as min, MAX(ID_Solicitud) as max from LEGTECNICOS`;
 

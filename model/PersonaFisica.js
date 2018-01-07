@@ -44,7 +44,10 @@ module.exports.getByDni = function(dni) {
                      .where(table.dni.equals(dni))
                      .toQuery();
     
-    return connector.execQuery(query).then(r => r.rows[0]);
+    return connector.execQuery(query).then(r => {
+        if (!r.rows.length) return null;
+        else return r.rows[0];
+    });
 }
 
 module.exports.add = function (persona, client) {

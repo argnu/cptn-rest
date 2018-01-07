@@ -133,7 +133,7 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function addDatosBasicos(profesional) {
+function addDatosBasicos(profesional, client) {
   let query = table.insert(
     table.id.value(profesional.id),
     table.dni.value(profesional.dni), table.nombre.value(profesional.nombre),

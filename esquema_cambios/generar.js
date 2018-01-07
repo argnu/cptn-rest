@@ -60,18 +60,23 @@ createDir(moment().format('YYYY-DD-MM'))
         
         if (column.dataType == 'float' && !column_bd.type == 'double precision') 
             addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE double precision USING "${column.name}"::double precision`);
+        else return;
 
         if (column.dataType == 'int' && !column_bd.type == 'integer') 
             addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE integer USING "${column.name}"::integer`);
+        else return;
 
         if (column.dataType.toLowerCase().includes('varchar') && !column_bd.type == "character varying")
             addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+        else return;
 
         if (column.dataType.toLowerCase().includes('varchar') && column_bd.type == "character varying") {
             let longitud = +column.dataType.match(/\d+/)[0];
             if (longitud != column_bd.length) 
                addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            else return;
         }
+        else return;
 
         if (column.dataType != column_bd.type)
             addQuery(file, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);

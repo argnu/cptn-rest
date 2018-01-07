@@ -4,7 +4,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const table = sql.define({
-    name: 'comprobante_pago',
+    name: 'comprobante_pago_tarjeta',
     columns: [
         {
             name: 'id',

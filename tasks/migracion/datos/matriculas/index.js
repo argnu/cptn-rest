@@ -33,6 +33,6 @@ module.exports.empresaIncumbencias = empresaIncumbencias;
          .then(r => beneficiarios.migrar())
          .then(r => subsidiarios.migrar())
          .then(r => empresas.migrar())
-         .then(r => empresasrepresentantes.migrar())
+         .then(r => empresarepresentantes.migrar())
          .then(r => empresaIncumbencias.migrar())
  }

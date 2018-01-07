@@ -17,7 +17,7 @@ const table = sql.define({
             notNull: true
         },
         {
-            name: 'comitente',
+            name: 'persona',
             dataType: 'int',
             notNull: true
         },
@@ -35,7 +35,7 @@ const table = sql.define({
         },
         {
             table: 'persona',
-            columns: ['comitente'],
+            columns: ['persona'],
             refColumns: ['id']
         },
     ]
@@ -46,7 +46,7 @@ module.exports.table = table;
 module.exports.add = function (data, client) {
     let query = table.insert(
         table.legajo.value(data.legajo),
-        table.comitente.value(data.persona),
+        table.persona.value(data.persona),
         table.porcentaje.value(data.porcentaje)
     )
     .returning(table.star())
@@ -58,6 +58,7 @@ module.exports.add = function (data, client) {
 module.exports.getByLegajo = function(id_legajo) {
     let comitentes;
     let query = table.select(table.star()).where(table.legajo.equals(id_legajo)).toQuery();
+
     return connector.execQuery(query)
     .then(r => {
         comitentes = r.rows;

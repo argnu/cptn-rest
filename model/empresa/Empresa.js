@@ -118,8 +118,6 @@ module.exports.add = function(empresa, client) {
                 }, client))
               : [];
 
-              console.log('llega')
-
             return Promise.all([
               Promise.all(proms_contactos),
               Promise.all(proms_representantes),

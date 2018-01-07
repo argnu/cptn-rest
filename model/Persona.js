@@ -83,11 +83,13 @@ module.exports.getByCuit = function(cuit) {
                      .toQuery();
     return connector.execQuery(query)
     .then(r => {
+        if (!r.rows.length) return Promise.resolve(null);
         persona = r.rows[0];
         if (persona.tipo == 'fisica') return PersonaFisica.get(id)
         else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
     })
     .then(data => {
+        if (!data) return data;
         for (let col in data) if (col != 'id') persona[col] = data[col];
         return persona;
     })
@@ -110,5 +112,5 @@ module.exports.add = function(persona, client) {
         if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
         else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
     })
-    .then(r => r);
+    .then(r => persona);
 }
