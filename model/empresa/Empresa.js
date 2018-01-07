@@ -93,7 +93,7 @@ module.exports.add = function(empresa, client) {
   }, client)
   .then(entidad => {
     empresa.id = entidad.id;
-    return addDatosBasicos(empresa)
+    return addDatosBasicos(empresa, client)
           .then(r => {
             let empresa_added = r.rows[0];
 

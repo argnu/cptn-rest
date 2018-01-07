@@ -171,7 +171,7 @@ module.exports.add = function (profesional, client) {
   }, client)
   .then(entidad => {
     profesional.id = entidad.id;
-    return addDatosBasicos(profesional)
+    return addDatosBasicos(profesional, client)
           .then(r => {
             let proms_contactos = (profesional.contactos && profesional.contactos.length) ? profesional.contactos.map(c => {
               c.entidad = entidad.id;
