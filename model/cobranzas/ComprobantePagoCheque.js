@@ -46,9 +46,8 @@ const table = sql.define({
 module.exports.table = table;
 
 module.exports.add = function(comprobante_pago, client) {
-    console.log(comprobante_pago)
     let query = table.insert(
-            table.comprobante_pago.value(comprobante_pago.id),
+            table.id.value(comprobante_pago.id),
             table.numero_cheque.value(utils.checkNull(comprobante_pago.numero_cheque)),
             table.banco.value(utils.checkNull(comprobante_pago.banco)),
             table.fecha_vto_cheque.value(utils.checkNull(comprobante_pago.fecha_vto_cheque)),

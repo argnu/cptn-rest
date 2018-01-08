@@ -10,7 +10,7 @@ function addComprobantesItems(comprobante_item) {
       model.Boleta.getByNumero(comprobante_item['NUMCMPTE'])
     ])
     .then(([comprobante, boleta]) => {
-      if (comprobante){
+      if (comprobante) {
         let table = model.ComprobanteItem.table;
         let query = table.insert(
           table.comprobante.value(comprobante.id),

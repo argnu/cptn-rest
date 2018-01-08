@@ -26,7 +26,7 @@ function addBoleta(boleta) {
                   table.tipo_pago.value(boleta['CODTIPOPAGO']),
                   table.fecha_pago.value(utils.getFecha(boleta['FECHAPAGO_DATE'])),
                   table.fecha_update.value(utils.getFecha(boleta['FECHA_TIME'])),
-                  table.delegacion.value(legajo['CodDelegacion'] ? legajo['CodDelegacion'] : null),
+                  table.delegacion.value(boleta['CodDelegacion'] ? boleta['CodDelegacion'] : null),
                 ).toQuery();
 
     return connector.execQuery(query);
