@@ -70,8 +70,8 @@ module.exports.getByEntidad = function(id_entidad) {
             return Promise.all(domicilios.map(d => Domicilio.get(d.domicilio)));
          })
          .then(ds => {
-            domicilios.forEach((d, i) => {
-              d = ds[i];
+            ds.forEach((d, i) => {
+              domicilios[i].domicilio = d;
             });
             return domicilios;
          })
