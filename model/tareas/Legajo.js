@@ -339,7 +339,7 @@ function addBoleta(legajo) {
     let boleta = {
         delegacion: legajo.delegacion,
         matricula: legajo.matricula,
-        tipo_comprobante: 15,
+        tipo_comprobante: 15,    //TIPO DE COMPROBANTE PPA
         fecha: legajo.fecha_solicitud,
         total: legajo.aporte_neto,
         estado: 1,

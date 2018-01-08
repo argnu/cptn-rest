@@ -8,6 +8,7 @@ const utils = require('../../utils');
 function addTipoComprobante(tipo) {
   let table = model.TipoComprobante.table;
   let query = table.insert(
+                table.id.value(utils.checkString(tipo['ID'])),
                 table.abreviatura.value(utils.checkString(tipo['Tipo_Doc'])),
                 table.descripcion.value(utils.checkString(tipo['DESCRIPCION'])),
                 table.cuentaAcreedora.value(tipo['CUENTAACREEDORA']),
