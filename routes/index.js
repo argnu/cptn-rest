@@ -30,6 +30,7 @@ router.use('/profesionales', require('./profesionales'));
 router.use('/empresas', require('./empresas'));
 router.use('/solicitudes', require('./solicitudes'));
 router.use('/matriculas', require('./matriculas'));
+router.use('/matriculas-externas', require('./matriculas_externas'));
 router.use('/opciones', require('./opciones'));
 router.use('/paises', require('./paises'));
 router.use('/provincias', require('./provincias'));

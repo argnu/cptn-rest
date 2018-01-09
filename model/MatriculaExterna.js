@@ -2,6 +2,10 @@ const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
+const Persona = require(`${__base}/model/Persona`);
+const PersonaFisica = require(`${__base}/model/PersonaFisica`);
+const Localidad = require(`${__base}/model/geograficos/Localidad`);
+
 const table = sql.define({
     name: 'matricula_externa',
     columns: [
@@ -46,61 +50,106 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.getAll = function(params) {
-    let personas;
-    let query = table.select(table.star())
+function getTotal(params) {
+    let query;
+    if (!params) {
+        query = table.select(table.count().as('total')).from(table);
+    }
+    else {
+        query = table.select(table.count(table.id).as('total'))
+                     .from(
+                        table.join(Persona.table).on(table.persona.equals(Persona.table.id))
+                        .join(PersonaFisica.table).on(table.persona.equals(PersonaFisica.table.id))
+                        .leftJoin(Localidad.table).on(table.localidad.equals(Localidad.table.id))
+                     )  
 
-    if (params.cuit) table.where(table.cuit.equals(params.cuit));
+        if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
+        if (params.apellido) query.where(PersonaFisica.table.apellido.ilike(`%${params.apellido}%`));
+        if (params.dni) query.where(PersonaFisica.table.dni.ilike(`%${params.dni}%`));
+        if (params.cuit) query.where(Persona.table.cuit.ilike(`%${params.cuit}%`));
+    }
 
     return connector.execQuery(query.toQuery())
-    .then(r => {
-        persona = r.rows[0];
-        if (persona.tipo == 'fisica') return PersonaFisica.get(id)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
-    })
-    .then(data => {
-        for (let col in data) {
-            if (col != 'id') persona[col] = data[col];
-        }
-        return persona;
-    })
+        .then(r => +r.rows[0].total);
+}
+
+module.exports.getAll = function(params) {
+    let query = table.select(
+        Persona.table.nombre,
+        Persona.table.cuit,
+        Persona.table.telefono,
+        PersonaFisica.table.dni,
+        PersonaFisica.table.apellido,
+        table.numeroMatricula,
+        table.nombreInstitucion,
+        Localidad.table.nombre.as('localidad')
+    )
+    .from(
+        table.join(Persona.table).on(table.persona.equals(Persona.table.id))
+        .join(PersonaFisica.table).on(table.persona.equals(PersonaFisica.table.id))
+        .leftJoin(Localidad.table).on(table.localidad.equals(Localidad.table.id))
+    );
+    
+    if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
+    if (params.apellido) query.where(PersonaFisica.table.apellido.ilike(`%${params.apellido}%`));
+    if (params.dni) query.where(PersonaFisica.table.dni.ilike(`%${params.dni}%`));
+    if (params.cuit) query.where(Persona.table.cuit.ilike(`%${params.cuit}%`));
+     
+    return Promise.all([
+        connector.execQuery(query.toQuery()),
+        getTotal(params),
+    ]).then(([r, totalQuery]) => ({ totalQuery, resultados: r.rows  })) 
 }
 
 module.exports.get = function(id) {
-    let persona;
-    let query = table.select(table.star())
-                     .where(table.id.equals(id))
-                     .toQuery();
+    let query = table.select(
+        Persona.table.nombre,
+        Persona.table.cuit,
+        Persona.table.telefono,
+        PersonaFisica.table.dni,
+        PersonaFisica.table.apellido,
+        table.numeroMatricula,
+        table.nombreInstitucion,
+        Localidad.table.nombre.as('localidad')
+    )
+    .from(
+        table.join(Persona.table).on(table.persona.equals(Persona.table.id))
+        .join(PersonaFisica).on(table.persona.equals(PersonaFisica.table.id))
+        .join(Localidad).on(table.localidad.equals(Localidad.table.id))
+    )
+    .where(table.id.equals(id))
+    .toQuery();
+
     return connector.execQuery(query)
-    .then(r => {
-        persona = r.rows[0];
-        if (persona.tipo == 'fisica') return PersonaFisica.get(id)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
-    })
-    .then(data => {
-        for (let col in data) {
-            if (col != 'id') persona[col] = data[col];
-        }
-        return persona;
-    })
+        .then(r => r.rows[0]);      
 }
 
 
-module.exports.add = function(persona, client) {
-    let query = table.insert(
-        table.tipo.value(persona.tipo),
-        table.nombre.value(persona.nombre),
-        table.cuit.value(persona.cuit),
-        table.telefono.value(persona.telefono)
-    )
-    .returning(table.star())
-    .toQuery();
+function addPersona(persona) {
+    if (persona.id) return Promise.resolve(persona);
+    else return Persona.add(persona);
+}
 
-    return connector.execQuery(query, client)
-    .then(r => {
-        persona.id = r.rows[0].id;
-        if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
+module.exports.add = function(matricula, client) {
+    let persona_added = {};
+
+    return addPersona(matricula.persona)
+    .then(persona => {
+        persona_added = persona;
+
+        let query = table.insert(
+            table.persona.value(persona.id),
+            table.numeroMatricula.value(matricula.numeroMatricula),
+            table.nombreInstitucion.value(matricula.nombreInstitucion),
+            table.localidad.value(matricula.localidad)
+        )
+        .returning(table.star())
+        .toQuery();
+
+        return connector.execQuery(query).then(r => {
+            let result = r.rows[0];
+            result.persona = persona_added;
+            return result;
+        });
     })
-    .then(r => r);
 }

@@ -26,7 +26,6 @@ const table = sql.define({
         {
             name: 'cuit',
             dataType: 'varchar(20)',
-            notNull: true
         },
         {
             name: 'telefono',
@@ -39,16 +38,19 @@ module.exports.table = table;
 
 module.exports.getAll = function(params) {
     let personas;
-    let query = table.select(table.star())
+    let query = table.select(table.id, table.tipo, table.cuit, PersonaFisica.table.dni)
+                     .from(table.leftJoin(PersonaJuridica.table).on(table.id.equals(PersonaJuridica.table.id))
+                                .leftJoin(PersonaFisica.table).on(table.id.equals(PersonaFisica.table.id)));
 
-    if (params.cuit) table.where(table.cuit.equals(params.cuit));
+    if (params.cuit) query.where(table.cuit.equals(params.cuit));
+    if (params.dni) query.where(PersonaFisica.table.dni.equals(params.dni));
 
     return connector.execQuery(query.toQuery())
     .then(r => {
         personas = r.rows;
         let proms = personas.map(p => {
-            if (persona.tipo == 'fisica') return PersonaFisica.get(p.id)
-            else if (persona.tipo == 'juridica') return PersonaJuridica.get(p.id);
+            if (p.tipo == 'fisica') return PersonaFisica.get(p.id)
+            else if (p.tipo == 'juridica') return PersonaJuridica.get(p.id);
         })
         return Promise.all(proms);
     });
@@ -60,6 +62,7 @@ module.exports.get = function(id) {
                      .where(table.id.equals(id))
                      .toQuery();
     return connector.execQuery(query)
+
     .then(r => {
         persona = r.rows[0];
         if (persona.tipo == 'fisica') return PersonaFisica.get(id)
