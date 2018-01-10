@@ -62,7 +62,7 @@ module.exports.getByLegajo = function(id_legajo) {
     return connector.execQuery(query)
     .then(r => {
         comitentes = r.rows;
-        return Promise.all(comitentes.map(c => Persona.get(c.comitente)));
+        return Promise.all(comitentes.map(c => Persona.get(c.persona)));
     })
     .then(personas => {
         comitentes.forEach((comitente, i) => {

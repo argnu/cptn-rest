@@ -1,6 +1,8 @@
 const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
+
+const utils = require(`${__base}/utils`);
 const Matricula = require(`${__base}/model/Matricula`);
 const Profesional = require(`${__base}/model/profesional/Profesional`);
 
@@ -67,7 +69,7 @@ module.exports.add = function(representante, client) {
                 table.empresa.value(representante.empresa),
                 table.matricula.value(representante.matricula),
                 table.matricula_externa.value(representante.matricula_externa),
-                table.fechaInicio.value(representante.fechaInicio)
+                table.fechaInicio.value(utils.checkNull(representante.fechaInicio))
               )
               .returning(table.id, table.empresa, table.matricula, table.fechaInicio)
               .toQuery();

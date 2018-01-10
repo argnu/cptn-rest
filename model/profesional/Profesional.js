@@ -8,6 +8,8 @@ const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
 const TipoCondicionAfip = require('../tipos/TipoCondicionAfip');
+const utils = require(`${__base}/utils`);
+
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -138,7 +140,7 @@ function addDatosBasicos(profesional, client) {
     table.id.value(profesional.id),
     table.dni.value(profesional.dni), table.nombre.value(profesional.nombre),
     table.apellido.value(profesional.apellido),
-    table.fechaNacimiento.value(profesional.fechaNacimiento),
+    table.fechaNacimiento.value(utils.checkNull(profesional.fechaNacimiento)),
     table.lugarNacimiento.value(profesional.lugarNacimiento),
     table.sexo.value(profesional.sexo), table.estadoCivil.value(profesional.estadoCivil),
     table.nacionalidad.value(profesional.nacionalidad),

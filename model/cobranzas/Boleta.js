@@ -2,6 +2,8 @@ const moment = require('moment');
 const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+
+const utils = require(`${__base}/utils`);
 const BoletaItem = require('./BoletaItem');
 const TipoComprobante = require('../tipos/TipoComprobante');
 const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
@@ -192,11 +194,11 @@ function addDatosBoleta(boleta, client) {
                     table.fecha.value(boleta.fecha),
                     table.total.value(boleta.total),
                     table.estado.value(boleta.estado),
-                    table.fecha_vencimiento.value(boleta.fecha_vencimiento),
+                    table.fecha_vencimiento.value(utils.checkNull(boleta.fecha_vencimiento)),
                     table.numero_comprobante.value(boleta.numero_comprobante),
                     table.numero_solicitud.value(boleta.numero_solicitud),
                     table.numero_condonacion.value(boleta.numero_condonacion),
-                    table.fecha_update.value(boleta.fecha_update),
+                    table.fecha_update.value(utils.checkNull(boleta.fecha_update)),
                     table.delegacion.value(boleta.delegacion)
                 )
                 .returning(table.id, table.numero)

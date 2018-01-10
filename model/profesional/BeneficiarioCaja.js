@@ -2,6 +2,8 @@ const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
+const utils = require(`${__base}/utils`);
+
 const table = sql.define({
   name: 'beneficiariocaja',
   columns: [{
@@ -61,9 +63,12 @@ module.exports.table = table;
 
 module.exports.add = function(beneficiario, client) {
   let query = table.insert(
-    table.dni.value(beneficiario.dni), table.nombre.value(beneficiario.nombre),
-    table.apellido.value(beneficiario.apellido), table.fechaNacimiento.value(beneficiario.fechaNacimiento),
-    table.vinculo.value(beneficiario.vinculo), table.invalidez.value(beneficiario.invalidez),
+    table.dni.value(beneficiario.dni), 
+    table.nombre.value(beneficiario.nombre),
+    table.apellido.value(beneficiario.apellido), 
+    table.fechaNacimiento.value(utils.checkNull(beneficiario.fechaNacimiento)),
+    table.vinculo.value(beneficiario.vinculo), 
+    table.invalidez.value(beneficiario.invalidez),
     table.profesional.value(beneficiario.profesional)
   ).returning(table.id).toQuery();
 

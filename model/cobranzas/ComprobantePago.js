@@ -78,7 +78,7 @@ module.exports.add = function(comprobante_pago, client) {
     let query = table.insert(
             table.comprobante.value(comprobante_pago.comprobante),
             table.item.value(comprobante_pago.item),
-            table.fecha_pago.value(comprobante_pago.fecha_pago),
+            table.fecha_pago.value(utils.checkNull(comprobante_pago.fecha_pago)),
             table.importe.value(comprobante_pago.importe),
             table.forma_pago.value(comprobante_pago.forma_pago)
         )

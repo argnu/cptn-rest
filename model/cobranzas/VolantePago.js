@@ -2,6 +2,8 @@ const moment = require('moment');
 const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
+
+const utils = require(`${__base}/utils`);
 const VolantePagoBoleta = require('./VolantePagoBoleta');
 const Boleta = require('./Boleta');
 
@@ -94,7 +96,7 @@ function addVolante(volante, client) {
     table.updated_by.value(volante.operador),    
     table.matricula.value(volante.matricula),
     table.fecha.value(volante.fecha),
-    table.fecha_vencimiento.value(volante.fecha_vencimiento),
+    table.fecha_vencimiento.value(utils.checkNull(volante.fecha_vencimiento)),
     table.subtotal.value(volante.subtotal),
     table.interes_total.value(volante.interes_total),
     table.bonificacion_total.value(volante.bonificacion_total),

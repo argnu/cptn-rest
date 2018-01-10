@@ -2,6 +2,7 @@ const moment = require('moment');
 const sql = require('sql');
 sql.setDialect('postgres');
 
+const utils = require(`${__base}/utils`);
 const connector = require(`${__base}/connector`);
 const Domicilio = require(`${__base}/model/Domicilio`);
 const Entidad = require(`${__base}/model/Entidad`);
@@ -70,8 +71,8 @@ module.exports.add = function(empresa, client) {
     let query = table.insert(
       table.id.value(empresa.id),
       table.nombre.value(empresa.nombre),
-      table.fechaInicio.value(empresa.fechaInicio),
-      table.fechaConstitucion.value(empresa.fechaConstitucion),
+      table.fechaInicio.value(utils.checkNull(empresa.fechaInicio)),
+      table.fechaConstitucion.value(utils.checkNull(empresa.fechaConstitucion)),
       table.tipoEmpresa.value(empresa.tipoEmpresa),
       table.tipoSociedad.value(empresa.tipoSociedad)
     )

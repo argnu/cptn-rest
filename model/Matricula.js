@@ -2,6 +2,8 @@ const moment = require('moment');
 const connector = require('../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+
+const utils = require(`${__base}/utils`);
 const Solicitud = require('./Solicitud');
 const Profesional = require('./profesional/Profesional');
 const Empresa = require('./empresa/Empresa');
@@ -122,10 +124,10 @@ function addMatriculaMigracion(matricula, client) {
     table.idMigracion.value(matricula.idMigracion),
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
-    table.fechaResolucion.value(matricula.fechaResolucion),
+    table.fechaResolucion.value(utils.checkNull(matricula.fechaResolucion)),
     table.numeroActa.value(matricula.numeroActa),
     table.numeroMatricula.value(matricula.numeroMatricula),
-    table.fechaBaja.value(matricula.fechaBaja),
+    table.fechaBaja.value(utils.checkNull(matricula.fechaBaja)),
     table.observaciones.value(matricula.observaciones),
     table.notasPrivadas.value(matricula.notasPrivadas),
     table.asientoBajaF.value(matricula.asientoBajaF),
@@ -147,7 +149,7 @@ function addMatricula(matricula, client) {
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
     table.numeroMatricula.value(matricula.numeroMatricula),
-    table.fechaResolucion.value(matricula.fechaResolucion),
+    table.fechaResolucion.value(utils.checkNull(matricula.fechaResolucion)),
     table.numeroActa.value(matricula.numeroActa),
     table.estado.value(matricula.estado)
   )
