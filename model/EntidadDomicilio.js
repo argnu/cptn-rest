@@ -89,8 +89,10 @@ module.exports.deleteByEntidad = function(id_entidad, client) {
                    .toQuery();
 
   return connector.execQuery(query, client)
-  .then(domicilios_delete => {
-    return Promise.all(domicilios_delete.map(d => Domicilio.delete(d.domicilio)));
+  .then(r => {
+    if (r.rows.length)
+      return Promise.all(r.rows.map(d => Domicilio.delete(d.domicilio, client)));
+    else return Promise.resolve();
   })
   .then(r => id_entidad);
 }

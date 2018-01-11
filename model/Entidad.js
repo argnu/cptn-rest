@@ -71,8 +71,8 @@ module.exports.add = function(entidad, client) {
 
 
 module.exports.edit = function(id, entidad, client) {
-  return Promise.all(EntidadDomicilio.deleteByEntidad(entidad.id))
-  .then(r => {
+  // return EntidadDomicilio.deleteByEntidad(entidad.id, client)
+  // .then(r => {
     let query = table.update({
       condafip: entidad.condafip,
       cuit: entidad.cuit
@@ -81,13 +81,13 @@ module.exports.edit = function(id, entidad, client) {
     .toQuery();
   
     return connector.execQuery(query, client);
-  })
-  .then(r => {
-    let proms_domicilios = entidad.domicilios.map(d => {
-      d.entidad = id;
-      return EntidadDomicilio.add(d, client);
-    });
-    return Promise.all(proms_domicilios);    
-  })
-  .then(r => id); 
+  // })
+  // .then(r => {
+  //   let proms_domicilios = entidad.domicilios.map(d => {
+  //     d.entidad = id;
+  //     return EntidadDomicilio.add(d, client);
+  //   });
+  //   return Promise.all(proms_domicilios);    
+  // })
+  // .then(r => id); 
 }
