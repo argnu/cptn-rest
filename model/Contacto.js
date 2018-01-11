@@ -12,11 +12,13 @@ const table = sql.define({
     },
     {
       name: 'tipo',
-      dataType: 'int'
+      dataType: 'int',
+      notNull: true
     },
     {
       name: 'valor',
-      dataType: 'varchar(255)'
+      dataType: 'varchar(255)',
+      notNull: true
     },
     {
       name: 'whatsapp',
@@ -24,7 +26,8 @@ const table = sql.define({
     },
     {
       name: 'entidad',
-      dataType: 'int'
+      dataType: 'int',
+      notNull: true
     }
   ],
 
