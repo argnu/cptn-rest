@@ -4,7 +4,7 @@ sql.setDialect('postgres');
 
 const utils = require(`${__base}/utils`);
 const connector = require(`${__base}/connector`);
-const Domicilio = require(`${__base}/model/Domicilio`);
+const EntidadDomicilio = require(`${__base}/model/EntidadDomicilio`);
 const Entidad = require(`${__base}/model/Entidad`);
 const Contacto = require(`${__base}/model/Contacto`);
 const TipoEmpresa = require(`${__base}/model/tipos/TipoEmpresa`);
@@ -109,12 +109,11 @@ module.exports.add = function(empresa, client) {
                 matricula: r.matricula,
                 matricula_externa: r.matricula_externa,
                 tipo: r.tipo,
-                fechaInicio: r.fechaInicio ? r.fechaInicio : moment(),
-                fechaFin: r.fechaFin ? r.fechaFin : null
+                fechaInicio: moment()
               }, client))
               : [];
 
-              let proms_incumbencias = empresa.incumbencias ? 
+              let proms_incumbencias = empresa.incumbencias ?
                 empresa.incumbencias.map(i => EmpresaIncumbencia.add({
                   empresa: empresa_added.id,
                   incumbencia: i
@@ -236,66 +235,61 @@ module.exports.edit = function (id, empresa, client) {
         .then(([contactos, representantes, incumbencias]) => {
           return connector.execQuery(query, client)
             .then(r => {
-              let proms_contactos = [];
-              for (let c of empresa.contactos) {
-                if (!c.id) {
-                  c.entidad = id;
-                  proms_contactos.push(Contacto.add(c, client));
-                }
-              }
-
-              //BUSCO LOS CONTACTOS QUE YA NO ESTAN EN LA LISTA PARA BORRARLOS
-              for (let contacto of contactos) {
-                if (!empresa.contactos.find(c => c.id && c.id == contacto.id))
-                  proms_contactos.push(Contacto.delete(contacto.id, client));
-              }
-
-              // let proms_representantes = [];
-              // for (let representante of empresa.representantes) {
-              //   if (!representantes.find(r => r.matricula == representante)) {
-              //     proms_representantes.push(EmpresaRepresentante.add({ 
-              //       empresa: id, 
-              //       matricula: representante,
-              //       fechaInicio: moment()
-              //      }, client));
-              //   }
-              // }
-
-              // for (let representante of representantes) {
-              //   if (!empresa.representantes.find(r => r == representante.matricula))
-              //     proms_representantes.push(
-              //       EmpresaRepresentante.delete({
-              //         empresa: id, 
-              //         representante.matricula                      
-              //       }, client)
-              //     );
-              // }
-
-
-              let proms_incumbencias = [];
-              for (let incumbencia of empresa.incumbencias) {
-                if (!incumbencias.find(i => i.id == incumbencia)) {
-                  proms_incumbencias.push(EmpresaIncumbencia.add({ 
-                    empresa: id, 
-                    incumbencia: incumbencia,
-                   }, client));
-                }
-              }
-
-              for (let incumbencia of incumbencias) {
-                if (!empresa.incumbencias.find(i => i == incumbencia.id)) {
-                  proms_incumbencias.push(
-                    EmpresaIncumbencia.delete(id, incumbencia.id, client)
-                  );
-                }
-              }
-
+              let contactos_nuevos = empresa.contactos.filter(c => !c.id);
+              let contactos_existentes = empresa.contactos.filter(c => !!c.id).map(c => c.id);
+              let representantes_nuevos = empresa.representantes.filter(r => !r.id);
+              let representantes_existentes = empresa.representantes.filter(r => !!r.id).map(r => r.id);
+              let incumbencias_nuevas = empresa.incumbencias.filter(i => !i.id);
+              let incumbencias_existentes = empresa.incumbencias.filter(i => !!i.id).map(i => i.id);
+              
               return Promise.all([
-                Promise.all(proms_contactos),
-                Promise.all(proms_representantes),
-                Promise.all(proms_incumbencias)
+                connector.execQuery(
+                  Contacto.table.delete().where(
+                    Contacto.table.entidad.equals(id)
+                    .and(Contacto.table.id.notIn(contactos_existentes))
+                  ).toQuery(), client),
+
+                connector.execQuery(
+                  EmpresaRepresentante.table.delete().where(
+                    EmpresaRepresentante.table.empresa.equals(id)
+                    .and(EmpresaRepresentante.table.id.notIn(representantes_existentes))
+                ).toQuery(), client),
+
+                connector.execQuery(
+                  EmpresaIncumbencia.table.delete().where(
+                    EmpresaIncumbencia.table.empresa.equals(id)
+                    .and(EmpresaIncumbencia.table.id.notIn(incumbencias_existentes))
+                ).toQuery())
               ])
-              .then(rs => id);
+              .then(r => {
+                let proms_contactos = contactos_nuevos.map(c => {
+                  c.entidad = id;
+                  return Contacto.add(c, client);
+                });
+
+                let proms_representantes = representantes_nuevos.map(r => {
+                  return  EmpresaRepresentante.add({
+                    tipo: r.tipo,
+                    empresa: id,
+                    matricula: r.matricula,
+                    matricula_externa: r.matricula_externa,
+                    fechaInicio: moment().format('DD/MM/YYYY')
+                  }, client)
+                });
+
+                let proms_incumbencias = incumbencias_nuevas.map(i => EmpresaIncumbencia.add({
+                      empresa: id,
+                      incumbencia: i,                
+                }, client));
+
+
+                return Promise.all([
+                  Promise.all(proms_contactos),
+                  Promise.all(proms_representantes),
+                  Promise.all(proms_incumbencias)
+                ])
+                .then(rs => id);
+              })
             })
         })
     })

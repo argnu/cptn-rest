@@ -226,7 +226,7 @@ const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.i
                          .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
-                         
+
 
 
 
@@ -262,7 +262,7 @@ module.exports.getAll = function(params) {
       }
       if (profesionales[index].firma) {
         profesionales[index].firma = `http://localhost:3400/api/profesionales/${profesionales[index].id}/firma`;
-      }      
+      }
     });
     return profesionales;
   })
@@ -350,84 +350,77 @@ module.exports.edit = function(id, profesional, client) {
       publicarDireccion: profesional.publicarDireccion,
       publicarEmail: profesional.publicarEmail
     })
-      .where(table.id.equals(id))
-      .toQuery();
+    .where(table.id.equals(id))
+    .toQuery();
 
-    return Promise.all([
-      Contacto.getAll(profesional.id),
-      Formacion.getAll(profesional.id),
-      Beneficiario.getAll(profesional.id),
-      Subsidiario.getAll(profesional.id)      
-    ])
-    .then(([contactos, formaciones, beneficiarios, subsidiarios]) => {
-      return connector.execQuery(query, client)
+    return connector.execQuery(query, client)
+      .then(r => {
+        let contactos_nuevos = profesional.contactos.filter(c => !c.id);
+        let contactos_existentes = profesional.contactos.filter(c => !!c.id).map(c => c.id);
+        let formaciones_nuevas = profesional.formaciones.filter(f => !f.id);
+        let formaciones_existentes = profesional.formaciones.filter(f => !!f.id).map(f => f.id);
+        let beneficiarios_nuevos = profesional.beneficiarios.filter(b => !b.id);
+        let beneficiarios_existentes = profesional.beneficiarios.filter(b => !!b.id).map(b => b.id);  
+        let subsidiarios_nuevos = profesional.subsidiarios.filter(s => !s.id);
+        let subsidiarios_existentes = profesional.subsidiarios.filter(s => !!s.id).map(s => s.id);
+        
+        let proms = [
+          connector.execQuery(
+            Contacto.table.delete().where(
+              Contacto.table.entidad.equals(id)
+              .and(Contacto.table.id.notIn(contactos_existentes))
+            ).toQuery(), client),
+
+          connector.execQuery(
+            Formacion.table.delete().where(
+              Formacion.table.profesional.equals(id)
+              .and(Formacion.table.id.notIn(formaciones_existentes))
+            ).toQuery(), client),
+
+          connector.execQuery(
+            Beneficiario.table.delete().where(
+              Beneficiario.table.profesional.equals(id)
+              .and(Beneficiario.table.id.notIn(beneficiarios_existentes))
+            ).toQuery(), client), 
+
+          connector.execQuery(
+            Subsidiario.table.delete().where(
+              Subsidiario.table.profesional.equals(id)
+             .and(Subsidiario.table.id.notIn(subsidiarios_existentes))
+          ).toQuery(), client)
+        ];
+
+        return Promise.all(proms)
         .then(r => {
-          let proms_contactos = [];
-          for(let c of profesional.contactos) {
-            if (!c.id) {
-              c.entidad = id;
-              proms_contactos.push(Contacto.add(c, client));
-            }
-          }
-          
-          //BUSCO LOS CONTACTOS QUE YA NO ESTAN EN LA LISTA PARA BORRARLOS
-          for(let contacto of contactos) {
-            if (!profesional.contactos.find(c => c.id && c.id == contacto.id))
-              proms_contactos.push(Contacto.delete(contacto.id, client));
-          }
+          let proms_contactos = contactos_nuevos.map(c => { 
+            c.entidad = id;
+            return Contacto.add(c, client);
+          });
+
+          let proms_formaciones = formaciones_nuevas.map(f => {
+            f.profesional = id;
+            return Formacion.add(f, client);
+          });
 
 
-          
-          let proms_formaciones = [];
-          for (let f of profesional.formaciones) {
-            if (!f.id) {
-              f.profesional = id;
-              proms_formaciones.push(Formacion.add(f, client));
-            }
-          }
-          
-          for (let formacion of formaciones) {
-            if (!profesional.formaciones.find(c => c.id && c.id == formacion.id))
-              proms_formaciones.push(Formacion.delete(formacion.id, client));
-          }
+          let proms_beneficiarios = beneficiarios_nuevos.map(b => {
+            b.profesional = id;
+            return Beneficiario.add(b, client)
+          });
 
-
-          
-          let proms_beneficiarios = [];
-          for (let b of profesional.beneficiarios) {
-            if (!b.id) {
-              b.profesional = id;
-              proms_beneficiarios.push(Beneficiario.add(b, client));
-            }
-          }
-          
-          for (let beneficiario of beneficiarios) {
-            if (!profesional.beneficiarios.find(c => c.id && c.id == beneficiario.id))
-              proms_beneficiarios.push(Beneficiario.delete(beneficiario.id, client));
-          }
-
-
-          
-          let proms_subsidiarios = [];
-          for (let s of profesional.subsidiarios) {
-            if (!s.id) {
-              s.profesional = id;
-              proms_subsidiarios.push(Subsidiario.add(s, client));
-            }
-          }
-          
-          for (let subsidiario of subsidiarios) {
-            if (!profesional.subsidiarios.find(c => c.id && c.id == subsidiario.id))
-              proms_subsidiarios.push(Subsidiario.delete(subsidiario.id, client));
-          }
+          let proms_subsidiarios = subsidiarios_nuevos.map(s => {
+            s.profesional = id;
+            return Subsidiario.add(s, client);
+          });
 
           return Promise.all([
+            Promise.all(proms_contactos),
             Promise.all(proms_formaciones),
-            Promise.all(proms_beneficiarios),
-            Promise.all(proms_subsidiarios)
+            Promise.all(proms_subsidiarios),
+            Promise.all(proms_beneficiarios)
           ])
           .then(rs => id);
         })
-    })
+      })
   })
 }

@@ -121,20 +121,24 @@ function getMatriculaExterna(id) {
 
 module.exports.getAll = function(id_empresa) {
   let query = table.select(
+    table.id, table.tipo,
     table.matricula,
-    table.matricula_externa
+    table.fechaInicio,
+    table.fechaFin,
+    Matricula.table.numeroMatricula,
+    Profesional.table.nombre,
+    Profesional.table.apellido,
+    Profesional.table.dni
+  )
+  .from(
+    table.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
+         .join(Profesional.table).on(Matricula.table.entidad.equals(Profesional.table.id))
   )
   .where(table.empresa.equals(id_empresa))
   .toQuery();
 
   return connector.execQuery(query)
-        .then(r => {
-          let proms = r.rows.map(m => {
-            if (m.matricula) return getMatricula(m.id);
-            else if (m.matricula_externa) return getMatriculaExterna(m.id);
-          })
-          return Promise.all(proms);
-        });
+        .then(r => r.rows);
 }
 
 module.exports.delete = function (data, client) {
