@@ -226,7 +226,7 @@ module.exports.aprobar = function(matricula) {
   return existMatricula(matricula.solicitud)
   .then(exist => {
       if (!exist) {
-        Promise.all([
+        return Promise.all([
           Solicitud.get(matricula.solicitud),
           getNumeroMatricula(matricula.tipo),
           ValoresGlobales.getAll({ nombre: 'inscripcion_matricula' })
@@ -256,7 +256,7 @@ module.exports.aprobar = function(matricula) {
                   connection.client
                 );
               }
-              else Promise.resolve();
+              else return Promise.resolve();
             })
             .then(r => {
               return connector.commit(connection.client)

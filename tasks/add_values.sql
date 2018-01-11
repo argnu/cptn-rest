@@ -1,0 +1,2 @@
+﻿INSERT INTO valores_globales (fecha, nombre, descripcion, valor) VALUES (now(), 'inscripcion_matricula', 'Inscripción de Matrícula', 7200);
+INSERT INTO t_estadoboleta(id, valor) VALUES (10, 'Volante de Pago Generado');

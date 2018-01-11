@@ -14,7 +14,13 @@ Crear una base de datos y en caso de tener los datos hacer un restore de los dat
 
 `pg_restore --no-privileges --no-owner -n public  -d basededatos -U usuario archivodebackup`
 
-### 4- Configurar API
+### 4- Agregar datos extra (valores_globales, estados de boleta, etc.)
+
+Ejecutar el script .sql denominado `add_values.sql`:
+
+`psql -U argnu -d cptn -f add_values.sql`
+
+### 5- Configurar API
 
 Crear un archivo en la carpeta raíz del proyecto con nombre `config.private` y
 el siguiente contenido:

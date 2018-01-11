@@ -41,7 +41,10 @@ router.post('/', function(req, res) {
 
 router.post('/auth', function(req, res) {
   model.Usuario.auth(req.body)
-  .then(r => res.json(r))
+  .then(r => {
+    if (!r) res.status(403).json({ msg: 'Combinación de usuario/contraseña incorrecta' });
+    else res.json(r)
+  })
   .catch(e => {
     console.error(e);
     res.status(500).json({ msg: 'Error en el servidor' });

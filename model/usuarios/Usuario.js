@@ -97,9 +97,9 @@ module.exports.auth = function(usuario) {
           delete(usuario_bd.hash_password);
           return usuario_bd
         }
-        else throw Error("No existe la combinación usuario/contraseña")
+        else return null;
       }
-      else throw Error("No existe la combinación usuario/contraseña")
+      else return null;
   });
 }
 
