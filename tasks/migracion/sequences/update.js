@@ -8,8 +8,7 @@ Promise.all([
     connector.execRawQuery('SELECT MAX(id) FROM departamento'),
     connector.execRawQuery('SELECT MAX(id) FROM localidad'),
     connector.execRawQuery('SELECT MAX(id) FROM banco'),
-    connector.execRawQuery('SELECT MAX(id) FROM moneda'),
-    connector.execRawQuery('SELECT MAX(id) FROM incumbencia'),
+    connector.execRawQuery('SELECT MAX(id) FROM t_incumbencia'),
     connector.execRawQuery('SELECT MAX(id) FROM tarea_categoria'),
     connector.execRawQuery('SELECT MAX(id) FROM tarea_subcategoria'),
     connector.execRawQuery('SELECT MAX(id) FROM tarea_item'),
@@ -26,7 +25,6 @@ Promise.all([
         maxDepartamentos,
         maxLocalidades,
         maxBancos,
-        maxMonedas,
         maxIncumbencias,
         maxCategorias,
         maxSubcategorias,
@@ -44,8 +42,7 @@ Promise.all([
     ALTER SEQUENCE departamento_id_seq RESTART WITH ${maxDepartamentos.rows[0].max + 1};
     ALTER SEQUENCE localidad_id_seq RESTART WITH ${maxLocalidades.rows[0].max + 1};
     ALTER SEQUENCE banco_id_seq RESTART WITH ${maxBancos.rows[0].max + 1};
-    ALTER SEQUENCE moneda_id_seq RESTART WITH ${maxMonedas.rows[0].max + 1};
-    ALTER SEQUENCE incumbencia_id_seq RESTART WITH ${maxIncumbencias.rows[0].max + 1};
+    ALTER SEQUENCE t_incumbencia_id_seq RESTART WITH ${maxIncumbencias.rows[0].max + 1};
     ALTER SEQUENCE tarea_categoria_id_seq RESTART WITH ${maxCategorias.rows[0].max + 1};
     ALTER SEQUENCE tarea_subcategoria_id_seq RESTART WITH ${maxSubcategorias.rows[0].max + 1};
     ALTER SEQUENCE tarea_item_id_seq RESTART WITH ${maxItems.rows[0].max + 1};
