@@ -11,6 +11,8 @@ const addItem = (item)  => {
                   table.item.value(id_item),
                   table.valor.value(utils.checkString(item['DESCRIPCION']))
                 ).toQuery();
+
+    return connector.execQuery(query);
 }
 
 module.exports.migrar = function () {

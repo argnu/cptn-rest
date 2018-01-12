@@ -1,6 +1,8 @@
 const connector = require('../../connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+
+const utils = require(`${__base}/utils`)
 const Boleta = require('./Boleta');
 
 const table = sql.define({
@@ -74,7 +76,7 @@ module.exports.add = function (boleta_item, client) {
             table.boleta.value(boleta_item.boleta),
             table.item.value(boleta_item.item),
             table.descripcion.value(boleta_item.descripcion),
-            table.importe.value(boleta_item.importe)
+            table.importe.value(utils.getFloat(boleta_item.importe))
         )
         .returning(table.id, table.descripcion)
         .toQuery();

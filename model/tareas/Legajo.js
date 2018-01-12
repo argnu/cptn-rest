@@ -300,9 +300,9 @@ function addLegajo(legajo, client) {
                     table.created_by.value(legajo.operador),
                     table.updated_by.value(legajo.operador),
                     table.matricula.value(legajo.matricula),
-                    table.aporte_bruto.value(utils.checkNull(legajo.aporte_bruto)),
-                    table.aporte_neto.value(legajo.aporte_neto),
-                    table.aporte_neto_bonificacion.value(legajo.aporte_neto_bonificacion),
+                    table.aporte_bruto.value(utils.getFloat(legajo.aporte_bruto)),
+                    table.aporte_neto.value(utils.getFloat(legajo.aporte_neto)),
+                    table.aporte_neto_bonificacion.value(utils.getFloat(legajo.aporte_neto_bonificacion)),
                     table.cantidad_planos.value(utils.checkNull(legajo.cantidad_planos)),
                     table.domicilio.value(legajo.domicilio),
                     table.delegacion.value(legajo.delegacion),
@@ -311,15 +311,15 @@ function addLegajo(legajo, client) {
                     table.fecha_solicitud.value(utils.checkNull(legajo.fecha_solicitud)),
                     table.finalizacion_tarea.value(utils.checkNull(legajo.finalizacion_tarea)),
                     table.forma_pago.value(legajo.forma_pago),
-                    table.honorarios_presupuestados.value(utils.checkNull(legajo.honorarios_presupuestados)),
-                    table.honorarios_reales.value(utils.checkNull(legajo.honorarios_reales)),
+                    table.honorarios_presupuestados.value(utils.getFloat(legajo.honorarios_presupuestados)),
+                    table.honorarios_reales.value(utils.getFloat(legajo.honorarios_reales)),
                     table.informacion_adicional.value(legajo.informacion_adicional),
                     table.nomenclatura.value(legajo.nomenclatura),
                     table.numero_legajo.value(numero_legajo),
                     table.solicitud.value(numero_legajo),
                     table.observaciones.value(legajo.observaciones),
                     table.plazo_cumplimiento.value(utils.checkNull(legajo.plazo_cumplimiento)),
-                    table.porcentaje_cumplimiento.value(utils.checkNull(legajo.porcentaje_cumplimiento)),
+                    table.porcentaje_cumplimiento.value(utils.getFloat(legajo.porcentaje_cumplimiento)),
                     table.subcategoria.value(legajo.subcategoria),
                     table.tarea_publica.value(legajo.tarea_publica),
                     table.tipo.value(legajo.tipo)
@@ -359,57 +359,62 @@ function addBoleta(legajo) {
 module.exports.add = function (legajo) {
     let legajo_nuevo;
     let personas;
+    let connection;
 
     return connector
         .beginTransaction()
-        .then(connection => {
-            return Domicilio.add(legajo.domicilio, connection.client)
-                .then(domicilio_nuevo => {
-                    legajo.domicilio = domicilio_nuevo ? domicilio_nuevo.id : null;
-                    let proms = legajo.comitentes.map(c => {
-                        if (!c.persona.id) return Persona.add(c.persona, connection.client);
-                        else return Promise.resolve(c.persona);
-                    })
-                    return Promise.all(proms);
-                })
-                .then(comitentes => {
-                    personas = comitentes;
-                    return addLegajo(legajo, connection.client);
-                })
-                .then(legajo_added => {
-                    legajo_nuevo = legajo_added;
-                    let proms_comitentes = legajo.comitentes.map((comitente, index) => {
-                        comitente.legajo = legajo_nuevo.id;
-                        comitente.persona = personas[index].id;
-                        return LegajoComitente.add(comitente, connection.client);
-                    })
-                    return Promise.all(proms_comitentes);
-                })
-                .then(comitentes => {
-                    let proms_items = legajo.items.map(item => {
-                        item.legajo = legajo_nuevo.id;
-                        return LegajoItem.add(item, connection.client);
-                    })
-                    return Promise.all(proms_items);
-                })
-                .then(items => {
-                    legajo.id = legajo_nuevo.id;
-                    legajo.numero_legajo = legajo_nuevo.numero_legajo;
-                    legajo_nuevo.items = items;
-                    return addBoleta(legajo);
-                })
+        .then(con => {
+            connection = con;
+            if (legajo.domicilio.localidad && legajo.domicilio.calle.length) {
+                return Domicilio.add(legajo.domicilio, connection.client)    
+            }
+            else return Promise.resolve(null)
+        })
+        .then(domicilio_nuevo => {
+            legajo.domicilio = domicilio_nuevo ? domicilio_nuevo.id : null;
+            let proms = legajo.comitentes.map(c => {
+                if (!c.persona.id) return Persona.add(c.persona, connection.client);
+                else return Promise.resolve(c.persona);
+            })
+            return Promise.all(proms);
+        })
+        .then(comitentes => {
+            personas = comitentes;
+            return addLegajo(legajo, connection.client);
+        })
+        .then(legajo_added => {
+            legajo_nuevo = legajo_added;
+            let proms_comitentes = legajo.comitentes.map((comitente, index) => {
+                comitente.legajo = legajo_nuevo.id;
+                comitente.persona = personas[index].id;
+                return LegajoComitente.add(comitente, connection.client);
+            })
+            return Promise.all(proms_comitentes);
+        })
+        .then(comitentes => {
+            let proms_items = legajo.items.map(item => {
+                item.legajo = legajo_nuevo.id;
+                return LegajoItem.add(item, connection.client);
+            })
+            return Promise.all(proms_items);
+        })
+        .then(items => {
+            legajo.id = legajo_nuevo.id;
+            legajo.numero_legajo = legajo_nuevo.numero_legajo;
+            legajo_nuevo.items = items;
+            return addBoleta(legajo);
+        })
+        .then(r => {
+            return connector.commit(connection.client)
                 .then(r => {
-                    return connector.commit(connection.client)
-                        .then(r => {
-                            connection.done();
-                            return legajo_nuevo;
-                        });
-                })
-                .catch(e => {
-                    connector.rollback(connection.client);
                     connection.done();
-                    throw Error(e);
+                    return legajo_nuevo;
                 });
+        })
+        .catch(e => {
+            connector.rollback(connection.client);
+            connection.done();
+            throw Error(e);
         });
 }
 

@@ -20,6 +20,10 @@ Ejecutar el script .sql denominado `add_values.sql`:
 
 `psql -U argnu -d cptn -f add_values.sql`
 
+También restaurar el backup de los valores predeterminados de items que quedó colgado:
+
+`pg_restore --no-privileges --no-owner -n public  -d basededatos -U usuario backupItems?`
+
 ### 5- Configurar API
 
 Crear un archivo en la carpeta raíz del proyecto con nombre `config.private` y

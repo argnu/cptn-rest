@@ -7,6 +7,7 @@ const utils = require(`${__base}/tasks/migracion/utils`);
 const addItem = (item) => {
     let table = model.tareas.ItemPredeterminado.table;
     let id_item = `${item['CODIGOPREGUNTA']}${item['NUMEROPREGUNTA']}`;
+    console.log(id_item, item['CODIGOTAREAN2'])
     let query = table.insert(
                   table.item.value(id_item),
                   table.subcategoria.value(item['CODIGOTAREAN2'])

@@ -215,7 +215,7 @@ function addBoleta(id, fecha, importe, delegacion, client) {
     }]    
   }
   
-  return Boleta.addBoleta(boleta, client);
+  return Boleta.add(boleta, client);
 }
 
 module.exports.aprobar = function(matricula) {

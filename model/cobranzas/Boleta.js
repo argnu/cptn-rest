@@ -192,9 +192,9 @@ function addDatosBoleta(boleta, client) {
                     table.matricula.value(boleta.matricula),
                     table.tipo_comprobante.value(boleta.tipo_comprobante),
                     table.fecha.value(boleta.fecha),
-                    table.total.value(boleta.total),
+                    table.total.value(utils.getFloat(boleta.total)),
                     table.estado.value(boleta.estado),
-                    table.fecha_vencimiento.value(utils.checkNull(boleta.fecha_vencimiento)),
+                    table.fecha_vencimiento.value(boleta.fecha_vencimiento),
                     table.numero_comprobante.value(boleta.numero_comprobante),
                     table.numero_solicitud.value(boleta.numero_solicitud),
                     table.numero_condonacion.value(boleta.numero_condonacion),
@@ -209,7 +209,7 @@ function addDatosBoleta(boleta, client) {
         })
 }
 
-function addBoleta(boleta, client) {
+module.exports.add = function (boleta, client) {
     let boleta_nueva;
 
     return addDatosBoleta(boleta, client)
@@ -225,38 +225,8 @@ function addBoleta(boleta, client) {
         boleta_nueva.items = items;
         return boleta_nueva;
     });
-}
-module.exports.addBoleta = addBoleta;
+};
 
-module.exports.add = function (boleta) {
-    let boleta_nueva;
-    return connector
-        .beginTransaction()
-        .then(connection => {
-            return addDatosBoleta(boleta, connection.client)
-                .then(boleta_added => {
-                    boleta_nueva = boleta_added;
-                    let proms_items = boleta.items.map(item => {
-                        item.boleta = boleta_nueva.id;
-                        return BoletaItem.add(item, connection.client);
-                    })
-                    return Promise.all(proms_items);
-                })
-                .then(items => {
-                    boleta_nueva.items = items;
-                    return connector.commit(connection.client)
-                        .then(r => {
-                            connection.done();
-                            return boleta_nueva;
-                        });
-                })
-                .catch(e => {
-                    connector.rollback(connection.client);
-                    connection.done();
-                    throw Error(e);
-                });
-        });
-}
 
 module.exports.patch = function(id, boleta, client) {
   boleta.fecha_update = moment();
