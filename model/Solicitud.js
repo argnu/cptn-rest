@@ -15,6 +15,10 @@ const table = sql.define({
       primaryKey: true
     },
     {
+      name: 'numero',
+      dataType: 'serial'
+    },
+    {
       name: 'fecha',
       dataType: 'date',
       notNull: true
