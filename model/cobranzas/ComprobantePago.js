@@ -57,7 +57,7 @@ const table = sql.define({
 module.exports.table = table;
 
 function esCheque(id) {
-    return id == 4;
+    return id == 10 || id == 21 || id == 39;
 }
 
 function esTarjeta(id) {

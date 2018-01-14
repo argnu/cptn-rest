@@ -11,7 +11,7 @@ function addUsuario(data) {
 
 Promise.all([
     addUsuario({
-        id: 'hernandezn',
+        id: 'HERNANDEZN',
         password: 'TecNQ.1320',
         nombre: 'Nicolás',
         apellido: 'Hernandez',
@@ -19,7 +19,7 @@ Promise.all([
         delegacion: 1
     }),
     addUsuario({
-        id: 'gonzalesga',
+        id: 'GONZALESGA',
         password: 'TecNQ.1103',
         nombre: 'Germán Ariel',
         apellido: 'Gonzales',
@@ -27,7 +27,7 @@ Promise.all([
         delegacion: 1
     }),      
     addUsuario({
-        id: 'bilbaod',
+        id: 'BILBAOD',
         password: 'TecNQ.4280',
         nombre: 'Daniela',
         apellido: 'Bilbao',
@@ -35,7 +35,7 @@ Promise.all([
         delegacion: 1
     }),     
     addUsuario({
-        id: 'marquezm',
+        id: 'MARQUEZM',
         password: 'TecNQ.6721',
         nombre: 'Micaela',
         apellido: 'Marquez',
@@ -43,7 +43,7 @@ Promise.all([
         delegacion: 1
     }),      
     addUsuario({
-        id: 'lastrad',
+        id: 'LASTRAD',
         password: 'TecZP.9834',
         nombre: 'Damián',
         apellido: 'Lastra',
@@ -51,7 +51,7 @@ Promise.all([
         delegacion: 2
     }),      
     addUsuario({
-        id: 'cabreram',
+        id: 'CABRERAM',
         password: 'TecSM.0360',
         nombre: 'Matías',
         apellido: 'Cabrera',
@@ -59,7 +59,7 @@ Promise.all([
         delegacion: 3
     }),      
     addUsuario({
-        id: 'valdeza',
+        id: 'VALDEZA',
         password: 'TecVL.6567',
         nombre: 'Ana',
         apellido: 'Valdez',
@@ -67,7 +67,7 @@ Promise.all([
         delegacion: 4
     }),      
     addUsuario({
-        id: 'buscharaf',
+        id: 'BUSCHARAF',
         password: 'TecCM.7654',
         nombre: 'Fabiola',
         apellido: 'Buschara',
@@ -75,7 +75,7 @@ Promise.all([
         delegacion: 5
     }),      
     addUsuario({
-        id: 'gentiled',
+        id: 'GENTILED',
         password: 'TecJA.3412',
         nombre: 'Damián',
         apellido: 'Gentile',

@@ -24,7 +24,14 @@ También restaurar el backup de los valores predeterminados de items que quedó 
 
 `pg_restore --no-privileges --no-owner -n public  -d basededatos -U usuario backupItems?`
 
-### 5- Configurar API
+### 5- Agregar usuarios
+
+`npm run addinvitado`
+
+`npm run addusuarios`
+
+
+### 6- Configurar API
 
 Crear un archivo en la carpeta raíz del proyecto con nombre `config.private` y
 el siguiente contenido:
