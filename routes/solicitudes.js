@@ -50,8 +50,8 @@ router.post('/',
 
     if (req.body.solicitud) {
       solicitud = JSON.parse(req.body.solicitud);
-      solicitud.entidad.foto = req.body.foto || null;
-      solicitud.entidad.firma = req.body.firma || null;
+      solicitud.entidad.foto = req.body.foto ? req.body.foto : null;
+      solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
     }
     else solicitud = req.body;
 
@@ -73,8 +73,8 @@ router.put('/:id',
     let solicitud;
     if (req.body.solicitud) {
       solicitud = JSON.parse(req.body.solicitud);
-      solicitud.entidad.foto = req.body.foto || null;
-      solicitud.entidad.firma = req.body.firma || null;
+      solicitud.entidad.foto = req.body.foto ? req.body.foto : null;
+      solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
     }
     else solicitud = req.body;    
 

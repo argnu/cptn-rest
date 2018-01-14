@@ -328,7 +328,7 @@ module.exports.edit = function(id, profesional, client) {
     domicilios: profesional.domicilios
   }, client)
   .then(r => {
-    let query = table.update({
+    let obj_update = {
       dni: profesional.dni,
       apellido: profesional.apellido,
       nombre: profesional.nombre,
@@ -349,7 +349,12 @@ module.exports.edit = function(id, profesional, client) {
       publicarCelular: profesional.publicarCelular,
       publicarDireccion: profesional.publicarDireccion,
       publicarEmail: profesional.publicarEmail
-    })
+    };
+
+    if (profesional.foto) obj_update.foto = profesional.foto;
+    if (profesional.firma) obj_update.firma = profesional.firma;
+
+    let query = table.update(obj_update)
     .where(table.id.equals(id))
     .toQuery();
 

@@ -225,8 +225,6 @@ module.exports.edit = function(id, solicitud) {
           delegacion: solicitud.delegacion,
           updated_by: solicitud.operador
         }
-        if (solicitud.foto) datos_solicitud.foto = solicitud.foto;
-        if (solicitud.firma) datos_solicitud.firma = solicitud.firma;
 
         let query = table.update(datos_solicitud)
         .where(table.id.equals(id))

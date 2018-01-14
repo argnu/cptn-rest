@@ -3,6 +3,7 @@ module.exports.clone = function(obj) {
 }
 
 module.exports.checkNull = function(value) {
+  if (typeof value == 'number') return value;
   return value && value.length ? value : null;
 }
 
