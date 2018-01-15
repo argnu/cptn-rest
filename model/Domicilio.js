@@ -1,10 +1,11 @@
-const connector = require('../connector');
+const connector = require(`${__base}/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const Localidad = require('./geograficos/Localidad');
 const Departamento = require('./geograficos/Departamento');
 const Provincia = require('./geograficos/Provincia');
 const Pais = require('./geograficos/Pais');
+const utils = require(`${__base}/utils`);
 
 const table = sql.define({
   name: 'domicilio',
@@ -42,7 +43,7 @@ module.exports.table = table;
 module.exports.add = function(domicilio, client) {
   let query = table.insert(
     table.calle.value(domicilio.calle),
-    table.numero.value(domicilio.numero),
+    table.numero.value(utils.checkNull(domicilio.numero)),
     table.localidad.value(domicilio.localidad)
   )
   .returning(table.star())
@@ -76,7 +77,7 @@ module.exports.edit = function(id, domicilio, client) {
   let query = table.update({
     calle: domicilio.calle,
     localidad: domicilio.localidad,
-    numero: domicilio.numero
+    numero: utils.checkNull(domicilio.numero)
   })
   .where(table.id.equals(id))
   .toQuery();
