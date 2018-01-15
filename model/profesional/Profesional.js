@@ -1,3 +1,4 @@
+const config = require('../../config.private');
 const connector = require('../../connector');
 const Contacto = require('../Contacto');
 const Formacion = require('./Formacion');
@@ -258,10 +259,10 @@ module.exports.getAll = function(params) {
       profesionales[index].beneficiarios = beneficiarios;
       profesionales[index].subsidiarios = subsidiarios;
       if (profesionales[index].foto) {
-        profesionales[index].foto = `http://localhost:3400/api/profesionales/${profesionales[index].id}/foto`;
+        profesionales[index].foto = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesionales[index].id}/foto`;
       }
       if (profesionales[index].firma) {
-        profesionales[index].firma = `http://localhost:3400/api/profesionales/${profesionales[index].id}/firma`;
+        profesionales[index].firma = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesionales[index].id}/firma`;
       }
     });
     return profesionales;
