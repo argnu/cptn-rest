@@ -143,7 +143,8 @@ module.exports.add = function(solicitud) {
 
 const select = {
   atributes: [
-    table.star(), Delegacion.table.nombre.as('delegacion'),
+    table.star(), 
+    Delegacion.table.nombre.as('delegacion'),
     Entidad.table.tipo.as('tipoEntidad')
   ],
   from: table.join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))

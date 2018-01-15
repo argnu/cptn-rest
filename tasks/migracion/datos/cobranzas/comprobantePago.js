@@ -15,7 +15,7 @@ function addPagos(pago) {
                     importe: pago['Importe'],
                     forma_pago: pago['FormaPago'],
                     numero_cheque: pago['NroCheque'],
-                    banco: pago['CodBanco'],
+                    banco: pago['CodBanco'] ? pago['CodBanco'] : null,
                     titular_cuenta: utils.checkString(pago['TitularCuenta']),
                     fecha_vto_cheque: utils.getFecha(pago['FECHA_VTO']),
                     compensado: pago['Compensado']

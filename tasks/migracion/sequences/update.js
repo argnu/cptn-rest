@@ -15,8 +15,7 @@ Promise.all([
     connector.execRawQuery('SELECT MAX(id) FROM t_estadoboleta'),
     connector.execRawQuery('SELECT MAX(id) FROM t_estadomatricula'),
     connector.execRawQuery('SELECT MAX(id) FROM t_formapago'),
-    connector.execRawQuery('SELECT MAX(id) FROM t_pago'),
-    connector.execRawQuery('SELECT MAX(idMigracion) FROM matricula')
+    connector.execRawQuery('SELECT MAX(id) FROM t_pago')
 ])
     .then(([
         maxInstituciones,
@@ -33,8 +32,7 @@ Promise.all([
         maxEstadosBoleta,
         maxEstadosMatricula,
         maxFormasPago,
-        maxTiposPago,
-        maxNumeroSolicitud
+        maxTiposPago
     ]) => {
         return connector.execRawQuery(`
     ALTER SEQUENCE institucion_id_seq RESTART WITH ${maxInstituciones.rows[0].max + 1};
@@ -52,7 +50,6 @@ Promise.all([
     ALTER SEQUENCE t_estadomatricula_id_seq RESTART WITH ${maxEstadosMatricula.rows[0].max + 1};
     ALTER SEQUENCE t_formapago_id_seq RESTART WITH ${maxFormasPago.rows[0].max + 1};
     ALTER SEQUENCE t_pago_id_seq RESTART WITH ${maxTiposPago.rows[0].max + 1};
-    ALTER SEQUENCE solicitud_numero_seq RESTART WITH ${maxNumeroSolicitud.rows[0].max + 1};
     `)
     })
     .then(r => {
