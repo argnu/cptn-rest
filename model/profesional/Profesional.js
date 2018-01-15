@@ -292,10 +292,10 @@ module.exports.get = function(id) {
   .then(r => {
     profesional = r.rows[0];
     if (profesional.foto) {
-      profesional.foto = `http://localhost:3400/api/profesionales/${profesional.id}/foto`;
+      profesional.foto = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesional.id}/foto`;
     }
     if (profesional.firma) {
-      profesional.firma = `http://localhost:3400/api/profesionales/${profesional.id}/firma`;
+      profesional.firma = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesional.id}/firma`;
     }
     return getDatosProfesional(profesional);
   })
