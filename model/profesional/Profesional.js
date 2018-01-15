@@ -259,10 +259,10 @@ module.exports.getAll = function(params) {
       profesionales[index].beneficiarios = beneficiarios;
       profesionales[index].subsidiarios = subsidiarios;
       if (profesionales[index].foto) {
-        profesionales[index].foto = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesionales[index].id}/foto`;
+        profesionales[index].foto = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesionales[index].id}/foto`;
       }
       if (profesionales[index].firma) {
-        profesionales[index].firma = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesionales[index].id}/firma`;
+        profesionales[index].firma = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesionales[index].id}/firma`;
       }
     });
     return profesionales;
@@ -292,10 +292,10 @@ module.exports.get = function(id) {
   .then(r => {
     profesional = r.rows[0];
     if (profesional.foto) {
-      profesional.foto = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesional.id}/foto`;
+      profesional.foto = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/foto`;
     }
     if (profesional.firma) {
-      profesional.firma = `http://${config.entry.host}:${conig.entry.port}/api/profesionales/${profesional.id}/firma`;
+      profesional.firma = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/firma`;
     }
     return getDatosProfesional(profesional);
   })
