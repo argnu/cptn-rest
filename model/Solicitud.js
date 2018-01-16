@@ -160,7 +160,7 @@ module.exports.getAll = function(params) {
     /* ----------------- FILTERS  ---------------- */
     if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
     if (params.estado) query.where(table.estado.equals(params.estado));
-    if (params.exencionArt10) query.where(table.exencionArt10.equals(params.exencionArt10));
+    if (params.numero) query.where(table.numero.equals(params.numero));
 
     if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
     if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));

@@ -1,8 +1,25 @@
 const path = require('path');
+const multer  = require('multer');
 const router = require('express').Router();
 const model = require('../model');
 const bodyParser = require('body-parser');
 router.use(bodyParser.json());
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    let dest = (file.fieldname == 'firma') ? 'firmas' : 'fotos';
+    cb(null, `${__base}/files/${dest}`)
+  },
+
+  filename: function (req, file, cb) {
+    let ext = path.extname(file.originalname);
+    let name = file.originalname.replace(ext, '') + '-' + Date.now() + ext;    
+    req.body[file.fieldname] = name;
+    cb(null, name)
+  }
+})
+
+const upload = multer({ storage: storage })
 
 router.get('/', function(req, res) {
   model.Profesional.getAll(req.query)
@@ -58,6 +75,18 @@ router.get('/:id/foto', function (req, res) {
     });
 });
 
+router.put('/:id/foto', upload.fields([{ name: 'foto', maxCount: 1 }]), function(req, res) {
+    if (req.body.foto) {
+      model.Profesional.patch(req.params.id, { foto: req.body.foto })
+        .then(id => res.status(200).json({ id }))
+        .catch(e => {
+          console.error(e);
+          res.status(500).json({ msg: 'Error en el servidor' });
+        });      
+    }
+    else res.status(500).json({ msg: 'Error en el servidor' });
+});
+
 router.get('/:id/firma', function (req, res) {
   model.Profesional.getFirma(req.params.id)
     .then(r => res.sendFile(path.join(__base, 'files/firmas', r)))
@@ -65,6 +94,18 @@ router.get('/:id/firma', function (req, res) {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });
     });
+});
+
+router.put('/:id/firma', upload.fields([{ name: 'firma', maxCount: 1 }]), function(req, res) {
+    if (req.body.firma) {
+      model.Profesional.patch(req.params.id, { firma: req.body.firma })
+        .then(id => res.status(200).json({ id }))
+        .catch(e => {
+          console.error(e);
+          res.status(500).json({ msg: 'Error en el servidor' });
+        });      
+    }
+    else res.status(500).json({ msg: 'Error en el servidor' });
 });
 
 router.get('/:id', function (req, res) {

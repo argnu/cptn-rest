@@ -71,6 +71,10 @@ const table = sql.define({
       dataType: 'boolean'
     },
     {
+      name: 'jubilado',
+      dataType: 'boolean'
+    },
+    {
       name: 'empresa',
       dataType: 'varchar(250)'
     },
@@ -148,6 +152,7 @@ function addDatosBasicos(profesional, client) {
     table.observaciones.value(profesional.observaciones),
     table.relacionDependencia.value(profesional.relacionDependencia),
     table.independiente.value(profesional.independiente),
+    table.jubilado.value(profesional.jubilado),
     table.empresa.value(profesional.empresa),
     table.serviciosPrestados.value(profesional.serviciosPrestados),
     table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
@@ -210,7 +215,7 @@ const select_atributes = [table.id,
 Entidad.table.tipo, Entidad.table.cuit,
 table.nombre, table.apellido, table.dni,
 table.fechaNacimiento, table.lugarNacimiento, table.nacionalidad,
-table.relacionDependencia, table.independiente,
+table.relacionDependencia, table.independiente, table.jubilado,
 TipoSexo.table.valor.as('sexo'),
 TipoEstadoCivil.table.valor.as('estadoCivil'),
 TipoCondicionAfip.table.valor.as('condafip'),
@@ -341,6 +346,7 @@ module.exports.edit = function(id, profesional, client) {
       observaciones: profesional.observaciones,
       relacionDependencia: profesional.relacionDependencia,
       independiente: profesional.independiente,
+      jubilado: profesional.jubilado,
       empresa: profesional.empresa,
       serviciosPrestados: profesional.serviciosPrestados,
       poseeCajaPrevisional: profesional.poseeCajaPrevisional,
@@ -429,4 +435,14 @@ module.exports.edit = function(id, profesional, client) {
         })
       })
   })
+}
+
+module.exports.patch = function (id, profesional, client) {
+  let query = table.update(profesional)
+    .where(table.id.equals(id))
+    .returning(table.star())
+    .toQuery();
+    
+  return connector.execQuery(query, client)
+  .then(r => r.rows[0]);
 }
