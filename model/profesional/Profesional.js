@@ -1,6 +1,7 @@
 const config = require('../../config.private');
 const connector = require('../../connector');
 const Contacto = require('../Contacto');
+const ProfesionalCajaPrevisional = require('./ProfesionalCajaPrevisional');
 const Formacion = require('./Formacion');
 const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
@@ -83,18 +84,6 @@ const table = sql.define({
       dataType: 'varchar(255)'
     },
     {
-      name: 'poseeCajaPrevisional',
-      dataType: 'boolean'
-    },
-    {
-      name: 'nombreCajaPrevisional',
-      dataType: 'varchar(45)'
-    },
-    {
-      name: 'solicitaCajaPrevisional',
-      dataType: 'boolean'
-    },
-    {
       name: 'publicar',
       dataType: 'boolean'
     },
@@ -155,9 +144,6 @@ function addDatosBasicos(profesional, client) {
     table.jubilado.value(profesional.jubilado),
     table.empresa.value(profesional.empresa),
     table.serviciosPrestados.value(profesional.serviciosPrestados),
-    table.poseeCajaPrevisional.value(profesional.poseeCajaPrevisional),
-    table.nombreCajaPrevisional.value(profesional.nombreCajaPrevisional),
-    table.solicitaCajaPrevisional.value(profesional.solicitaCajaPrevisional),
     table.publicar.value(profesional.publicar),
     table.publicarCelular.value(profesional.publicarCelular),
     table.publicarEmail.value(profesional.publicarEmail),
@@ -191,21 +177,29 @@ module.exports.add = function (profesional, client) {
               return Formacion.add(f, client);
             }) : [];
 
-            let proms_beneficiarios = (profesional.beneficiarios && profesional.beneficiarios.length) ? profesional.beneficiarios.map(b => {
-              b.profesional = profesional.id;
-              return Beneficiario.add(b, client);
-            }) : [];
+            // let proms_beneficiarios = (profesional.beneficiarios && profesional.beneficiarios.length) ? profesional.beneficiarios.map(b => {
+            //   b.profesional = profesional.id;
+            //   return Beneficiario.add(b, client);
+            // }) : [];
 
             let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
               s.profesional = profesional.id;
               return Subsidiario.add(s, client);
             }) : [];
 
+            let proms_cajas = (profesional.cajas_previsionales && profesional.cajas_previsionales.length) ? profesional.cajas_previsionales.map(c => {
+              return ProfesionalCajaPrevisional.add({
+                profesional: profesional.id,
+                caja: c
+              })
+            }) : [];
+
 
             return Promise.all(proms_contactos)
             .then(rs => Promise.all(proms_formaciones))
-            .then(rs => Promise.all(proms_beneficiarios))
+            // .then(rs => Promise.all(proms_beneficiarios))
             .then(rs => Promise.all(proms_subsidiarios))
+            .then(rs => Promise.all(proms_cajas))
             .then(rs => profesional);
           });
   })
@@ -220,9 +214,7 @@ TipoSexo.table.valor.as('sexo'),
 TipoEstadoCivil.table.valor.as('estadoCivil'),
 TipoCondicionAfip.table.valor.as('condafip'),
 table.observaciones, table.empresa,
-table.serviciosPrestados, table.poseeCajaPrevisional,
-table.solicitaCajaPrevisional,
-table.nombreCajaPrevisional, table.publicar,
+table.serviciosPrestados,
 table.foto, table.firma,
 table.publicarAcervo, table.publicarCelular,
 table.publicarDireccion, table.publicarEmail
@@ -232,8 +224,6 @@ const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.i
                          .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
-
-
 
 
 
@@ -257,11 +247,11 @@ module.exports.getAll = function(params) {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilios, contactos, formaciones, beneficiarios, subsidiarios ] = value;
+      [ domicilios, contactos, formaciones, cajas_previsionales, subsidiarios ] = value;
       profesionales[index].domicilios = domicilios;
       profesionales[index].contactos = contactos;
       profesionales[index].formaciones = formaciones;
-      profesionales[index].beneficiarios = beneficiarios;
+      profesionales[index].cajas_previsionales = cajas_previsionales;
       profesionales[index].subsidiarios = subsidiarios;
       if (profesionales[index].foto) {
         profesionales[index].foto = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesionales[index].id}/foto`;
@@ -280,7 +270,8 @@ function getDatosProfesional(profesional) {
       EntidadDomicilio.getByEntidad(profesional.id),
       Contacto.getAll(profesional.id),
       Formacion.getAll(profesional.id),
-      Beneficiario.getAll(profesional.id),
+      ProfesionalCajaPrevisional.getByProfesional(profesional.id),
+      // Beneficiario.getAll(profesional.id),
       Subsidiario.getAll(profesional.id)
     ]);
 }
@@ -305,12 +296,12 @@ module.exports.get = function(id) {
     return getDatosProfesional(profesional);
   })
   .then(([
-      domicilios, contactos, formaciones, beneficiarios, subsidiarios
+      domicilios, contactos, formaciones, cajas_previsionales, subsidiarios
     ]) => {
       profesional.domicilios = domicilios;
       profesional.contactos = contactos;
       profesional.formaciones = formaciones;
-      profesional.beneficiarios = beneficiarios;
+      profesional.cajas_previsionales = cajas_previsionales;
       profesional.subsidiarios = subsidiarios;
       return profesional;
     });
@@ -349,9 +340,6 @@ module.exports.edit = function(id, profesional, client) {
       jubilado: profesional.jubilado,
       empresa: profesional.empresa,
       serviciosPrestados: profesional.serviciosPrestados,
-      poseeCajaPrevisional: profesional.poseeCajaPrevisional,
-      nombreCajaPrevisional: profesional.nombreCajaPrevisional,
-      solicitaCajaPrevisional: profesional.solicitaCajaPrevisional,
       publicarAcervo: profesional.publicarAcervo,
       publicarCelular: profesional.publicarCelular,
       publicarDireccion: profesional.publicarDireccion,
@@ -371,10 +359,12 @@ module.exports.edit = function(id, profesional, client) {
         let contactos_existentes = profesional.contactos.filter(c => !!c.id).map(c => c.id);
         let formaciones_nuevas = profesional.formaciones.filter(f => !f.id);
         let formaciones_existentes = profesional.formaciones.filter(f => !!f.id).map(f => f.id);
-        let beneficiarios_nuevos = profesional.beneficiarios.filter(b => !b.id);
-        let beneficiarios_existentes = profesional.beneficiarios.filter(b => !!b.id).map(b => b.id);  
+        // let beneficiarios_nuevos = profesional.beneficiarios.filter(b => !b.id);
+        // let beneficiarios_existentes = profesional.beneficiarios.filter(b => !!b.id).map(b => b.id);  
         let subsidiarios_nuevos = profesional.subsidiarios.filter(s => !s.id);
         let subsidiarios_existentes = profesional.subsidiarios.filter(s => !!s.id).map(s => s.id);
+        let cajas_nuevas = profesional.cajas_previsionales.filter(c => !c.id);
+        let cajas_existentes = profesional.cajas_previsionales.filter(c => !!c.id).map(c => c.id);
         
         let proms = [
           connector.execQuery(
@@ -389,16 +379,22 @@ module.exports.edit = function(id, profesional, client) {
               .and(Formacion.table.id.notIn(formaciones_existentes))
             ).toQuery(), client),
 
-          connector.execQuery(
-            Beneficiario.table.delete().where(
-              Beneficiario.table.profesional.equals(id)
-              .and(Beneficiario.table.id.notIn(beneficiarios_existentes))
-            ).toQuery(), client), 
+          // connector.execQuery(
+          //   Beneficiario.table.delete().where(
+          //     Beneficiario.table.profesional.equals(id)
+          //     .and(Beneficiario.table.id.notIn(beneficiarios_existentes))
+          //   ).toQuery(), client), 
 
           connector.execQuery(
             Subsidiario.table.delete().where(
               Subsidiario.table.profesional.equals(id)
              .and(Subsidiario.table.id.notIn(subsidiarios_existentes))
+          ).toQuery(), client),
+
+          connector.execQuery(
+            ProfesionalCajaPrevisional.table.delete().where(
+              ProfesionalCajaPrevisional.table.profesional.equals(id)
+             .and(ProfesionalCajaPrevisional.table.id.notIn(cajas_existentes))
           ).toQuery(), client)
         ];
 
@@ -415,21 +411,29 @@ module.exports.edit = function(id, profesional, client) {
           });
 
 
-          let proms_beneficiarios = beneficiarios_nuevos.map(b => {
-            b.profesional = id;
-            return Beneficiario.add(b, client)
-          });
+          // let proms_beneficiarios = beneficiarios_nuevos.map(b => {
+          //   b.profesional = id;
+          //   return Beneficiario.add(b, client)
+          // });
 
           let proms_subsidiarios = subsidiarios_nuevos.map(s => {
             s.profesional = id;
             return Subsidiario.add(s, client);
           });
 
+          let proms_cajas = cajas_nuevas.map(c => {
+            return ProfesionalCajaPrevisional.add({
+              profesional: id,
+              caja: c
+            }, client);
+          });
+
           return Promise.all([
             Promise.all(proms_contactos),
             Promise.all(proms_formaciones),
             Promise.all(proms_subsidiarios),
-            Promise.all(proms_beneficiarios)
+            // Promise.all(proms_beneficiarios),
+            Promise.all(proms_cajas)
           ])
           .then(rs => id);
         })

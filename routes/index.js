@@ -46,6 +46,7 @@ router.use('/bancos', require('./bancos'));
 router.use('/usuarios', require('./usuarios'));
 router.use('/legajos', require('./legajos'));
 router.use('/tareas', require('./tareas'));
+router.use('/cajas-previsionales', require('./cajas-previsionales'));
 
 router.use('/personas', require('./personas'));
 
