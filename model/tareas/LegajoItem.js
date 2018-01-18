@@ -36,12 +36,12 @@ const table = sql.define({
 module.exports.table = table;
 
 function getIdItem(item, client) {
-  if (typeof item.id == "number") return Promise.resolve(item.id);
+  if (typeof item == "number") return Promise.resolve(item);
   return Item.add(item, client).then(item_nuevo => item_nuevo.id);
 }
 
 module.exports.add = function(item, client) {
-  return getIdItem(item, client)
+  return getIdItem(item.item, client)
   .then(id_item => {
     let query = table.insert(
         table.legajo.value(item.legajo),
