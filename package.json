@@ -13,7 +13,8 @@
     "addinvitado": "node ./tasks/databaseaddinvitado.js",
     "addusuarios": "node ./tasks/database/addusuarios.js",
 
-    "migracion": "node ./migraciones/generar.js"
+    "migracion-gen": "node ./migraciones/generar.js",
+    "migracion-run": "sh ./migraciones/run.sh"
   },
   "keywords": [
     "rest",

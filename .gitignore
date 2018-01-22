@@ -5,6 +5,7 @@ npm-debug.log
 
 migraciones/*
 !migraciones/generar.js
+!migraciones/run.sh
 
 files/fotos/*
 !files/fotos/.gitkeep

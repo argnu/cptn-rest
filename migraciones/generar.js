@@ -122,7 +122,7 @@ function createDir(name) {
 }
 
 function createFiles() {
-    return createDir(moment().format('YYYY-DD-MM'))
+    return createDir(moment().format('YYYY-MM-DD'))
     .then(dirname => Promise.all([
         openFile(path.join(dirname, 'positivos.sql')),
         openFile(path.join(dirname, 'negativos.sql')),
