@@ -8,26 +8,31 @@
 
 `npm install`
 
-### 3- Crear BD en Postgres
+### 3- Configurar Base de datos PostgreSQL
 
-Crear una base de datos y en caso de tener los datos hacer un restore de los datos migrados:
+#### a) Si la base de datos no existe crearla y restaurar backup:
 
-`pg_restore --no-privileges --no-owner -n public  -d basededatos -U usuario archivodebackup`
+* `pg_restore --no-privileges --no-owner -n public  -d basededatos -U usuario archivodebackup`
 
-### 4- Agregar datos extra (valores_globales, estados de boleta, etc.)
+* En caso de que la base sea una migración de la base de datos CPAGIN, es necesario configurar 
+valores iniciales:
 
-Ejecutar el script .sql denominado `add_values.sql`:
-
-`psql -U argnu -d cptn -f add_values.sql`
-
-### 5- Agregar usuarios
+`psql -d basededatos -U usuario -f add_values.sql`
 
 `npm run addinvitado`
 
 `node tasks/addusuarios.js`
 
 
-### 6- Configurar API
+#### b) Si la base de datos existe es necesario realizar los cambios de esquema:
+
+* `npm run genchange`:  para generar el script .sql de cambios. Se creará una nueva carpeta dentro de 
+la carpeta **esquema_cambios** con la fecha del día y cuyo contenido será el script .sql.
+
+* `psql -d basededatos -U usuario -f script.sql`: para ejecutar los cambios de esquema en la base de datos.
+
+
+### 4- Configurar API
 
 Crear un archivo en la carpeta raíz del proyecto con nombre `config.private` y
 el siguiente contenido:

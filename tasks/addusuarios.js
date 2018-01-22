@@ -80,6 +80,14 @@ Promise.all([
         apellido: 'Gentile',
         email: '',
         delegacion: 7
+    }),   
+    addUsuario({
+        id: 'GASPARROL',
+        password: 'TecSM.4367',
+        nombre: 'Leandro',
+        apellido: 'Gasparro',
+        email: '',
+        delegacion: 3
     })   
 ])
 .then(r => {
