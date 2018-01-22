@@ -6,12 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node_modules/nodemon/bin/nodemon.js index.js",
-    "migrate": "node ./tasks/migracion",
-    "create": "node ./tasks/create.js",
-    "drop": "node ./tasks/droptables.js",
-    "populate": "node ./tasks/populate.js",
-    "addinvitado": "node ./tasks/addinvitado.js",
-    "genchange": "node ./esquema_cambios/generar.js"
+
+    "create": "node ./tasks/database/create.js",
+    "clean": "node ./tasks/database/clean.js",
+    "populate": "node ./tasks/database/populate.js",
+    "addinvitado": "node ./tasks/databaseaddinvitado.js",
+    "addusuarios": "node ./tasks/database/addusuarios.js",
+
+    "migracion": "node ./migraciones/generar.js"
   },
   "keywords": [
     "rest",

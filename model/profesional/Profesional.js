@@ -1,5 +1,5 @@
 const config = require('../../config.private');
-const connector = require('../../connector');
+const connector = require('../../db/connector');
 const Contacto = require('../Contacto');
 const ProfesionalCajaPrevisional = require('./ProfesionalCajaPrevisional');
 const Formacion = require('./Formacion');
@@ -10,7 +10,7 @@ const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
 const TipoCondicionAfip = require('../tipos/TipoCondicionAfip');
-const utils = require(`${__base}/utils`);
+const utils = require(`../../utils`);
 
 const sql = require('sql');
 sql.setDialect('postgres');

@@ -1,9 +1,9 @@
 const moment = require('moment');
-const connector = require(`${__base}/connector`);
+const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const utils = require(`${__base}/utils`);
+const utils = require(`../../utils`);
 const VolantePagoBoleta = require('./VolantePagoBoleta');
 const Boleta = require('./Boleta');
 

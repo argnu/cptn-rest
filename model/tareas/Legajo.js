@@ -1,14 +1,14 @@
 const moment = require('moment');
-const connector = require(`${__base}/connector`);
+const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const LegajoItem = require('./LegajoItem')
 const LegajoComitente = require('./LegajoComitente')
 const Item = require('./Item')
-const Domicilio = require(`${__base}/model/Domicilio`);
-const Boleta = require(`${__base}/model/cobranzas/Boleta`);
-const Persona = require(`${__base}/model/Persona`);
-const utils = require(`${__base}/utils`);
+const Domicilio = require(`../Domicilio`);
+const Boleta = require(`../cobranzas/Boleta`);
+const Persona = require(`../Persona`);
+const utils = require(`../../utils`);
 
 
 const table = sql.define({

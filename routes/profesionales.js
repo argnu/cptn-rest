@@ -8,7 +8,7 @@ router.use(bodyParser.json());
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let dest = (file.fieldname == 'firma') ? 'firmas' : 'fotos';
-    cb(null, `${__base}/files/${dest}`)
+    cb(null, path.join(__dirname, '..', 'files', dest))
   },
 
   filename: function (req, file, cb) {
@@ -68,7 +68,7 @@ router.get('/:id/subsidiarios', function(req, res) {
 
 router.get('/:id/foto', function (req, res) {
   model.Profesional.getFoto(req.params.id)
-    .then(r => res.sendFile(path.join(__base, 'files/fotos', r)))
+    .then(r => res.sendFile(path.join(__dirname, '..', 'files/fotos', r)))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });
@@ -89,7 +89,7 @@ router.put('/:id/foto', upload.fields([{ name: 'foto', maxCount: 1 }]), function
 
 router.get('/:id/firma', function (req, res) {
   model.Profesional.getFirma(req.params.id)
-    .then(r => res.sendFile(path.join(__base, 'files/firmas', r)))
+    .then(r => res.sendFile(path.join(__dirname, '..', 'files/firmas', r)))
     .catch(e => {
       console.error(e);
       res.status(500).json({ msg: 'Error en el servidor' });

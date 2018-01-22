@@ -1,5 +1,5 @@
 const dot = require('dot-object');
-const connector = require(`${__base}/connector`);
+const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 

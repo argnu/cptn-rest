@@ -1,10 +1,10 @@
-const connector = require(`${__base}/connector`);
+const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const utils = require(`${__base}/utils`);
-const Matricula = require(`${__base}/model/Matricula`);
-const Profesional = require(`${__base}/model/profesional/Profesional`);
+const utils = require(`../../utils`);
+const Matricula = require(`../Matricula`);
+const Profesional = require(`../profesional/Profesional`);
 
 
 const table = sql.define({

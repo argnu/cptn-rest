@@ -1,6 +1,6 @@
 const path = require('path');
-const connector = require('../db/connector');
-const model = require('../model');
+const connector = require('../../db/connector');
+const model = require('../../model');
 
 
 function createTable(table) {

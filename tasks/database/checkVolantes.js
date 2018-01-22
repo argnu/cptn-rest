@@ -1,5 +1,5 @@
-const connector = require('../connector');
-const model = require('../model');
+const connector = require('../../db/connector');
+const model = require('../../model');
 
 function getVolantesVencidos() {
     let table = model.VolantePago.table;
@@ -11,7 +11,6 @@ function getVolantesVencidos() {
 
     return connector.execQuery(query).then(r => r.rows);
 }
-
 
 //ESTADO 1 ES 'PENDIENTE DE PAGO'
 function updateBoletas(boletas) {
