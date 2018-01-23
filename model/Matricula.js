@@ -243,7 +243,7 @@ module.exports.aprobar = function(matricula) {
             matricula.estado = 12; // 12 es 'Pendiente de Pago'
             matricula.numeroMatricula = numero_nueva;            
 
-            return Solicitud.patch(solicitud.id, { estado: 'aprobada' }, connection.client)  
+            return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)  
             .then(r => addMatricula(matricula, connection.client))
             .then(r => {
               matricula_added = r;
@@ -340,6 +340,14 @@ module.exports.getAll = function (params) {
   if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
   if (params.cuit) query.where(Entidad.table.cuit.ilike(`%${params.cuit}%`));
 
+  if (params.sort.numeroMatricula) query.order(table.numeroMatricula[params.sort.numeroMatricula]);
+  else if (params.sort.estado) query.order(table.estado[params.sort.estado]);
+  else if (params.sort.nombreEmpresa) query.order(Empresa.table.nombre[params.sort.nombreEmpresa]);
+  else if (params.sort.nombre) query.order(Profesional.table.nombre[params.sort.nombre]);
+  else if (params.sort.apellido) query.order(Profesional.table.apellido[params.sort.apellido]);
+  else if (params.sort.dni) query.order(Profesional.table.dni[params.sort.dni]);
+  else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);
+  
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);
 

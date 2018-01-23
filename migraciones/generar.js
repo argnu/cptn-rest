@@ -8,37 +8,56 @@ init()
 .then(([files, tables_bd]) => {
 
     function checkTypes(column, column_bd) {
-        if (column.dataType == 'serial') return; //POR EL MOMENTO LOS AUTOINCREMENT NO LOS TOCO
-        
-        if (column.dataType == 'float' && !column_bd.type == 'double precision') 
-            addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE double precision USING "${column.name}"::double precision`);
-        else return;
-
-        if (column.dataType == 'int' && !column_bd.type == 'integer') 
+        if (column.dataType == 'serial' && !(column_bd.type == 'integer')) {
             addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE integer USING "${column.name}"::integer`);
-        else return;
+            addQuery(files.negativos, `CREATE SEQUENCE "${column.table._name}_${column.name}_seq";`);
+            return addQuery(files.negativos, `ALTER SEQUENCE "${column.table._name}_${column.name}_seq" OWNED BY "${column.table._name}.${column.name}";`);
+        }
+        
+        if (column.dataType == 'float' && !(column_bd.type == 'double precision')) 
+            return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE double precision USING "${column.name}"::double precision`);
+        else if (column_bd.type == 'double precision') return;
 
-        if (column.dataType.toLowerCase().includes('varchar') && !column_bd.type == "character varying")
-            addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
-        else return;
+        if (column.dataType == 'int' && !(column_bd.type == 'integer')) 
+            return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE integer USING "${column.name}"::integer`);
+        else if (column_bd.type == 'integer') return;
 
-        if (column.dataType.toLowerCase().includes('varchar') && column_bd.type == "character varying") {
+        if (column.dataType.toLowerCase().includes('varchar') && !(column_bd.type == "character varying"))
+            return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+        else if (column_bd.type == "character varying") {
             let longitud = +column.dataType.match(/\d+/)[0];
             if (longitud != column_bd.length) 
-               addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+               return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
             else return;
         }
-        else return;
 
         if (column.dataType != column_bd.type)
-            addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
     }
 
     function checkForeignKeys(tablename, foreignKeys, constraints_bd) {
         for(let fkey of foreignKeys) {
             let fkey_name = `${tablename}_${fkey.columns[0]}_fkey`;
             if (!constraints_bd.find(k => k.name == fkey_name)) 
-                addQuery(files.negativos, `ALTER TABLE "${tablename}" ADD FOREIGN KEY("${fkey.columns[0]}") REFERENCES ${fkey.table}("${fkey.refColumns[0]}")`);
+                addQuery(files.negativos, `ALTER TABLE "${tablename}" ADD FOREIGN KEY("${fkey.columns[0]}") REFERENCES ${fkey.table}("${fkey.refColumns[0]}")`
+                    + (fkey.onDelete ? ` ON DELETE ${fkey.onDelete} ` : '')
+                    + (fkey.onUpdate ? ` ON UPDATE ${fkey.onUpdate} ` : '')
+                );
+            else {
+                let band = false;
+                let constraint = constraints_bd.find(k => k.name == fkey_name);
+                let query_chg = `ALTER TABLE ${tablename} DROP CONSTRAINT "${constraint.name}";\n`;
+                query_chg += `ALTER TABLE ${tablename} ADD FOREIGN KEY("${fkey.columns[0]}" REFERENCES ${fkey.table}("${fkey.refColumns[0]}");\n`;
+                if (fkey.onDelete && fkey.onDelete.toUpperCase() != constraint.on_delete) { 
+                    band = true;
+                    query_chg += ` ON DELETE ${fkey.onDelete.toUpperCase()};`;
+                }
+                if (fkey.onUpdate && fkey.onUpdate.toUpperCase() != constraint.on_update) { 
+                    band = true;
+                    query_chg += ` ON UPDATE ${fkey.onUpdate.toUpperCase()};`;
+                }
+                if (band) addQuery(files.negativos, query_chg.substring(0, query_chg.length-1));
+            }
         }
     }
 
@@ -97,10 +116,11 @@ init()
 function init() {
     let files = {};
     return createFiles()
-    .then(([f_pos, f_neg, f_mig]) => {
+    .then(([f_pos, f_neg, f_mig, f_fin]) => {
         files.positivos = f_pos;
         files.negativos = f_neg;
         files.migracion = f_mig;
+        files.fin = f_fin;
         return db.schema.getTables();
     })
     .then(tables => {
@@ -124,17 +144,26 @@ function createDir(name) {
 function createFiles() {
     return createDir(moment().format('YYYY-MM-DD'))
     .then(dirname => Promise.all([
-        openFile(path.join(dirname, 'positivos.sql')),
-        openFile(path.join(dirname, 'negativos.sql')),
-        openFile(path.join(dirname, 'migracion.js'))
+        openFile(path.join(dirname, '01. added.sql')),
+        openFile(path.join(dirname, '03. changes.sql')),
+        openFile(path.join(dirname, '02. pre_change.sql')),
+        openFile(path.join(dirname, '04. post_change.sql'))
     ]))
 }
 
-function openFile(file) {
+function openFile(file, content) {
     return new Promise(function(resolve, reject) {
         fs.open(file, 'w+', (err, fd) => {
             if (err) reject(err);
-            else resolve(fd);
+            else { 
+                if (content) {
+                    fs.appendFile(file, content, (err) => {
+                        if (err) reject(err);
+                        else resolve(fd);
+                    });                    
+                }
+                else resolve(fd);
+            }
         });            
     })
 }
@@ -148,3 +177,19 @@ function addQuery(file, query) {
     });
 }
 
+templateJS = (msg) => {
+    return `
+const model = require('../../model');
+const connector = require('../../db/connector');
+
+Promise
+.then(r => {
+    console.log('${msg}');
+    process.exit();
+})
+.catch(e => {
+    console.error(e);
+    process.exit();
+})
+    `
+}

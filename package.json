@@ -10,7 +10,7 @@
     "create": "node ./tasks/database/create.js",
     "clean": "node ./tasks/database/clean.js",
     "populate": "node ./tasks/database/populate.js",
-    "addinvitado": "node ./tasks/databaseaddinvitado.js",
+    "addinvitado": "node ./tasks/database/addinvitado.js",
     "addusuarios": "node ./tasks/database/addusuarios.js",
 
     "migracion-gen": "node ./migraciones/generar.js",

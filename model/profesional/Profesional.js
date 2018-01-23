@@ -229,8 +229,9 @@ const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.i
 
 module.exports.getAll = function(params) {
   let profesionales = [];
-  let query = table.select(...select_atributes)
+  let query = table.select(select_atributes)
   .from(select_from)
+
 
   if (params.dni) query.where(table.dni.equals(params.dni));
   if (params.limit) query.limit(+params.limit);
@@ -277,13 +278,12 @@ function getDatosProfesional(profesional) {
 }
 
 module.exports.get = function(id) {
-  let query = table.select(...select_atributes)
+  let query = table.select(select_atributes)
   .from(select_from)
   .where(table.id.equals(id))
   .toQuery();
 
   let profesional;
-
   return connector.execQuery(query)
   .then(r => {
     profesional = r.rows[0];
@@ -448,5 +448,4 @@ module.exports.patch = function (id, profesional, client) {
     .toQuery();
     
   return connector.execQuery(query, client)
-  .then(r => r.rows[0]);
 }

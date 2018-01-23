@@ -14,6 +14,18 @@ const table = sql.define({
       name: 'nombre',
       dataType: 'varchar(255)',
       notNull: true
+    },
+    {
+      name: 'domicilio',
+      dataType: 'int'
+    }
+  ],
+
+  foreignKeys: [
+    {
+      table: 'domicilio',
+      columns: [ 'domicilio' ],
+      refColumns: [ 'id' ]
     }
   ]
 });
