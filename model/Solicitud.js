@@ -169,13 +169,15 @@ module.exports.getAll = function(params) {
     if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
 
     /* ---------------- SORTING ------------------ */
-    if (params.sort.numero) query.order(table.numero[params.sort.numero]);
-    else if (params.sort.estado) query.order(table.estado[params.sort.estado]);
-    else if (params.sort.nombreEmpresa) query.order(Empresa.table.nombre[params.sort.nombreEmpresa]);
-    else if (params.sort.nombre) query.order(Profesional.table.nombre[params.sort.nombre]);
-    else if (params.sort.apellido) query.order(Profesional.table.apellido[params.sort.apellido]);
-    else if (params.sort.dni) query.order(Profesional.table.dni[params.sort.dni]);
-    else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);    
+    if (params.sort) {
+      if (params.sort.numero) query.order(table.numero[params.sort.numero]);
+      else if (params.sort.estado) query.order(table.estado[params.sort.estado]);
+      else if (params.sort.nombreEmpresa) query.order(Empresa.table.nombre[params.sort.nombreEmpresa]);
+      else if (params.sort.nombre) query.order(Profesional.table.nombre[params.sort.nombre]);
+      else if (params.sort.apellido) query.order(Profesional.table.apellido[params.sort.apellido]);
+      else if (params.sort.dni) query.order(Profesional.table.dni[params.sort.dni]);
+      else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);   
+    } 
 
 
     /* ---------------- LIMIT AND OFFSET ------------------ */
