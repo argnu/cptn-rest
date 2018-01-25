@@ -58,7 +58,7 @@ module.exports.get = function(id) {
 
 module.exports.getAll = function(params) {
   let query = table.select(table.star()).from(table);
-  if (params.sort && params.sort.valor) query.order(table.valor[params.sort.valor]);
+  if (params.sort && params.sort.valor) query.order(table.descripcion[params.sort.valor]);
 
   return connector.execQuery(query.toQuery())
   .then(r => r.rows);

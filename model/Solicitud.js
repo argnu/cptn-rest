@@ -1,4 +1,5 @@
 const connector = require('../db/connector');
+const utils = require('../utils');
 const sql = require('sql');
 sql.setDialect('postgres');
 const Profesional = require('./profesional/Profesional');
@@ -161,7 +162,7 @@ module.exports.getAll = function(params) {
     /* ----------------- FILTERS  ---------------- */
     if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
     if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
-    if (params.numero) query.where(table.numero.equals(params.numero));
+    if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
 
     if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
     if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));

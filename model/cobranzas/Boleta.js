@@ -198,7 +198,7 @@ function addDatosBoleta(boleta, client) {
                     table.numero_comprobante.value(boleta.numero_comprobante),
                     table.numero_solicitud.value(boleta.numero_solicitud),
                     table.numero_condonacion.value(boleta.numero_condonacion),
-                    table.fecha_update.value(utils.checkNull(boleta.fecha_update)),
+                    table.fecha_update.value(boleta.fecha_update ? boleta.fecha_update : moment()),
                     table.delegacion.value(boleta.delegacion)
                 )
                 .returning(table.id, table.numero)
@@ -215,7 +215,8 @@ module.exports.add = function (boleta, client) {
     return addDatosBoleta(boleta, client)
     .then(boleta_added => {
         boleta_nueva = boleta_added;
-        let proms_items = boleta.items.map(item => {
+        let proms_items = boleta.items.map((item, index) => {
+            item.item = item.item ? item.item : index;
             item.boleta = boleta_nueva.id;
             return BoletaItem.add(item, client);
         })

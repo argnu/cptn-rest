@@ -85,6 +85,10 @@ const table = sql.define({
     {
       name: 'updated_by',
       dataType: 'varchar(45)',
+    },     
+    {
+      name: 'eliminado',
+      dataType: 'boolean',
     }     
   ],
 
@@ -323,14 +327,14 @@ function getTotal(params) {
 
 module.exports.getAll = function (params) {
   let matriculas = [];
-  let query = table.select(
-    ...select.atributes
-  ).from(
+  let query = table.select(select.atributes)
+  .from(
     table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
     .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
     .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
     .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))    
-  );
+  )
+  .where(table.eliminado.equals(false));
 
   if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));

@@ -86,6 +86,12 @@ router.put('/:id',
       });
 });
 
+router.patch('/:id', function(req, res) {
+  model.Solicitud.patch(req.params.id, req.body)
+    .then(r => res.status(200).json(r))
+    .catch(e => handler(e, res));
+});
+
 router.delete('/:id', function(req, res) {
 
 });

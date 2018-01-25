@@ -22,7 +22,12 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-
+  model.Boleta.add(req.body)
+    .then(r => res.json(r))
+    .catch(e => {
+      console.error(e);
+      res.status(500).json({ msg: 'Error en el servidor' });
+    });
 });
 
 router.put('/:id', function(req, res) {

@@ -4,6 +4,7 @@
 
 -  **Nueva Entidad**: `TipoEstadoSolicitud`.
 - **Delegacion**: agregado atributo domicilio, enlace con entidad Domicilio.
+- Atributo **eliminado** para `TipoEstadoMatricula` y `Matricula`.
 
 ## Modificado
 

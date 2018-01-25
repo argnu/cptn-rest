@@ -37,7 +37,7 @@ module.exports.getAll = function(params) {
   let query = table.select(table.id, table.nombre)
   .from(table.join(Departamento.table).on(table.departamento.equals(Departamento.table.id)));
 
-  if (params.departamento_id) query.where(table.departamento.equals(params.departamento_id));
+  if (params.departamento_id && !isNaN(+params.departamento_id)) query.where(table.departamento.equals(+params.departamento_id));
   if (params.departamento_text) query.where(Departamento.table.nombre.equals(params.departamento_text));
 
   return new Promise(function(resolve, reject) {
