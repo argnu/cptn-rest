@@ -216,7 +216,7 @@ module.exports.add = function (boleta, client) {
     .then(boleta_added => {
         boleta_nueva = boleta_added;
         let proms_items = boleta.items.map((item, index) => {
-            item.item = item.item ? item.item : index;
+            item.item = item.item ? item.item : (index + 1); 
             item.boleta = boleta_nueva.id;
             return BoletaItem.add(item, client);
         })
