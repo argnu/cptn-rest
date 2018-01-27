@@ -205,22 +205,34 @@ module.exports.add = function (profesional, client) {
   })
 }
 
-const select_atributes = [table.id,
-Entidad.table.tipo, Entidad.table.cuit,
-table.nombre, table.apellido, table.dni,
-table.fechaNacimiento, table.lugarNacimiento, table.nacionalidad,
-table.relacionDependencia, table.independiente, table.jubilado,
-TipoSexo.table.valor.as('sexo'),
-TipoEstadoCivil.table.valor.as('estadoCivil'),
-TipoCondicionAfip.table.valor.as('condafip'),
-table.observaciones, table.empresa,
-table.serviciosPrestados,
-table.foto, table.firma,
-table.publicarAcervo, table.publicarCelular,
-table.publicarDireccion, table.publicarEmail
+const select = [
+  table.id,
+  Entidad.table.tipo, 
+  Entidad.table.cuit,
+  table.nombre, 
+  table.apellido, 
+  table.dni,
+  table.fechaNacimiento.cast('varchar(10)'),
+  table.lugarNacimiento, 
+  table.nacionalidad,
+  table.relacionDependencia, 
+  table.independiente, 
+  table.jubilado,
+  TipoSexo.table.valor.as('sexo'),
+  TipoEstadoCivil.table.valor.as('estadoCivil'),
+  TipoCondicionAfip.table.valor.as('condafip'),
+  table.observaciones, 
+  table.empresa,
+  table.serviciosPrestados,
+  table.foto, 
+  table.firma,
+  table.publicarAcervo, 
+  table.publicarCelular,
+  table.publicarDireccion, 
+  table.publicarEmail
 ];
 
-const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
+const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
@@ -229,8 +241,8 @@ const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.i
 
 module.exports.getAll = function(params) {
   let profesionales = [];
-  let query = table.select(select_atributes)
-  .from(select_from)
+  let query = table.select(select)
+  .from(from)
 
 
   if (params.dni) query.where(table.dni.equals(params.dni));
@@ -278,8 +290,8 @@ function getDatosProfesional(profesional) {
 }
 
 module.exports.get = function(id) {
-  let query = table.select(select_atributes)
-  .from(select_from)
+  let query = table.select(select)
+  .from(from)
   .where(table.id.equals(id))
   .toQuery();
 

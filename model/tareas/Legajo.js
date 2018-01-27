@@ -232,9 +232,46 @@ function getItemData(id_item) {
 }
 
 
+const select = [
+    table.id,
+    table.solicitud,
+    table.numero_legajo,
+    table.tipo,
+    table.matricula,
+    table.fecha_solicitud.cast('varchar(10)'),
+    table.domicilio,
+    table.nomenclatura,
+    table.estado,
+    table.subcategoria,
+    table.incumbencia,
+    table.honorarios_presupuestados,
+    table.forma_pago,
+    table.plazo_cumplimiento.cast('varchar(10)'),
+    table.honorarios_reales,
+    table.porcentaje_cumplimiento,
+    table.finalizacion_tarea.cast('varchar(10)'),
+    table.tarea_publica,
+    table.dependencia,
+    table.aporte_bruto,
+    table.aporte_neto,
+    table.aporte_neto_bonificacion,
+    table.cantidad_planos,
+    table.observaciones,
+    table.observaciones_internas,
+    table.informacion_adicional,
+    table.evaluador,
+    table.delegacion,
+    table.numero_acta,
+    table.operador_carga,
+    table.operador_aprobacion,
+    table.created_by,
+    table.updated_by
+]
+
+
 module.exports.getAll = function (params) {
     let legajos = [];
-    let query = table.select(table.star()).from(table);
+    let query = table.select(select).from(table);
     query.where(table.tipo.notEquals(0)); // EVITAR LOS ANULADOS
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
 
@@ -260,7 +297,7 @@ module.exports.getAll = function (params) {
 
 module.exports.get = function (id) {
     let legajos;
-    let query = table.select(table.star())
+    let query = table.select(select)
         .from(table)
         .where(table.id.equals(id));
 

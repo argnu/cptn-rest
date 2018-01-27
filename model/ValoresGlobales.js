@@ -33,8 +33,16 @@ const table = sql.define({
 
 module.exports.table = table;
 
+const select = [
+    table.id,
+    table.fecha.cast('varchar(10)'),
+    table.nombre,
+    table.descripcion,
+    table.valor
+]
+
 module.exports.getAll = function (params) {
-    let query = table.select(table.star())
+    let query = table.select(select)
 
     if (params.descripcion) query.where(table.descripcion.equals(params.descripcion));
     if (params.nombre) query.where(table.nombre.equals(params.nombre));
@@ -45,7 +53,7 @@ module.exports.getAll = function (params) {
 }
 
 module.exports.get = function (id) {
-    let query = table.select(table.start()).where(table.id.equals(id)).toQuery();
+    let query = table.select(select).where(table.id.equals(id)).toQuery();
 
     return connector.execQuery(query)
         .then(r => r.rows[0]);

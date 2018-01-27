@@ -102,6 +102,22 @@ const table = sql.define({
 
 module.exports.table = table;
 
+const select = [
+    table.id,
+    table.numero,
+    table.matricula,
+    table.tipo_comprobante,
+    table.fecha.cast('varchar(10)'),
+    table.total,
+    table.estado,
+    table.fecha_vencimiento.cast('varchar(10)'),
+    table.numero_comprobante,
+    table.numero_solicitud,
+    table.numero_condonacion,
+    table.fecha_update.cast('varchar(10)'),
+    table.delegacion,
+]
+
 function getData(b) {
     return Promise.all([
         BoletaItem.getByBoleta(b.id),
@@ -113,8 +129,7 @@ function getData(b) {
 module.exports.getAll = function (params) {
     let boletas = [];
 
-    let query = table.select(table.star())
-        .from(table);
+    let query = table.select(select)
 
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
     if (params.estado) query.where(table.estado.equals(params.estado));
@@ -144,8 +159,7 @@ module.exports.getAll = function (params) {
 }
 
 module.exports.get = function (id) {
-    let query = table.select(table.star())
-        .from(table)
+    let query = table.select(select)
         .where(table.id.equals(id))
         .toQuery();
 
@@ -165,8 +179,7 @@ module.exports.get = function (id) {
 }
 
 module.exports.getByNumero = function(numero) {
-    let query = table.select(table.star())
-        .from(table)
+    let query = table.select(select)
         .where(table.numero.equals(numero))
         .toQuery();
 

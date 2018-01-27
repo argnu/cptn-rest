@@ -64,8 +64,18 @@ function esTarjeta(id) {
     return false;
 }
 
+const select = [
+    table.id,
+    table.comprobante,
+    table.item,
+    table.fecha_pago.cast('varchar(10)'),
+    table.importe,
+    table.forma_pago,
+    table.compensado
+]
+
 module.exports.getByComprobante = function (id) {
-    let query = table.select(table.star())
+    let query = table.select(select)
         .from(table)
         .where(table.comprobante.equals(id))
         .toQuery();

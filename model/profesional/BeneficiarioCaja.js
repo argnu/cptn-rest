@@ -79,12 +79,19 @@ module.exports.add = function(beneficiario, client) {
          });
 };
 
+
+const select = [
+  table.id, 
+  table.dni, 
+  table.nombre, 
+  table.apellido,
+  table.fechaNacimiento.cast('varchar(10)'), 
+  table.vinculo,
+  table.invalidez  
+]
+
 module.exports.getAll = function(id_profesional) {
-  let query = table.select(
-    table.id, table.dni, table.nombre, table.apellido,
-    table.fechaNacimiento, table.vinculo,
-    table.invalidez
-  ).where(table.profesional.equals(id_profesional))
+  let query = table.select(select).where(table.profesional.equals(id_profesional))
   .toQuery();
 
   return connector.execQuery(query)

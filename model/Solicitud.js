@@ -136,28 +136,27 @@ module.exports.add = function(solicitud) {
   });          
 }
 
-const select = {
-  atributes: [
-    table.id,
-    table.fecha,
-    table.numero,
-    table.updated_by,
-    table.created_by,
-    table.entidad,
-    TipoEstadoSolicitud.table.valor.as('estado'),
-    Delegacion.table.nombre.as('delegacion'),
-    Entidad.table.tipo.as('tipoEntidad')
-  ],
-  from: table.join(TipoEstadoSolicitud.table).on(table.estado.equals(TipoEstadoSolicitud.table.id))
-             .join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))
-             .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-             .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-             .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-}
+const select = [
+  table.id,
+  table.fecha.cast('varchar(10)'),
+  table.numero,
+  table.updated_by,
+  table.created_by,
+  table.entidad,
+  TipoEstadoSolicitud.table.valor.as('estado'),
+  Delegacion.table.nombre.as('delegacion'),
+  Entidad.table.tipo.as('tipoEntidad')
+]
+
+const from = table.join(TipoEstadoSolicitud.table).on(table.estado.equals(TipoEstadoSolicitud.table.id))
+.join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))
+.join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+.leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+.leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
 
 module.exports.getAll = function(params) {
     let solicitudes = [];
-    let query = table.select(select.atributes).from(select.from);
+    let query = table.select(select).from(from);
 
     /* ----------------- FILTERS  ---------------- */
     if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
@@ -208,8 +207,8 @@ module.exports.getAll = function(params) {
 
 module.exports.get = function(id) {
   let solicitud = {};
-  let query = table.select(...select.atributes)
-                   .from(select.from)
+  let query = table.select(...select)
+                   .from(from)
                    .where(table.id.equals(id))
                    .toQuery();
 

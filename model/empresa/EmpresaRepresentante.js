@@ -119,17 +119,21 @@ function getMatriculaExterna(id) {
   return connector.execQuery(query).then(r => r.rows[0]);  
 }
 
+
+const select = [
+  table.id, table.tipo,
+  table.matricula,
+  table.fechaInicio.cast('varchar(10)'),
+  table.fechaFin.cast('varchar(10)'),
+  Matricula.table.numeroMatricula,
+  Profesional.table.nombre,
+  Profesional.table.apellido,
+  Profesional.table.dni  
+]
+
+
 module.exports.getAll = function(id_empresa) {
-  let query = table.select(
-    table.id, table.tipo,
-    table.matricula,
-    table.fechaInicio,
-    table.fechaFin,
-    Matricula.table.numeroMatricula,
-    Profesional.table.nombre,
-    Profesional.table.apellido,
-    Profesional.table.dni
-  )
+  let query = table.select(select)
   .from(
     table.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
          .join(Profesional.table).on(Matricula.table.entidad.equals(Profesional.table.id))

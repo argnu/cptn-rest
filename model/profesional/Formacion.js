@@ -70,13 +70,16 @@ module.exports.add = function (formacion, client) {
 };
 
 
+const select = [
+  table.id,
+  table.fecha.cast('varchar(10)'), 
+  Titulo.table.nombre.as('titulo'),
+  Institucion.table.nombre.as('institucion'),
+  TipoFormacion.table.valor.as('tipo')
+]
+
 module.exports.getAll = function(id_profesional) {
-  let query = table.select(
-    table.id,
-    Titulo.table.nombre.as('titulo'),
-    table.fecha, Institucion.table.nombre.as('institucion'),
-    TipoFormacion.table.valor.as('tipo')
-  )
+  let query = table.select(select)
   .from(
      table.join(Institucion.table).on(table.institucion.equals(Institucion.table.id))
           .join(Titulo.table).on(table.titulo.equals(Titulo.table.id))

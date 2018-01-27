@@ -90,6 +90,21 @@ const table = sql.define({
 
 module.exports.table = table;
 
+const select = [
+  table.id,
+  table.matricula,
+  table.fecha.cast('varchar(10)'),
+  table.fecha_vencimiento.cast('varchar(10)'),
+  table.subtotal,
+  table.interes_total,
+  table.bonificacion_total,
+  table.importe_total,
+  table.delegacion,
+  table.pagado,
+  table.created_by,
+  table.updated_by
+]
+
 function addVolante(volante, client) {
   let query = table.insert(
     table.created_by.value(volante.operador),
@@ -180,7 +195,7 @@ module.exports.getBoletas = getBoletas;
 
 module.exports.get = function(id) {
   let volante;
-  let query = table.select(table.star())
+  let query = table.select(select)
                    .where(table.id.equals(id))
                    .toQuery();
 
@@ -197,7 +212,7 @@ module.exports.get = function(id) {
 
 module.exports.getAll = function(params) {
   let volantes = [];
-  let query = table.select(table.star()).from(table);
+  let query = table.select(select).from(table);
 
   if (params.matricula) query.where(table.matricula.equals(params.matricula));
   if (params.pagado) query.where(table.pagado.equals(params.pagado == 'true'));

@@ -282,18 +282,22 @@ module.exports.aprobar = function(matricula) {
 }
 
 
-const select = {
-  atributes: [
-    table.id, table.legajo, table.numeroMatricula,
-    TipoEstadoMatricula.table.valor.as('estado'),
-    table.fechaResolucion, table.numeroActa,
-    table.entidad, table.solicitud,
-    table.fechaBaja, table.observaciones,
-    table.notasPrivadas, table.asientoBajaF,
-    table.codBajaF,
-    Entidad.table.tipo.as('tipoEntidad')
-  ]
-};
+const select = [
+  table.id, 
+  table.legajo, 
+  table.numeroMatricula,
+  table.fechaResolucion.cast('varchar(10)'), 
+  table.numeroActa,
+  table.entidad, 
+  table.solicitud,
+  table.fechaBaja.cast('varchar(10)'), 
+  table.observaciones,
+  table.notasPrivadas, 
+  table.asientoBajaF,
+  table.codBajaF,
+  TipoEstadoMatricula.table.valor.as('estado'),
+  Entidad.table.tipo.as('tipoEntidad')
+];
 
 
 function getTotal(params) {
@@ -327,7 +331,7 @@ function getTotal(params) {
 
 module.exports.getAll = function (params) {
   let matriculas = [];
-  let query = table.select(select.atributes)
+  let query = table.select(select)
   .from(
     table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
     .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
@@ -381,7 +385,7 @@ module.exports.getAll = function (params) {
 
 module.exports.get = function (id) {
   let solicitud = {};
-  let query = table.select(...select.atributes)
+  let query = table.select(...select)
                     .from(
                       table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
                       .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))

@@ -136,28 +136,31 @@ module.exports.add = function(empresa, client) {
 }
 
 
-const select_atributes = [table.id,
-Entidad.table.tipo,
-table.nombre, table.fechaInicio,
-table.fechaConstitucion,
-TipoEmpresa.table.valor.as('tipoEmpresa'),
-TipoSociedad.table.valor.as('tipoSociedad'),
-TipoCondicionAfip.table.valor.as('condafip'),
-Entidad.table.cuit,
+const select = [
+  table.id,
+  table.nombre, 
+  table.fechaInicio.cast('varchar(10)'),
+  table.fechaConstitucion.cast('varchar(10)'),
+  Entidad.table.tipo,
+  TipoEmpresa.table.valor.as('tipoEmpresa'),
+  TipoSociedad.table.valor.as('tipoSociedad'),
+  TipoCondicionAfip.table.valor.as('condafip'),
+  Entidad.table.cuit,
 ];
 
-const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
+const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
                          .leftJoin(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
                          .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
 
-module.exports.getAll = function() {
+module.exports.getAll = function(params) {
   let empresas = [];
-  let query = table.select(...select_atributes)
-                  .from(select_from)
-                  .toQuery();
+  let query = table.select(select).from(from)
 
-  return connector.execQuery(query)
+  if (params.limit) query.limit(+params.limit);
+  if (params.limit && params.offset) query.offset(+params.offset);                  
+
+  return connector.execQuery(query.toQuery())
   .then(r => {
     empresas = r.rows;
     let proms = []
@@ -190,8 +193,8 @@ function getDatosEmpresa(empresa) {
 
 module.exports.get = function(id) {
   let empresa;
-  let query = table.select(...select_atributes)
-                  .from(select_from)
+  let query = table.select(select)
+                  .from(from)
                   .where(table.id.equals(id))
                   .toQuery();
 
