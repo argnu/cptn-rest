@@ -1,18 +1,16 @@
 {
   "name": "cptn-rest",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "RESTFull API para el Colegio de Profesionales Técnicos del Neuquén",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node_modules/nodemon/bin/nodemon.js index.js",
-
     "create": "node ./tasks/database/create.js",
     "clean": "node ./tasks/database/clean.js",
     "populate": "node ./tasks/database/populate.js",
     "addinvitado": "node ./tasks/database/addinvitado.js",
     "addusuarios": "node ./tasks/database/addusuarios.js",
-
     "migracion-gen": "node ./migraciones/generar.js",
     "migracion-run": "sh ./migraciones/run.sh"
   },
