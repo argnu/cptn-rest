@@ -155,7 +155,8 @@ function addMatricula(matricula, client) {
     table.numeroMatricula.value(matricula.numeroMatricula),
     table.fechaResolucion.value(utils.checkNull(matricula.fechaResolucion)),
     table.numeroActa.value(matricula.numeroActa),
-    table.estado.value(matricula.estado)
+    table.estado.value(matricula.estado),
+    table.eliminado.value(false)
   )
   .returning(table.id, table.entidad, table.numeroMatricula,
     table.solicitud, table.fechaResolucion, table.numeroActa
