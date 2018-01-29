@@ -191,7 +191,7 @@ module.exports.add = function (profesional, client) {
               return ProfesionalCajaPrevisional.add({
                 profesional: profesional.id,
                 caja: c
-              })
+              }, client)
             }) : [];
 
 
