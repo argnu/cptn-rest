@@ -1,3 +1,16 @@
+# 1.2.2 (2018-01-29)
+
+## Solucionado
+
+- **Matricula**: aprobación de matricula setea atributo `eliminado` en `false`.
+
+# 1.2.1 (2018-01-28)
+
+## Solucionado
+
+- **Solicitud**: getAll, filtros de paginación y retorno de `total` y `totalQuery`.
+
+
 # 1.2.0 (2018-01-28)
 
 ## Agregado
