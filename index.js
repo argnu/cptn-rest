@@ -1,5 +1,3 @@
-global.__base = __dirname;
-
 const express = require('express');
 const pg = require('pg');
 const jwt = require('jsonwebtoken');

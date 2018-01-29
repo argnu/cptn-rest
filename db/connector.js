@@ -2,14 +2,48 @@ const { Pool, Client } = require('pg')
 const config = require('../config.private');
 const pool = new Pool(config.db);
 
-module.exports.execQuery = function(query, client) {
+function execQuery(query, client) {
   client = (client instanceof Client) ? client : pool;
   return client.query(query.text, query.values);
 }
 
-module.exports.execRawQuery = function(query, client) {
+module.exports.execQuery = execQuery;
+
+function execRawQuery(query, client) {
   client = (client instanceof Client) ? client : pool;
   return client.query(query);
+}
+
+module.exports.execRawQuery = execRawQuery;
+
+module.exports.execQuerys = function(querys) {
+  function* getQuery() {
+      for(let q of querys) yield execQuery(q);
+  }
+
+  var it = getQuery();
+  function execQuerys() {
+    let q = it.next().value;
+    if (q) return q.then(r => execQuerys());
+    else return Promise.resolve();
+  }
+
+  return execQuerys();
+}
+
+module.exports.execRawQuerys = function(querys) {
+  function* getQuery() {
+      for(let q of querys) yield execRawQuery(q);
+  }
+
+  var it = getQuery();
+  function execQuerys() {
+    let q = it.next().value;
+    if (q) return q.then(r => execQuerys());
+    else return Promise.resolve();
+  }
+
+  return execQuerys();
 }
 
 module.exports.beginTransaction = function() {

@@ -1,11 +1,11 @@
-const config = require(`${__base}/config.private`);
+const config = require(`../../config.private`);
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const connector = require(`${__base}/connector`);
+const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const Delegacion = require(`${__base}/model/Delegacion`);
+const Delegacion = require(`../Delegacion`);
 const UsuarioDelegacion = require('./UsuarioDelegacion');
 
  const table = sql.define({

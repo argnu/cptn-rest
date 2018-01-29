@@ -8,7 +8,7 @@ router.use(bodyParser.json());
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let dest = (file.fieldname == 'firma') ? 'firmas' : 'fotos';
-    cb(null, `${__base}/files/${dest}`)
+    cb(null, path.join(__dirname, '..', 'files', dest))
   },
 
   filename: function (req, file, cb) {
@@ -84,6 +84,12 @@ router.put('/:id',
         console.error(e);
         res.status(500).json({ msg: 'Error en el servidor' });
       });
+});
+
+router.patch('/:id', function(req, res) {
+  model.Solicitud.patch(req.params.id, req.body)
+    .then(r => res.status(200).json(r))
+    .catch(e => handler(e, res));
 });
 
 router.delete('/:id', function(req, res) {

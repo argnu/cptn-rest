@@ -1,4 +1,4 @@
-const connector = require('../../connector');
+const connector = require('../../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -13,6 +13,10 @@ sql.setDialect('postgres');
       name: 'valor',
       dataType: 'varchar(255)',
       notNull: true
+    },
+    {
+      name: 'eliminado',
+      dataType: 'boolean'
     }
   ]
 });
@@ -20,7 +24,7 @@ sql.setDialect('postgres');
 module.exports.table = table;
 
 module.exports.getAll = function(params) {
-  let query = table.select(table.star()).from(table);
+  let query = table.select(table.star()).from(table).where(table.eliminado.equals(false));
   if (params.sort && params.sort.valor) query.order(table.valor[params.sort.valor]);
 
   return connector.execQuery(query.toQuery())

@@ -1,7 +1,6 @@
 const path = require('path');
-global.__base = path.join(__dirname, '..');
-const connector = require('../connector');
-const model = require('../model');
+const connector = require('../../db/connector');
+const model = require('../../model');
 
 function querysSecuencial(querys) {
   function* getQuery() {
@@ -107,6 +106,14 @@ function populateEstadoLegajo () {
   return querysSecuencial(querys);
 }
 
+function populateEstadoSolicitud () {
+  let querys = [];
+  querys.push(model.TipoEstadoSolicitud.table.insert(model.TipoEstadoSolicitud.table.id.value(1), model.TipoEstadoSolicitud.table.valor.value('Pendiente')).toQuery());
+  querys.push(model.TipoEstadoSolicitud.table.insert(model.TipoEstadoSolicitud.table.id.value(2), model.TipoEstadoSolicitud.table.valor.value('Aprobada')).toQuery());
+  querys.push(model.TipoEstadoSolicitud.table.insert(model.TipoEstadoSolicitud.table.id.value(3), model.TipoEstadoSolicitud.table.valor.value('Rechazada')).toQuery());
+  return querysSecuencial(querys);
+}
+
 function populate() {
   return Promise.all([
     populateEstadoCivil(),
@@ -117,7 +124,8 @@ function populate() {
     populateSociedad(),
     populateEmpresa(),
     populateAfip(),
-    populateEstadoLegajo()
+    populateEstadoLegajo(),
+    populateEstadoSolicitud()
   ]);
 }
 

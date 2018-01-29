@@ -1,8 +1,8 @@
-const connector = require(`${__base}/connector`);
+const connector = require(`../../../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
-const model = require(`${__base}/model`);
-const utils = require(`${__base}/tasks/migracion/utils`);
+const model = require(`../../../../model`);
+const utils = require(`../../utils`);
 
 const addCategoria = (categoria)  => {
     let table = model.tareas.Categoria.table;

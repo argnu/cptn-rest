@@ -12,3 +12,7 @@ module.exports.getFloat = function(value) {
   return value && value.length ? value.replace(',', '.') : null;
 }
 
+module.exports.numberOrNull = function(value) {
+  if (isNaN(+value)) return null;
+  else return +value;
+}

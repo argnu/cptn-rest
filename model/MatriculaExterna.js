@@ -1,10 +1,10 @@
-const connector = require('../connector');
+const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const Persona = require(`${__base}/model/Persona`);
-const PersonaFisica = require(`${__base}/model/PersonaFisica`);
-const Localidad = require(`${__base}/model/geograficos/Localidad`);
+const Persona = require(`./Persona`);
+const PersonaFisica = require(`./PersonaFisica`);
+const Localidad = require(`./geograficos/Localidad`);
 
 const table = sql.define({
     name: 'matricula_externa',

@@ -1,9 +1,9 @@
-const connector = require(`${__base}/connector`);
+const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const utils = require(`${__base}/utils`);
-const model = require(`${__base}/model`);
+const utils = require(`../../utils`);
+const model = require(`../../model`);
 const ComprobanteItem = require('./ComprobanteItem');
 const ComprobantePago = require('./ComprobantePago');
 const Boleta = require('./Boleta');
@@ -112,10 +112,31 @@ const table = sql.define({
     ]
 });
 
+const select = [
+    table.id,
+    table.tipo_comprobante,
+    table.numero,
+    table.matricula,
+    table.fecha.cast('varchar(10)'),
+    table.fecha_vencimiento.cast('varchar(10)'),
+    table.subtotal,
+    table.interes_total,
+    table.bonificacion_total,
+    table.importe_total,
+    table.importe_cancelado,
+    table.observaciones,
+    table.delegacion,
+    table.operador,
+    table.anulado,
+    table.contable,
+    table.created_by,
+    table.updated_by
+]
+
 module.exports.table = table;
 
 module.exports.getByNumero = function (numero) {
-    let query = table.select(table.star())
+    let query = table.select(select)
         .from(table)
         .where(table.numero.equals(numero))
         .toQuery();
@@ -134,7 +155,7 @@ function getData(b) {
 module.exports.getAll = function (params) {
     let comprobantes = [];
 
-    let query = table.select(table.star())
+    let query = table.select(select)
         .from(table);
 
     if (params.matricula) query.where(table.matricula.equals(params.matricula));

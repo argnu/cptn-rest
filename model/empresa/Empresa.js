@@ -2,14 +2,14 @@ const moment = require('moment');
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const utils = require(`${__base}/utils`);
-const connector = require(`${__base}/connector`);
-const EntidadDomicilio = require(`${__base}/model/EntidadDomicilio`);
-const Entidad = require(`${__base}/model/Entidad`);
-const Contacto = require(`${__base}/model/Contacto`);
-const TipoEmpresa = require(`${__base}/model/tipos/TipoEmpresa`);
-const TipoSociedad = require(`${__base}/model/tipos/TipoSociedad`);
-const TipoCondicionAfip = require(`${__base}/model/tipos/TipoCondicionAfip`);
+const utils = require(`../../utils`);
+const connector = require(`../../db/connector`);
+const EntidadDomicilio = require(`../EntidadDomicilio`);
+const Entidad = require(`../Entidad`);
+const Contacto = require(`../Contacto`);
+const TipoEmpresa = require(`../tipos/TipoEmpresa`);
+const TipoSociedad = require(`../tipos/TipoSociedad`);
+const TipoCondicionAfip = require(`../tipos/TipoCondicionAfip`);
 const EmpresaRepresentante = require('./EmpresaRepresentante');
 const EmpresaIncumbencia = require('./EmpresaIncumbencia');
 
@@ -136,28 +136,31 @@ module.exports.add = function(empresa, client) {
 }
 
 
-const select_atributes = [table.id,
-Entidad.table.tipo,
-table.nombre, table.fechaInicio,
-table.fechaConstitucion,
-TipoEmpresa.table.valor.as('tipoEmpresa'),
-TipoSociedad.table.valor.as('tipoSociedad'),
-TipoCondicionAfip.table.valor.as('condafip'),
-Entidad.table.cuit,
+const select = [
+  table.id,
+  table.nombre, 
+  table.fechaInicio.cast('varchar(10)'),
+  table.fechaConstitucion.cast('varchar(10)'),
+  Entidad.table.tipo,
+  TipoEmpresa.table.valor.as('tipoEmpresa'),
+  TipoSociedad.table.valor.as('tipoSociedad'),
+  TipoCondicionAfip.table.valor.as('condafip'),
+  Entidad.table.cuit,
 ];
 
-const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
+const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
                          .leftJoin(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
                          .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
 
-module.exports.getAll = function() {
+module.exports.getAll = function(params) {
   let empresas = [];
-  let query = table.select(...select_atributes)
-                  .from(select_from)
-                  .toQuery();
+  let query = table.select(select).from(from)
 
-  return connector.execQuery(query)
+  if (params.limit) query.limit(+params.limit);
+  if (params.limit && params.offset) query.offset(+params.offset);                  
+
+  return connector.execQuery(query.toQuery())
   .then(r => {
     empresas = r.rows;
     let proms = []
@@ -190,8 +193,8 @@ function getDatosEmpresa(empresa) {
 
 module.exports.get = function(id) {
   let empresa;
-  let query = table.select(...select_atributes)
-                  .from(select_from)
+  let query = table.select(select)
+                  .from(from)
                   .where(table.id.equals(id))
                   .toQuery();
 

@@ -1,5 +1,5 @@
 const config = require('../../config.private');
-const connector = require('../../connector');
+const connector = require('../../db/connector');
 const Contacto = require('../Contacto');
 const ProfesionalCajaPrevisional = require('./ProfesionalCajaPrevisional');
 const Formacion = require('./Formacion');
@@ -10,7 +10,7 @@ const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
 const TipoCondicionAfip = require('../tipos/TipoCondicionAfip');
-const utils = require(`${__base}/utils`);
+const utils = require(`../../utils`);
 
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -191,7 +191,7 @@ module.exports.add = function (profesional, client) {
               return ProfesionalCajaPrevisional.add({
                 profesional: profesional.id,
                 caja: c
-              })
+              }, client)
             }) : [];
 
 
@@ -205,22 +205,34 @@ module.exports.add = function (profesional, client) {
   })
 }
 
-const select_atributes = [table.id,
-Entidad.table.tipo, Entidad.table.cuit,
-table.nombre, table.apellido, table.dni,
-table.fechaNacimiento, table.lugarNacimiento, table.nacionalidad,
-table.relacionDependencia, table.independiente, table.jubilado,
-TipoSexo.table.valor.as('sexo'),
-TipoEstadoCivil.table.valor.as('estadoCivil'),
-TipoCondicionAfip.table.valor.as('condafip'),
-table.observaciones, table.empresa,
-table.serviciosPrestados,
-table.foto, table.firma,
-table.publicarAcervo, table.publicarCelular,
-table.publicarDireccion, table.publicarEmail
+const select = [
+  table.id,
+  Entidad.table.tipo, 
+  Entidad.table.cuit,
+  table.nombre, 
+  table.apellido, 
+  table.dni,
+  table.fechaNacimiento.cast('varchar(10)'),
+  table.lugarNacimiento, 
+  table.nacionalidad,
+  table.relacionDependencia, 
+  table.independiente, 
+  table.jubilado,
+  TipoSexo.table.valor.as('sexo'),
+  TipoEstadoCivil.table.valor.as('estadoCivil'),
+  TipoCondicionAfip.table.valor.as('condafip'),
+  table.observaciones, 
+  table.empresa,
+  table.serviciosPrestados,
+  table.foto, 
+  table.firma,
+  table.publicarAcervo, 
+  table.publicarCelular,
+  table.publicarDireccion, 
+  table.publicarEmail
 ];
 
-const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
+const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
@@ -229,8 +241,9 @@ const select_from = table.join(Entidad.table).on(table.id.equals(Entidad.table.i
 
 module.exports.getAll = function(params) {
   let profesionales = [];
-  let query = table.select(...select_atributes)
-  .from(select_from)
+  let query = table.select(select)
+  .from(from)
+
 
   if (params.dni) query.where(table.dni.equals(params.dni));
   if (params.limit) query.limit(+params.limit);
@@ -277,13 +290,12 @@ function getDatosProfesional(profesional) {
 }
 
 module.exports.get = function(id) {
-  let query = table.select(...select_atributes)
-  .from(select_from)
+  let query = table.select(select)
+  .from(from)
   .where(table.id.equals(id))
   .toQuery();
 
   let profesional;
-
   return connector.execQuery(query)
   .then(r => {
     profesional = r.rows[0];
@@ -448,5 +460,4 @@ module.exports.patch = function (id, profesional, client) {
     .toQuery();
     
   return connector.execQuery(query, client)
-  .then(r => r.rows[0]);
 }

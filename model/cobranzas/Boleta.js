@@ -1,9 +1,9 @@
 const moment = require('moment');
-const connector = require('../../connector');
+const connector = require('../../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const utils = require(`${__base}/utils`);
+const utils = require(`../../utils`);
 const BoletaItem = require('./BoletaItem');
 const TipoComprobante = require('../tipos/TipoComprobante');
 const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
@@ -102,6 +102,22 @@ const table = sql.define({
 
 module.exports.table = table;
 
+const select = [
+    table.id,
+    table.numero,
+    table.matricula,
+    table.tipo_comprobante,
+    table.fecha.cast('varchar(10)'),
+    table.total,
+    table.estado,
+    table.fecha_vencimiento.cast('varchar(10)'),
+    table.numero_comprobante,
+    table.numero_solicitud,
+    table.numero_condonacion,
+    table.fecha_update.cast('varchar(10)'),
+    table.delegacion,
+]
+
 function getData(b) {
     return Promise.all([
         BoletaItem.getByBoleta(b.id),
@@ -113,8 +129,7 @@ function getData(b) {
 module.exports.getAll = function (params) {
     let boletas = [];
 
-    let query = table.select(table.star())
-        .from(table);
+    let query = table.select(select)
 
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
     if (params.estado) query.where(table.estado.equals(params.estado));
@@ -144,8 +159,7 @@ module.exports.getAll = function (params) {
 }
 
 module.exports.get = function (id) {
-    let query = table.select(table.star())
-        .from(table)
+    let query = table.select(select)
         .where(table.id.equals(id))
         .toQuery();
 
@@ -165,8 +179,7 @@ module.exports.get = function (id) {
 }
 
 module.exports.getByNumero = function(numero) {
-    let query = table.select(table.star())
-        .from(table)
+    let query = table.select(select)
         .where(table.numero.equals(numero))
         .toQuery();
 
@@ -198,7 +211,7 @@ function addDatosBoleta(boleta, client) {
                     table.numero_comprobante.value(boleta.numero_comprobante),
                     table.numero_solicitud.value(boleta.numero_solicitud),
                     table.numero_condonacion.value(boleta.numero_condonacion),
-                    table.fecha_update.value(utils.checkNull(boleta.fecha_update)),
+                    table.fecha_update.value(boleta.fecha_update ? boleta.fecha_update : moment()),
                     table.delegacion.value(boleta.delegacion)
                 )
                 .returning(table.id, table.numero)
@@ -215,7 +228,8 @@ module.exports.add = function (boleta, client) {
     return addDatosBoleta(boleta, client)
     .then(boleta_added => {
         boleta_nueva = boleta_added;
-        let proms_items = boleta.items.map(item => {
+        let proms_items = boleta.items.map((item, index) => {
+            item.item = item.item ? item.item : (index + 1); 
             item.boleta = boleta_nueva.id;
             return BoletaItem.add(item, client);
         })

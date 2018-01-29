@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
-  model.tareas.Legajo.getAll(req.params)
+  model.tareas.Legajo.getAll(req.query)
     .then(r => res.json(r))
     .catch(e => {
       console.error(e);

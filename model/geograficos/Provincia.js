@@ -1,4 +1,4 @@
-const connector = require('../../connector');
+const connector = require('../../db/connector');
 const utils = require('../../utils');
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -37,7 +37,7 @@ module.exports.getAll = function(params) {
   let query = table.select(table.id, table.nombre)
   .from(table.join(Pais.table).on(table.pais.equals(Pais.table.id)));
 
-  if (params.pais_id) query.where(table.pais.equals(params.pais_id));
+  if (params.pais_id && !isNaN(+params.pais_id)) query.where(table.pais.equals(+params.pais_id));
   if (params.pais_text) query.where(Pais.table.nombre.equals(params.pais_text));
 
   return new Promise(function(resolve, reject) {

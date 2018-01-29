@@ -1,4 +1,4 @@
-const connector = require('../connector');
+const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -14,6 +14,18 @@ const table = sql.define({
       name: 'nombre',
       dataType: 'varchar(255)',
       notNull: true
+    },
+    {
+      name: 'domicilio',
+      dataType: 'int'
+    }
+  ],
+
+  foreignKeys: [
+    {
+      table: 'domicilio',
+      columns: [ 'domicilio' ],
+      refColumns: [ 'id' ]
     }
   ]
 });

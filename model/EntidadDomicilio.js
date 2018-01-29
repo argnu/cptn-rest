@@ -1,7 +1,7 @@
-const connector = require('../connector');
+const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
-const Domicilio = require(`${__base}/model/Domicilio`);
+const Domicilio = require(`./Domicilio`);
 
 const table = sql.define({
   name: 'entidad_domicilio',

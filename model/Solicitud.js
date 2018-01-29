@@ -1,10 +1,12 @@
-const connector = require('../connector');
+const connector = require('../db/connector');
+const utils = require('../utils');
 const sql = require('sql');
 sql.setDialect('postgres');
 const Profesional = require('./profesional/Profesional');
 const Empresa = require('./empresa/Empresa');
 const Entidad = require('./Entidad');
 const Delegacion = require('./Delegacion');
+const TipoEstadoSolicitud = require('./tipos/TipoEstadoSolicitud');
 
 const table = sql.define({
   name: 'solicitud',
@@ -25,20 +27,8 @@ const table = sql.define({
     },
     {
       name: 'estado',
-      dataType: 'varchar(45)',
+      dataType: 'int',
       notNull: true
-    },
-    {
-      name: 'exencionArt10',
-      dataType: 'boolean',
-      notNull: true,
-      defaultValue: false
-    },
-    {
-      name: 'exencionArt6',
-      dataType: 'boolean',
-      notNull: true,
-      defaultValue: false
     },
     {
       name: 'delegacion',
@@ -60,6 +50,11 @@ const table = sql.define({
   ],
 
   foreignKeys: [
+    {
+      table: 't_estadosolicitud',
+      columns: [ 'estado' ],
+      refColumns: [ 'id' ]
+    },
     {
       table: 'delegacion',
       columns: [ 'delegacion' ],
@@ -90,7 +85,7 @@ function addSolicitud(solicitud, client) {
     table.created_by.value(solicitud.operador),
     table.updated_by.value(solicitud.operador),
     table.fecha.value(solicitud.fecha),
-    table.estado.value('pendiente'),
+    table.estado.value(1),
     table.delegacion.value(solicitud.delegacion),
     table.entidad.value(solicitud.entidad.id)
   ).returning(table.id, table.fecha, table.estado, table.delegacion, table.entidad).toQuery()
@@ -141,26 +136,32 @@ module.exports.add = function(solicitud) {
   });          
 }
 
-const select = {
-  atributes: [
-    table.star(), 
-    Delegacion.table.nombre.as('delegacion'),
-    Entidad.table.tipo.as('tipoEntidad')
-  ],
-  from: table.join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))
-             .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-             .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-             .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-}
+const select = [
+  table.id,
+  table.fecha.cast('varchar(10)'),
+  table.numero,
+  table.updated_by,
+  table.created_by,
+  table.entidad,
+  TipoEstadoSolicitud.table.valor.as('estado'),
+  Delegacion.table.nombre.as('delegacion'),
+  Entidad.table.tipo.as('tipoEntidad')
+]
+
+const from = table.join(TipoEstadoSolicitud.table).on(table.estado.equals(TipoEstadoSolicitud.table.id))
+.join(Delegacion.table).on(table.delegacion.equals(Delegacion.table.id))
+.join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+.leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+.leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
 
 module.exports.getAll = function(params) {
     let solicitudes = [];
-    let query = table.select(...select.atributes).from(select.from);
+    let query = table.select(select).from(from);
 
     /* ----------------- FILTERS  ---------------- */
     if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
-    if (params.estado) query.where(table.estado.equals(params.estado));
-    if (params.numero) query.where(table.numero.equals(params.numero));
+    if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
+    if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
 
     if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
     if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
@@ -168,7 +169,16 @@ module.exports.getAll = function(params) {
     if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
 
     /* ---------------- SORTING ------------------ */
-    if (params.sort && params.sort.estado) query.order(table.valor[params.estado.valor]);
+    if (params.sort) {
+      if (params.sort.numero) query.order(table.numero[params.sort.numero]);
+      else if (params.sort.estado) query.order(table.estado[params.sort.estado]);
+      else if (params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
+      else if (params.sort.nombreEmpresa) query.order(Empresa.table.nombre[params.sort.nombreEmpresa]);
+      else if (params.sort.nombre) query.order(Profesional.table.nombre[params.sort.nombre]);
+      else if (params.sort.apellido) query.order(Profesional.table.apellido[params.sort.apellido]);
+      else if (params.sort.dni) query.order(Profesional.table.dni[params.sort.dni]);
+      else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);   
+    } 
 
 
     /* ---------------- LIMIT AND OFFSET ------------------ */
@@ -197,8 +207,8 @@ module.exports.getAll = function(params) {
 
 module.exports.get = function(id) {
   let solicitud = {};
-  let query = table.select(...select.atributes)
-                   .from(select.from)
+  let query = table.select(...select)
+                   .from(from)
                    .where(table.id.equals(id))
                    .toQuery();
 
@@ -221,8 +231,6 @@ module.exports.edit = function(id, solicitud) {
     .then(connection => {
         let datos_solicitud = {
           fecha: solicitud.fecha,
-          exencionArt10: solicitud.exencionArt10,
-          exencionArt6: solicitud.exencionArt6,
           delegacion: solicitud.delegacion,
           updated_by: solicitud.operador
         }

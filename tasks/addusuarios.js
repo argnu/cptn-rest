@@ -1,7 +1,6 @@
 const path = require('path');
-global.__base = path.join(__dirname, '..');
-const connector = require(`${__base}/connector`);
-const model = require(`${__base}/model`);
+const connector = require(`../../db/connector`);
+const model = require(`../../model`);
 
 
 function addUsuario(data) {

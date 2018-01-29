@@ -3,8 +3,9 @@ config.private.js
 node_modules
 npm-debug.log
 
-esquema_cambios/*
-!esquema_cambios/generar.js
+migraciones/*
+!migraciones/generar.js
+!migraciones/run.sh
 
 files/fotos/*
 !files/fotos/.gitkeep

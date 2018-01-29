@@ -1,5 +1,5 @@
-const utils = require(`${__base}/utils`);
-const connector = require(`${__base}/connector`);
+const utils = require(`../../utils`);
+const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 

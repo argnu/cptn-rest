@@ -1,9 +1,9 @@
 const moment = require('moment');
-const connector = require('../connector');
+const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const utils = require(`${__base}/utils`);
+const utils = require(`../utils`);
 const Solicitud = require('./Solicitud');
 const Profesional = require('./profesional/Profesional');
 const Empresa = require('./empresa/Empresa');
@@ -85,6 +85,10 @@ const table = sql.define({
     {
       name: 'updated_by',
       dataType: 'varchar(45)',
+    },     
+    {
+      name: 'eliminado',
+      dataType: 'boolean',
     }     
   ],
 
@@ -243,7 +247,7 @@ module.exports.aprobar = function(matricula) {
             matricula.estado = 12; // 12 es 'Pendiente de Pago'
             matricula.numeroMatricula = numero_nueva;            
 
-            return Solicitud.patch(solicitud.id, { estado: 'aprobada' }, connection.client)  
+            return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)  
             .then(r => addMatricula(matricula, connection.client))
             .then(r => {
               matricula_added = r;
@@ -278,18 +282,22 @@ module.exports.aprobar = function(matricula) {
 }
 
 
-const select = {
-  atributes: [
-    table.id, table.legajo, table.numeroMatricula,
-    TipoEstadoMatricula.table.valor.as('estado'),
-    table.fechaResolucion, table.numeroActa,
-    table.entidad, table.solicitud,
-    table.fechaBaja, table.observaciones,
-    table.notasPrivadas, table.asientoBajaF,
-    table.codBajaF,
-    Entidad.table.tipo.as('tipoEntidad')
-  ]
-};
+const select = [
+  table.id, 
+  table.legajo, 
+  table.numeroMatricula,
+  table.fechaResolucion.cast('varchar(10)'), 
+  table.numeroActa,
+  table.entidad, 
+  table.solicitud,
+  table.fechaBaja.cast('varchar(10)'), 
+  table.observaciones,
+  table.notasPrivadas, 
+  table.asientoBajaF,
+  table.codBajaF,
+  TipoEstadoMatricula.table.valor.as('estado'),
+  Entidad.table.tipo.as('tipoEntidad')
+];
 
 
 function getTotal(params) {
@@ -323,14 +331,14 @@ function getTotal(params) {
 
 module.exports.getAll = function (params) {
   let matriculas = [];
-  let query = table.select(
-    ...select.atributes
-  ).from(
+  let query = table.select(select)
+  .from(
     table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
     .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
     .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
     .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))    
-  );
+  )
+  .where(table.eliminado.equals(false));
 
   if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
@@ -340,6 +348,16 @@ module.exports.getAll = function (params) {
   if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
   if (params.cuit) query.where(Entidad.table.cuit.ilike(`%${params.cuit}%`));
 
+  if (params.sort) {
+    if (params.sort.numeroMatricula) query.order(table.numeroMatricula[params.sort.numeroMatricula]);
+    else if (params.sort.estado) query.order(table.estado[params.sort.estado]);
+    else if (params.sort.nombreEmpresa) query.order(Empresa.table.nombre[params.sort.nombreEmpresa]);
+    else if (params.sort.nombre) query.order(Profesional.table.nombre[params.sort.nombre]);
+    else if (params.sort.apellido) query.order(Profesional.table.apellido[params.sort.apellido]);
+    else if (params.sort.dni) query.order(Profesional.table.dni[params.sort.dni]);
+    else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);
+  }
+  
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);
 
@@ -367,7 +385,7 @@ module.exports.getAll = function (params) {
 
 module.exports.get = function (id) {
   let solicitud = {};
-  let query = table.select(...select.atributes)
+  let query = table.select(...select)
                     .from(
                       table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
                       .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))

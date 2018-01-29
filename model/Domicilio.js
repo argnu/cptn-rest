@@ -1,11 +1,11 @@
-const connector = require(`${__base}/connector`);
+const connector = require(`../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const Localidad = require('./geograficos/Localidad');
 const Departamento = require('./geograficos/Departamento');
 const Provincia = require('./geograficos/Provincia');
 const Pais = require('./geograficos/Pais');
-const utils = require(`${__base}/utils`);
+const utils = require(`../utils`);
 
 const table = sql.define({
   name: 'domicilio',
