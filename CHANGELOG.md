@@ -1,4 +1,4 @@
-# UNRELEASED
+# 1.2.0 (2018-01-28)
 
 ## Agregado
 
