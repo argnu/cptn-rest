@@ -154,6 +154,32 @@ const from = table.join(TipoEstadoSolicitud.table).on(table.estado.equals(TipoEs
 .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
 .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
 
+
+function getTotal(params) {
+  let query;
+
+  if (!params) {
+    query = table.select(table.count().as('total')).from(table);
+  }
+  else {
+    query = table.select(table.count(table.id).as('total'))
+    .from(from);
+
+    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+    if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
+    if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
+  
+    if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
+    if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
+    if (params.dni) query.where(Profesional.table.dni.like(`%${params.dni}%`));
+    if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
+  }  
+  
+  return connector.execQuery(query.toQuery())
+  .then(r => +r.rows[0].total);  
+  
+}
+
 module.exports.getAll = function(params) {
     let solicitudes = [];
     let query = table.select(select).from(from);
@@ -200,8 +226,9 @@ module.exports.getAll = function(params) {
                  solicitudes[i].entidad = r;
                  delete(solicitudes[i].tipoEntidad);
                });
-               return solicitudes;
+               return getTotal(params)
              })
+             .then(total => ({resultados: solicitudes, totalQuery: total}))
     });
 }
 
