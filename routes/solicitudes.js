@@ -1,8 +1,10 @@
 const path = require('path');
 const multer  = require('multer');
 const router = require('express').Router();
-const model = require('../model');
 const bodyParser = require('body-parser');
+const model = require('../model');
+const utils = require('../utils');
+
 router.use(bodyParser.json());
 
 const storage = multer.diskStorage({
@@ -24,19 +26,13 @@ const upload = multer({ storage: storage })
 router.get('/', function(req, res) {
   model.Solicitud.getAll(req.query)
     .then(r => res.json(r))
-    .catch(e => {
-      console.error(e);
-      res.status(500).json({ msg: 'Error en el servidor' });
-    });
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.get('/:id', function(req, res) {
   model.Solicitud.get(req.params.id)
     .then(r => res.json(r))
-    .catch(e => {
-      console.error(e);
-      res.status(500).json({ msg: 'Error en el servidor' });
-    });
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.post('/',          
@@ -57,10 +53,7 @@ router.post('/',
 
     model.Solicitud.add(solicitud)
       .then(id => res.status(201).json({ id }))
-      .catch(e => {
-        console.error(e);
-        res.status(500).json({ msg: 'Error en el servidor' });
-      });
+      .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.put('/:id',          
@@ -80,16 +73,13 @@ router.put('/:id',
 
     model.Solicitud.edit(req.params.id, solicitud)
       .then(id => res.status(201).json({ id }))
-      .catch(e => {
-        console.error(e);
-        res.status(500).json({ msg: 'Error en el servidor' });
-      });
+      .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.patch('/:id', function(req, res) {
   model.Solicitud.patch(req.params.id, req.body)
     .then(r => res.status(200).json(r))
-    .catch(e => handler(e, res));
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.delete('/:id', function(req, res) {

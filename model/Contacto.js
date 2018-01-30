@@ -47,6 +47,35 @@ const table = sql.define({
 
 module.exports.table = table;
 
+module.exports.getAll = function(id_entidad) {
+  let query = table.select(
+    table.id, 
+    table.valor,
+    table.whatsapp,
+    TipoContacto.table.valor.as('tipo')
+  ).from(
+    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
+  ).where(table.entidad.equals(id_entidad))
+  .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => r.rows);
+}
+
+module.exports.get = function(id) {
+  let query = table.select(
+    table.id, 
+    table.valor,
+    table.whatsapp,
+    TipoContacto.table.valor.as('tipo')
+  ).from(
+    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
+  ).where(table.id.equals(id))
+  .toQuery();
+  return connector.execQuery(query)
+         .then(r => r.rows[0]);
+}
+
 module.exports.add = function (contacto, client) {
   let query = table.insert(
     table.tipo.value(contacto.tipo), 
@@ -62,32 +91,25 @@ module.exports.add = function (contacto, client) {
          })
 };
 
-module.exports.getAll = function(id_entidad) {
-  let query = table.select(
-    table.id, table.valor,
-    TipoContacto.table.valor.as('tipo')
-  ).from(
-    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
-  ).where(table.entidad.equals(id_entidad))
+module.exports.edit = function (id, contacto, client) {
+  let query = table.update({
+    tipo: contacto.tipo,
+    valor: contacto.valor,
+    whatsapp: contacto.whatsapp,
+  })
+  .where(table.id.equals(id))
+  .returning(table.id, table.tipo, table.valor, table.whatsapp)
   .toQuery();
 
-  return connector.execQuery(query)
-         .then(r => r.rows);
-}
-
-module.exports.get = function(id) {
-  let query = table.select(
-    table.id, table.valor,
-    TipoContacto.table.valor.as('tipo')
-  ).from(
-    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
-  ).where(table.id.equals(id))
-  .toQuery();
-  return connector.execQuery(query)
-         .then(r => r.rows[0]);
-}
+  return connector.execQuery(query, client)
+         .then(r => {
+           let contacto_added = r.rows[0];
+           return contacto_added;
+         })
+};
 
 module.exports.delete = function(id, client) {
   let query = table.delete().where(table.id.equals(id)).toQuery();
   return connector.execQuery(query, client);
 }
+

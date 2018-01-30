@@ -15,13 +15,9 @@ const table = sql.define({
       primaryKey: true
     },
     {
-      name: 'calle',
+      name: 'direccion',
       dataType: 'varchar(100)',
       notNull: true
-    },
-    {
-      name: 'numero',
-      dataType: 'int'
     },
     {
       name: 'localidad',
@@ -40,22 +36,10 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.add = function(domicilio, client) {
-  let query = table.insert(
-    table.calle.value(domicilio.calle),
-    table.numero.value(utils.checkNull(domicilio.numero)),
-    table.localidad.value(domicilio.localidad)
-  )
-  .returning(table.star())
-  .toQuery();
-
-  return connector.execQuery(query, client)
-  .then(r => r.rows[0]);
-}
-
 module.exports.get = function(id) {
   let query = table.select(
-                      table.id, table.calle, table.numero,
+                      table.id, 
+                      table.direccion,
                       Localidad.table.nombre.as('localidad'),
                       Departamento.table.nombre.as('departamento'),
                       Provincia.table.nombre.as('provincia'),
@@ -73,11 +57,22 @@ module.exports.get = function(id) {
          .then(r => r.rows[0]);
 }
 
+module.exports.add = function(domicilio, client) {
+  let query = table.insert(
+    table.direccion.value(domicilio.direccion),
+    table.localidad.value(domicilio.localidad)
+  )
+  .returning(table.star())
+  .toQuery();
+
+  return connector.execQuery(query, client)
+  .then(r => r.rows[0]);
+}
+
 module.exports.edit = function(id, domicilio, client) {
   let query = table.update({
-    calle: domicilio.calle,
-    localidad: domicilio.localidad,
-    numero: utils.checkNull(domicilio.numero)
+    direccion: domicilio.direccion,
+    localidad: domicilio.localidad
   })
   .where(table.id.equals(id))
   .toQuery();

@@ -42,22 +42,6 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.add = function(data, client) {
-    return Domicilio.add(data.domicilio)
-    .then(domicilio => {
-      let query = table.insert(
-        table.tipo.value(data.tipo), 
-        table.entidad.value(data.entidad),
-        table.domicilio.value(domicilio.id)
-      )
-      .returning(table.star())
-      .toQuery();
-    
-      return connector.execQuery(query, client)
-             .then(r => r.rows[0]);
-    })
-}
-
 module.exports.getByEntidad = function(id_entidad) {
   let domicilios;
   let query = table.select(table.star())
@@ -75,6 +59,22 @@ module.exports.getByEntidad = function(id_entidad) {
             });
             return domicilios;
          })
+}
+
+module.exports.add = function(data, client) {
+    return Domicilio.add(data.domicilio)
+    .then(domicilio => {
+      let query = table.insert(
+        table.tipo.value(data.tipo), 
+        table.entidad.value(data.entidad),
+        table.domicilio.value(domicilio.id)
+      )
+      .returning(table.star())
+      .toQuery();
+    
+      return connector.execQuery(query, client)
+             .then(r => r.rows[0]);
+    })
 }
 
 module.exports.delete = function(id, client) {
