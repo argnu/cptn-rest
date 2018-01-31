@@ -46,12 +46,14 @@ const table = sql.define({
     {
       table: 'empresa',
       columns: [ 'empresa' ],
-      refColumns: [ 'id' ]
+      refColumns: [ 'id' ],
+      onDelete: 'cascade'
     },
     {
       table: 'matricula',
       columns: [ 'matricula' ],
-      refColumns: [ 'id' ]
+      refColumns: [ 'id' ],
+      onDelete: 'cascade'
     },
     {
       table: 'matricula_externa',

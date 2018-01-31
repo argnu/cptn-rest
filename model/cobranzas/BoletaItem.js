@@ -32,11 +32,14 @@ const table = sql.define({
         }
     ],
 
-    foreignKeys: [{
-        table: 'boleta',
-        columns: ['boleta'],
-        refColumns: ['id']
-    }, ]
+    foreignKeys: [
+        {
+            table: 'boleta',
+            columns: ['boleta'],
+            refColumns: ['id'],
+            onDelete: 'cascade'
+        }, 
+    ]
 });
 
 module.exports.table = table;

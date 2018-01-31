@@ -16,7 +16,8 @@ sql.setDialect('postgres');
     },
     {
       name: 'eliminado',
-      dataType: 'boolean'
+      dataType: 'boolean',
+      defaultValue: false
     }
   ]
 });
