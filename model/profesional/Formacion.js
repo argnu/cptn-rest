@@ -1,6 +1,8 @@
 const connector = require('../../db/connector');
+const utils = require('../../utils');
 const sql = require('sql');
 sql.setDialect('postgres');
+
 const Institucion = require('../Institucion');
 const TipoFormacion = require('../tipos/TipoFormacion');
 const Titulo = require('../Titulo');
@@ -79,7 +81,7 @@ module.exports.getAll = function(id_profesional) {
 module.exports.add = function (formacion, client) {
   let query = table.insert(
     table.titulo.value(formacion.titulo),
-    table.fecha.value(formacion.fecha),
+    table.fecha.value(utils.checkNull(formacion.fecha)),
     table.institucion.value(formacion.institucion),
     table.profesional.value(formacion.profesional)
   )
@@ -97,7 +99,7 @@ module.exports.add = function (formacion, client) {
 module.exports.edit = function (id, formacion, client) {
   let query = table.update({
     titulo: formacion.titulo,
-    fecha: formacion.fecha,
+    fecha: utils.checkNull(formacion.fecha),
     institucion: formacion.institucion
   })
   .where(table.id.equals(id))
