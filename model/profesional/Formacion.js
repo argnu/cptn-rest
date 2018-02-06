@@ -73,7 +73,7 @@ module.exports.getAll = function(id_profesional) {
   .toQuery();
 
   return connector.execQuery(query)
-         .then(r => r.rows);
+  .then(r => r.rows)
 }
 
 module.exports.add = function (formacion, client) {
@@ -87,7 +87,11 @@ module.exports.add = function (formacion, client) {
   .toQuery();
 
   return connector.execQuery(query, client)
-         .then(r => r.rows[0]);
+  .then(r => r.rows[0])
+  .catch(e => {
+    console.log('Error insertando formación: ', formacion);
+    return Promise.reject(e);
+  })  
 };
 
 module.exports.edit = function (id, formacion, client) {
