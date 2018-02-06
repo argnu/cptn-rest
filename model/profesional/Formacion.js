@@ -21,7 +21,11 @@ const table = sql.define({
       notNull: true
     },
     {
-      name: 'fecha',
+      name: 'fechaEmision',
+      dataType: 'date'
+    },
+    {
+      name: 'fechaEgreso',
       dataType: 'date'
     },
     {
@@ -59,7 +63,8 @@ module.exports.table = table;
 
 const select = [
   table.id,
-  table.fecha.cast('varchar(10)'), 
+  table.fechaEmision.cast('varchar(10)'), 
+  table.fechaEgreso.cast('varchar(10)'), 
   Titulo.table.nombre.as('titulo'),
   Institucion.table.nombre.as('institucion'),
   TipoFormacion.table.valor.as('tipo')
@@ -81,7 +86,8 @@ module.exports.getAll = function(id_profesional) {
 module.exports.add = function (formacion, client) {
   let query = table.insert(
     table.titulo.value(formacion.titulo),
-    table.fecha.value(utils.checkNull(formacion.fecha)),
+    table.fechaEgreso.value(utils.checkNull(formacion.fechaEgreso)),
+    table.fechaEmision.value(utils.checkNull(formacion.fechaEmision)),
     table.institucion.value(formacion.institucion),
     table.profesional.value(formacion.profesional)
   )
@@ -99,7 +105,8 @@ module.exports.add = function (formacion, client) {
 module.exports.edit = function (id, formacion, client) {
   let query = table.update({
     titulo: formacion.titulo,
-    fecha: utils.checkNull(formacion.fecha),
+    fechaEgreso: utils.checkNull(formacion.fechaEgreso),
+    fechaEmision: utils.checkNull(formacion.fechaEmision),
     institucion: formacion.institucion
   })
   .where(table.id.equals(id))
