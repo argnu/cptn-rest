@@ -47,6 +47,19 @@ const table = sql.define({
 
 module.exports.table = table;
 
+module.exports.getAll = function(id_profesional) {
+  let query = table.select(
+      table.id, table.nombre, table.apellido,
+      table.dni, table.porcentaje
+  )
+  .from(table)
+  .where(table.profesional.equals(id_profesional))
+  .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => r.rows);
+}
+
 module.exports.add = function(subsidiario, client) {
   let query = table.insert(
     table.dni.value(subsidiario.dni), table.nombre.value(subsidiario.nombre),
@@ -61,18 +74,23 @@ module.exports.add = function(subsidiario, client) {
          })
 };
 
-module.exports.getAll = function(id_profesional) {
-  let query = table.select(
-      table.id, table.nombre, table.apellido,
-      table.dni, table.porcentaje
-  )
-  .from(table)
-  .where(table.profesional.equals(id_profesional))
+module.exports.edit = function(id, subsidiario, client) {
+  let query = table.update({
+    dni: subsidiario.dni, 
+    nombre: subsidiario.nombre,
+    apellido: subsidiario.apellido, 
+    porcentaje: subsidiario.porcentaje
+  })
+  .where(table.id.equals(id))
+  .returning(table.id)
   .toQuery();
 
-  return connector.execQuery(query)
-         .then(r => r.rows);
-}
+  return connector.execQuery(query, client)
+         .then(r => {
+           subsidiario.id = r.rows[0].id;
+           return subsidiario;
+         })
+};
 
 module.exports.delete = function (id, client) {
   let query = table.delete().where(table.id.equals(id)).toQuery();

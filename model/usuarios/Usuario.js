@@ -80,8 +80,10 @@ module.exports.add = function(usuario) {
 
 module.exports.auth = function(usuario) {
   let query = table.select(
-          table.id, table.hash_password,
-          table.nombre, table.apellido,
+          table.id, 
+          table.hash_password,
+          table.nombre, 
+          table.apellido,
           table.email
         )
        .from(table)

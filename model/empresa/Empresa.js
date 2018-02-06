@@ -239,7 +239,7 @@ module.exports.edit = function (id, empresa, client) {
           return connector.execQuery(query, client)
             .then(r => {
               let contactos_nuevos = empresa.contactos.filter(c => !c.id);
-              let contactos_existentes = empresa.contactos.filter(c => !!c.id).map(c => c.id);
+              let contactos_existentes = empresa.contactos.filter(c => !!c.id);
               let representantes_nuevos = empresa.representantes.filter(r => !r.id);
               let representantes_existentes = empresa.representantes.filter(r => !!r.id).map(r => r.id);
               let incumbencias_nuevas = empresa.incumbencias.filter(i => !i.id);
@@ -249,7 +249,7 @@ module.exports.edit = function (id, empresa, client) {
                 connector.execQuery(
                   Contacto.table.delete().where(
                     Contacto.table.entidad.equals(id)
-                    .and(Contacto.table.id.notIn(contactos_existentes))
+                    .and(Contacto.table.id.notIn(contactos_existentes.map(c => c.id)))
                   ).toQuery(), client),
 
                 connector.execQuery(
@@ -265,10 +265,12 @@ module.exports.edit = function (id, empresa, client) {
                 ).toQuery())
               ])
               .then(r => {
-                let proms_contactos = contactos_nuevos.map(c => {
+                let proms_contactos_nuevos = contactos_nuevos.map(c => {
                   c.entidad = id;
                   return Contacto.add(c, client);
                 });
+                
+                let proms_contactos_edit = contactos_existentes.map(c => Contacto.edit(c.id, c, client));
 
                 let proms_representantes = representantes_nuevos.map(r => {
                   return  EmpresaRepresentante.add({
@@ -287,7 +289,8 @@ module.exports.edit = function (id, empresa, client) {
 
 
                 return Promise.all([
-                  Promise.all(proms_contactos),
+                  Promise.all(proms_contactos_nuevos),
+                  Promise.all(proms_contactos_edit),
                   Promise.all(proms_representantes),
                   Promise.all(proms_incumbencias)
                 ])

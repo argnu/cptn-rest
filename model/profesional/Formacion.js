@@ -1,6 +1,8 @@
 const connector = require('../../db/connector');
+const utils = require('../../utils');
 const sql = require('sql');
 sql.setDialect('postgres');
+
 const Institucion = require('../Institucion');
 const TipoFormacion = require('../tipos/TipoFormacion');
 const Titulo = require('../Titulo');
@@ -55,21 +57,6 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.add = function (formacion, client) {
-  let query = table.insert(
-    table.titulo.value(formacion.titulo),
-    table.fecha.value(formacion.fecha),
-    table.institucion.value(formacion.institucion),
-    table.profesional.value(formacion.profesional)
-  )
-  .returning(table.star())
-  .toQuery();
-
-  return connector.execQuery(query, client)
-         .then(r => r.rows[0]);
-};
-
-
 const select = [
   table.id,
   table.fecha.cast('varchar(10)'), 
@@ -88,8 +75,40 @@ module.exports.getAll = function(id_profesional) {
   .toQuery();
 
   return connector.execQuery(query)
-         .then(r => r.rows);
+  .then(r => r.rows)
 }
+
+module.exports.add = function (formacion, client) {
+  let query = table.insert(
+    table.titulo.value(formacion.titulo),
+    table.fecha.value(utils.checkNull(formacion.fecha)),
+    table.institucion.value(formacion.institucion),
+    table.profesional.value(formacion.profesional)
+  )
+  .returning(table.star())
+  .toQuery();
+
+  return connector.execQuery(query, client)
+  .then(r => r.rows[0])
+  .catch(e => {
+    console.log('Error insertando formación: ', formacion);
+    return Promise.reject(e);
+  })  
+};
+
+module.exports.edit = function (id, formacion, client) {
+  let query = table.update({
+    titulo: formacion.titulo,
+    fecha: utils.checkNull(formacion.fecha),
+    institucion: formacion.institucion
+  })
+  .where(table.id.equals(id))
+  .returning(table.star())
+  .toQuery();
+
+  return connector.execQuery(query, client)
+         .then(r => r.rows[0]);
+};
 
 module.exports.delete = function (id, client) {
   let query = table.delete().where(table.id.equals(id)).toQuery();

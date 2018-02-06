@@ -13,12 +13,12 @@ init()
             addQuery(files.negativos, `CREATE SEQUENCE "${column.table._name}_${column.name}_seq";`);
             return addQuery(files.negativos, `ALTER SEQUENCE "${column.table._name}_${column.name}_seq" OWNED BY "${column.table._name}.${column.name}";`);
         }
-        
-        if (column.dataType == 'float' && !(column_bd.type == 'double precision')) 
+
+        if (column.dataType == 'float' && !(column_bd.type == 'double precision'))
             return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE double precision USING "${column.name}"::double precision`);
         else if (column_bd.type == 'double precision') return;
 
-        if (column.dataType == 'int' && !(column_bd.type == 'integer')) 
+        if (column.dataType == 'int' && !(column_bd.type == 'integer'))
             return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE integer USING "${column.name}"::integer`);
         else if (column_bd.type == 'integer') return;
 
@@ -26,7 +26,7 @@ init()
             return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
         else if (column_bd.type == "character varying") {
             let longitud = +column.dataType.match(/\d+/)[0];
-            if (longitud != column_bd.length) 
+            if (longitud != column_bd.length)
                return addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
             else return;
         }
@@ -38,25 +38,18 @@ init()
     function checkForeignKeys(tablename, foreignKeys, constraints_bd) {
         for(let fkey of foreignKeys) {
             let fkey_name = `${tablename}_${fkey.columns[0]}_fkey`;
-            if (!constraints_bd.find(k => k.name == fkey_name)) 
+            let constraint_fkey = constraints_bd.find(k => k.name == fkey_name);
+            if (!constraints_bd.find(k => k.name == fkey_name))
                 addQuery(files.negativos, `ALTER TABLE "${tablename}" ADD FOREIGN KEY("${fkey.columns[0]}") REFERENCES ${fkey.table}("${fkey.refColumns[0]}")`
                     + (fkey.onDelete ? ` ON DELETE ${fkey.onDelete} ` : '')
                     + (fkey.onUpdate ? ` ON UPDATE ${fkey.onUpdate} ` : '')
                 );
-            else {
-                let band = false;
-                let constraint = constraints_bd.find(k => k.name == fkey_name);
-                let query_chg = `ALTER TABLE ${tablename} DROP CONSTRAINT "${constraint.name}";\n`;
-                query_chg += `ALTER TABLE ${tablename} ADD FOREIGN KEY("${fkey.columns[0]}" REFERENCES ${fkey.table}("${fkey.refColumns[0]}");\n`;
-                if (fkey.onDelete && fkey.onDelete.toUpperCase() != constraint.on_delete) { 
-                    band = true;
-                    query_chg += ` ON DELETE ${fkey.onDelete.toUpperCase()};`;
-                }
-                if (fkey.onUpdate && fkey.onUpdate.toUpperCase() != constraint.on_update) { 
-                    band = true;
-                    query_chg += ` ON UPDATE ${fkey.onUpdate.toUpperCase()};`;
-                }
-                if (band) addQuery(files.negativos, query_chg.substring(0, query_chg.length-1));
+            else if ((fkey.onDelete && fkey.onDelete.toUpperCase() != constraint_fkey.on_delete) || (fkey.onUpdate && fkey.onUpdate.toUpperCase() != constraint_fkey.on_update)){
+                let query_chg = `ALTER TABLE ${tablename} DROP CONSTRAINT "${constraint_fkey.name}";\n`;
+                query_chg += `ALTER TABLE ${tablename} ADD FOREIGN KEY ("${fkey.columns[0]}") REFERENCES ${fkey.table}("${fkey.refColumns[0]}")`;
+                if (fkey.onDelete && fkey.onDelete.toUpperCase() != constraint_fkey.on_delete) query_chg += ` ON DELETE ${fkey.onDelete.toUpperCase()} `;
+                if (fkey.onUpdate && fkey.onUpdate.toUpperCase() != constraint_fkey.on_update) query_chg += ` ON UPDATE ${fkey.onUpdate.toUpperCase()} `;
+                addQuery(files.negativos, query_chg);
             }
         }
     }
@@ -68,21 +61,37 @@ init()
             addQuery(files.negativos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET NOT NULL`);
         else if (!column.dataType == 'serial' && !column.notNull && !column_bd.nullable)
             addQuery(files.positivos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP NOT NULL`);
-        
+
+        if (column.dataType != 'serial') {
+            let def_value = typeof column.defaultValue == 'string' ? '"'+column.defaultValue+"'" : column.defaultValue;
+            if (!column_bd.default) def_db_value = null;
+            else if (column_bd.type == 'boolean') def_db_value = (column_bd.default === 'true');
+            else if (column_bd.type == 'integer') def_db_value = parseInt(column_bd.default);
+            else if (column_bd.type == 'double precision') def_db_value = parseFloat(column_bd.default);
+            else if (column_bd.type.includes('character')) column_bd.default.replace(/\:\:.+$/, '');
+
+            
+            if (column.defaultValue != undefined && column_bd.default == null) 
+                addQuery(files.positivos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
+            else if (column.defaultValue == undefined && column_bd.default != null)
+                addQuery(files.positivos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP DEFAULT`);
+            else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value)
+                addQuery(files.positivos, `ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
+        }
     }
 
     function checkColumns(table, table_bd) {
         for (let column of table.columns) {
             let column_bd = table_bd.columns.find(c => c.name == column.name);
             if (!column_bd) addQuery(files.positivos, table.alter().addColumn(column));
-            else { 
+            else {
                 checkColumn(column, column_bd);
                 column_bd.checked = true;
             }
         }
         for (let column_bd of table_bd.columns.filter(c => !c.checked)) {
             addQuery(files.negativos, `ALTER TABLE "${table_bd.name}" DROP COLUMN "${column_bd.name}"`);
-        }        
+        }
     }
 
     function checkTable(table) {
@@ -93,7 +102,7 @@ init()
             checkForeignKeys(table._name, table.foreignKeys, table_bd.constraints);
             table_bd.checked = true;
         }
-        
+
     }
 
     function checkModel(model) {
@@ -133,11 +142,11 @@ function createDir(name) {
     if (fs.existsSync(newdir_name)) return Promise.resolve(newdir_name);
 
     return new Promise(function(resolve, reject) {
-        
+
         fs.mkdir(newdir_name, (err) => {
             if (err) reject(err);
             else resolve(newdir_name);
-        });    
+        });
     })
 }
 
@@ -155,16 +164,16 @@ function openFile(file, content) {
     return new Promise(function(resolve, reject) {
         fs.open(file, 'w+', (err, fd) => {
             if (err) reject(err);
-            else { 
+            else {
                 if (content) {
                     fs.appendFile(file, content, (err) => {
                         if (err) reject(err);
                         else resolve(fd);
-                    });                    
+                    });
                 }
                 else resolve(fd);
             }
-        });            
+        });
     })
 }
 

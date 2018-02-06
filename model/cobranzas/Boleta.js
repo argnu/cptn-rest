@@ -80,7 +80,8 @@ const table = sql.define({
         {
             table: 'matricula',
             columns: ['matricula'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onDelete: 'cascade'
         },
         {
             table: 'delegacion',

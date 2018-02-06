@@ -89,6 +89,7 @@ const table = sql.define({
     {
       name: 'eliminado',
       dataType: 'boolean',
+      defaultValue: false
     }     
   ],
 
@@ -170,7 +171,8 @@ function addMatricula(matricula, client) {
 function existMatricula(solicitud) {
   let query = table.select(
     table.id
-  ).where(table.solicitud.equals(solicitud))
+  )
+  .where(table.solicitud.equals(solicitud).and(table.eliminado.equals(false)))
   .toQuery();
 
   return connector.execQuery(query)

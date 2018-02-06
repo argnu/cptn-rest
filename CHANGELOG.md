@@ -1,3 +1,15 @@
+# UNRELEASED
+
+## Modificado
+
+- **Solicitud**: edicion de contactos, formaciones, subsidiarios y domicilios existentes.
+- **Direccion**: eliminado atributo `numero` y `calle`, cambio por campo generico `direccion`.
+
+## Solucionado
+
+- **PersonaJuridica**: require de `Persona`. 
+
+
 # 1.2.2 (2018-01-29)
 
 ## Solucionado

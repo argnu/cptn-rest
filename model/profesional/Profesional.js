@@ -368,27 +368,27 @@ module.exports.edit = function(id, profesional, client) {
     return connector.execQuery(query, client)
       .then(r => {
         let contactos_nuevos = profesional.contactos.filter(c => !c.id);
-        let contactos_existentes = profesional.contactos.filter(c => !!c.id).map(c => c.id);
+        let contactos_existentes = profesional.contactos.filter(c => !!c.id);
         let formaciones_nuevas = profesional.formaciones.filter(f => !f.id);
-        let formaciones_existentes = profesional.formaciones.filter(f => !!f.id).map(f => f.id);
+        let formaciones_existentes = profesional.formaciones.filter(f => !!f.id);
         // let beneficiarios_nuevos = profesional.beneficiarios.filter(b => !b.id);
         // let beneficiarios_existentes = profesional.beneficiarios.filter(b => !!b.id).map(b => b.id);  
         let subsidiarios_nuevos = profesional.subsidiarios.filter(s => !s.id);
-        let subsidiarios_existentes = profesional.subsidiarios.filter(s => !!s.id).map(s => s.id);
+        let subsidiarios_existentes = profesional.subsidiarios.filter(s => !!s.id);
         let cajas_nuevas = profesional.cajas_previsionales.filter(c => !c.id);
-        let cajas_existentes = profesional.cajas_previsionales.filter(c => !!c.id).map(c => c.id);
+        let cajas_existentes = profesional.cajas_previsionales.filter(c => !!c.id);
         
         let proms = [
           connector.execQuery(
             Contacto.table.delete().where(
               Contacto.table.entidad.equals(id)
-              .and(Contacto.table.id.notIn(contactos_existentes))
+              .and(Contacto.table.id.notIn(contactos_existentes.map(c => c.id)))
             ).toQuery(), client),
 
           connector.execQuery(
             Formacion.table.delete().where(
               Formacion.table.profesional.equals(id)
-              .and(Formacion.table.id.notIn(formaciones_existentes))
+              .and(Formacion.table.id.notIn(formaciones_existentes.map(f => f.id)))
             ).toQuery(), client),
 
           // connector.execQuery(
@@ -400,27 +400,31 @@ module.exports.edit = function(id, profesional, client) {
           connector.execQuery(
             Subsidiario.table.delete().where(
               Subsidiario.table.profesional.equals(id)
-             .and(Subsidiario.table.id.notIn(subsidiarios_existentes))
+             .and(Subsidiario.table.id.notIn(subsidiarios_existentes.map(s => s.id)))
           ).toQuery(), client),
 
           connector.execQuery(
             ProfesionalCajaPrevisional.table.delete().where(
               ProfesionalCajaPrevisional.table.profesional.equals(id)
-             .and(ProfesionalCajaPrevisional.table.id.notIn(cajas_existentes))
+             .and(ProfesionalCajaPrevisional.table.id.notIn(cajas_existentes.map(c => c.id)))
           ).toQuery(), client)
         ];
 
         return Promise.all(proms)
         .then(r => {
-          let proms_contactos = contactos_nuevos.map(c => { 
+          let proms_contactos_nuevos = contactos_nuevos.map(c => { 
             c.entidad = id;
             return Contacto.add(c, client);
           });
 
-          let proms_formaciones = formaciones_nuevas.map(f => {
+          let proms_contactos_edit = contactos_existentes.map(c => Contacto.edit(c.id, c, client));
+
+          let proms_formaciones_nuevas = formaciones_nuevas.map(f => {
             f.profesional = id;
             return Formacion.add(f, client);
           });
+
+          let proms_formaciones_edit = formaciones_existentes.map(f => Formacion.edit(f.id, f, client));
 
 
           // let proms_beneficiarios = beneficiarios_nuevos.map(b => {
@@ -428,10 +432,12 @@ module.exports.edit = function(id, profesional, client) {
           //   return Beneficiario.add(b, client)
           // });
 
-          let proms_subsidiarios = subsidiarios_nuevos.map(s => {
+          let proms_subsidiarios_nuevos = subsidiarios_nuevos.map(s => {
             s.profesional = id;
             return Subsidiario.add(s, client);
           });
+
+          let proms_subsidiarios_edit = subsidiarios_existentes.map(s => Subsidiario.edit(s.id, s, client));
 
           let proms_cajas = cajas_nuevas.map(c => {
             return ProfesionalCajaPrevisional.add({
@@ -441,9 +447,12 @@ module.exports.edit = function(id, profesional, client) {
           });
 
           return Promise.all([
-            Promise.all(proms_contactos),
-            Promise.all(proms_formaciones),
-            Promise.all(proms_subsidiarios),
+            Promise.all(proms_contactos_nuevos),
+            Promise.all(proms_contactos_edit),
+            Promise.all(proms_formaciones_nuevas),
+            Promise.all(proms_formaciones_edit),
+            Promise.all(proms_subsidiarios_nuevos),
+            Promise.all(proms_subsidiarios_edit),
             // Promise.all(proms_beneficiarios),
             Promise.all(proms_cajas)
           ])

@@ -2,6 +2,8 @@ const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
+const Persona = require('./Persona');
+
 const table = sql.define({
     name: 'persona_juridica',
     columns: [

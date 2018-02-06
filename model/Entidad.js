@@ -1,6 +1,8 @@
 const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+
+const Domicilio = require('./Domicilio');
 const EntidadDomicilio = require('./EntidadDomicilio');
 
 
@@ -71,31 +73,56 @@ module.exports.add = function(entidad, client) {
 
 
 module.exports.edit = function(id, entidad, client) {
-  let domicilios_existentes = entidad.domicilios.filter(d => !!d.id).map(d => d.id);
-  let domicilios_nuevos = entidad.domicilios.filter(d => !d.id);
+  try {
+    let domicilios_existentes = entidad.domicilios.filter(d => !!d.id);
+    let domicilios_nuevos = entidad.domicilios.filter(d => !d.id);
 
-  let query = EntidadDomicilio.table.delete()
-  .where(
-    EntidadDomicilio.table.entidad.equals(id)
-    .and(EntidadDomicilio.table.id.notIn(domicilios_existentes))
-  )
-  .toQuery();
-  return connector.execQuery(query, client)
-  .then(r => {
-    let query = table.update({
-      condafip: entidad.condafip,
-      cuit: entidad.cuit
-    })
-    .where(table.id.equals(id))
+    let query = EntidadDomicilio.table.delete()
+    .where(
+      EntidadDomicilio.table.entidad.equals(id)
+      .and(EntidadDomicilio.table.id.notIn(domicilios_existentes.map(d => d.id)))
+    )
     .toQuery();
-  
+
     return connector.execQuery(query, client)
     .then(r => {
-      let proms_domicilios = domicilios_nuevos.map(d => {
-        d.entidad = id;
-        return EntidadDomicilio.add(d, client);
-      });
-      return Promise.all(proms_domicilios);        
-    })    
-  })
+      let query = table.update({
+        condafip: entidad.condafip,
+        cuit: entidad.cuit
+      })
+      .where(table.id.equals(id))
+      .toQuery();
+    
+      return connector.execQuery(query, client)
+      .then(r => {
+        let proms_domicilios_nuevos = domicilios_nuevos.map(d => {
+          d.entidad = id;
+          return EntidadDomicilio.add(d, client);
+        });
+
+        let proms_domicilios_edit = domicilios_existentes.filter(d => typeof d.domicilio.pais == 'number')
+                                                         .map(d => Domicilio.edit(d.domicilio.id, d.domicilio, client));
+
+        return Promise.all([
+          Promise.all(proms_domicilios_nuevos),
+          Promise.all(proms_domicilios_edit)
+        ]);
+      })   
+      .catch(e => {
+        console.log(e);
+        console.log('Error en Entidad.edit');
+        return Promise.reject(e);
+      })       
+    })
+    .catch(e => {
+      console.log(e);
+      console.log('Error en Entidad.edit');
+      return Promise.reject(e);
+    })
+  }
+  catch (e) {
+    console.log(e);
+    console.log('Error en Entidad.edit');
+    throw Error(e);
+  }
 }
