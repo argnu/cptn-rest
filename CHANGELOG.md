@@ -4,6 +4,9 @@
 
 - **Formacion**: fechaEmision y fechaEgreso.
 
+## Modificado
+- **Usuario**: obtención de domicilios de las delegaciones del usuario.
+
 # 1.3.0 (2018-02-05)
 
 ## Modificado
