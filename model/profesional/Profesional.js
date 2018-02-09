@@ -177,11 +177,6 @@ module.exports.add = function (profesional, client) {
               return Formacion.add(f, client);
             }) : [];
 
-            // let proms_beneficiarios = (profesional.beneficiarios && profesional.beneficiarios.length) ? profesional.beneficiarios.map(b => {
-            //   b.profesional = profesional.id;
-            //   return Beneficiario.add(b, client);
-            // }) : [];
-
             let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
               s.profesional = profesional.id;
               return Subsidiario.add(s, client);
@@ -197,7 +192,6 @@ module.exports.add = function (profesional, client) {
 
             return Promise.all(proms_contactos)
             .then(rs => Promise.all(proms_formaciones))
-            // .then(rs => Promise.all(proms_beneficiarios))
             .then(rs => Promise.all(proms_subsidiarios))
             .then(rs => Promise.all(proms_cajas))
             .then(rs => profesional);
@@ -371,8 +365,6 @@ module.exports.edit = function(id, profesional, client) {
         let contactos_existentes = profesional.contactos.filter(c => !!c.id);
         let formaciones_nuevas = profesional.formaciones.filter(f => !f.id);
         let formaciones_existentes = profesional.formaciones.filter(f => !!f.id);
-        // let beneficiarios_nuevos = profesional.beneficiarios.filter(b => !b.id);
-        // let beneficiarios_existentes = profesional.beneficiarios.filter(b => !!b.id).map(b => b.id);  
         let subsidiarios_nuevos = profesional.subsidiarios.filter(s => !s.id);
         let subsidiarios_existentes = profesional.subsidiarios.filter(s => !!s.id);
         let cajas_nuevas = profesional.cajas_previsionales.filter(c => !c.id);
@@ -390,12 +382,6 @@ module.exports.edit = function(id, profesional, client) {
               Formacion.table.profesional.equals(id)
               .and(Formacion.table.id.notIn(formaciones_existentes.map(f => f.id)))
             ).toQuery(), client),
-
-          // connector.execQuery(
-          //   Beneficiario.table.delete().where(
-          //     Beneficiario.table.profesional.equals(id)
-          //     .and(Beneficiario.table.id.notIn(beneficiarios_existentes))
-          //   ).toQuery(), client), 
 
           connector.execQuery(
             Subsidiario.table.delete().where(
@@ -426,12 +412,6 @@ module.exports.edit = function(id, profesional, client) {
 
           let proms_formaciones_edit = formaciones_existentes.map(f => Formacion.edit(f.id, f, client));
 
-
-          // let proms_beneficiarios = beneficiarios_nuevos.map(b => {
-          //   b.profesional = id;
-          //   return Beneficiario.add(b, client)
-          // });
-
           let proms_subsidiarios_nuevos = subsidiarios_nuevos.map(s => {
             s.profesional = id;
             return Subsidiario.add(s, client);
@@ -453,7 +433,6 @@ module.exports.edit = function(id, profesional, client) {
             Promise.all(proms_formaciones_edit),
             Promise.all(proms_subsidiarios_nuevos),
             Promise.all(proms_subsidiarios_edit),
-            // Promise.all(proms_beneficiarios),
             Promise.all(proms_cajas)
           ])
           .then(rs => id);

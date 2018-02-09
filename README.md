@@ -88,3 +88,8 @@ Ver enlace: https://blog.codeship.com/running-node-js-linux-systemd/
   }
 }
 ```
+
+
+## Backup
+
+`pg_dump -d $DB -U $USUARIO -F c -f "./backup"`
