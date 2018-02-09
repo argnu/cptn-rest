@@ -52,7 +52,7 @@ router.post('/',
     else solicitud = req.body;
 
     model.Solicitud.add(solicitud)
-      .then(id => res.status(201).json({ id }))
+      .then(solicitud => res.status(201).json(solicitud))
       .catch(e => utils.errorHandler(e, req, res));
 });
 

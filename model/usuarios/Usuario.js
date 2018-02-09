@@ -107,15 +107,13 @@ module.exports.auth = function(usuario) {
 
 module.exports.getDelegaciones = function(id) {
   let table = Delegacion.table;
-  let query = table.select(
-    table.id, table.nombre
-  )
+  let query = table.select(table.id)
   .from(table.join(UsuarioDelegacion.table).on(table.id.equals(UsuarioDelegacion.table.delegacion)))
   .where(UsuarioDelegacion.table.usuario.equals(id))
   .toQuery();
 
   return connector.execQuery(query)
-    .then(r => r.rows);  
+    .then(r => Promise.all(r.rows.map(row => Delegacion.get(row.id))));
 }
 
 module.exports.addDelegacion = function(id, delegacion) {
