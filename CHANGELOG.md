@@ -1,4 +1,4 @@
-#UNRELEASED
+# 1.3.1 (2018-02-14)
 
 ## Solucionado
  
