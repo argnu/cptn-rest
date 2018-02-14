@@ -1,3 +1,9 @@
+#UNRELEASED
+
+## Solucionado
+ 
+- **Legajo**: bug cuando creaba domicilio, chequeaba la `calle` que ya no existe.
+
 # 1.3.0 (2018-02-05)
 
 ## Modificado
