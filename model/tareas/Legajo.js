@@ -403,7 +403,7 @@ module.exports.add = function (legajo) {
         .beginTransaction()
         .then(con => {
             connection = con;
-            if (legajo.domicilio.localidad && legajo.domicilio.calle.length) {
+            if (legajo.domicilio.localidad) {
                 return Domicilio.add(legajo.domicilio, connection.client)    
             }
             else return Promise.resolve(null)
