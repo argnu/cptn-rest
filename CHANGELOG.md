@@ -1,4 +1,10 @@
-#UNRELEASED
+# UNRELEASED
+
+## Modificado
+
+- **Formacion**: nuevo campo fechaEmision.
+
+# 1.3.1 (2018-02-15)
 
 ## Solucionado
  
