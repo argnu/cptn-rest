@@ -1,0 +1,7 @@
+{
+    "sql-file": true,
+    "migrations-dir": "db/migraciones/files",
+    "defaultEnv": "dev",
+    "dev": "postgres://mweingart:mwei090@localhost/cptn",
+    "prod": { "ENV": "DB_CONNECTION" }
+}

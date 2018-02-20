@@ -1,8 +1,28 @@
-# 1.3.1 (2018-02-14)
+# 1.4.0 (2018-02-14)
+
+## Modificado
+
+- **Formacion**: nuevo campo fechaEmision.
+
+## Solucionado
+
+- **Solicitud**: no devolvía bien el objeto resultante del POST.
+- Fix en migracion de domicilios (faltaban puntos y coma).
+
+# 1.3.1 (2018-02-15)
 
 ## Solucionado
  
 - **Legajo**: bug cuando creaba domicilio, chequeaba la `calle` que ya no existe.
+
+# 1.3.0 (2018-02-05)
+
+## Agregado
+
+- **Formacion**: fechaEmision y fechaEgreso.
+
+## Modificado
+- **Usuario**: obtención de domicilios de las delegaciones del usuario.
 
 # 1.3.0 (2018-02-05)
 
