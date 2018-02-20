@@ -9,23 +9,23 @@ ALTER TABLE "domicilio" DROP COLUMN calle;
 ALTER TABLE "domicilio" DROP COLUMN numero;
 
 ALTER TABLE empresa_representante DROP CONSTRAINT "empresa_representante_empresa_fkey";
-ALTER TABLE empresa_representante ADD FOREIGN KEY ("empresa") REFERENCES empresa("id") ON DELETE CASCADE 
+ALTER TABLE empresa_representante ADD FOREIGN KEY ("empresa") REFERENCES empresa("id") ON DELETE CASCADE ;
 ALTER TABLE empresa_representante DROP CONSTRAINT "empresa_representante_matricula_fkey";
-ALTER TABLE empresa_representante ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE 
+ALTER TABLE empresa_representante ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE ;
 ALTER TABLE legajo DROP CONSTRAINT "legajo_matricula_fkey";
-ALTER TABLE legajo ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE 
+ALTER TABLE legajo ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE ;
 ALTER TABLE boleta DROP CONSTRAINT "boleta_matricula_fkey";
-ALTER TABLE boleta ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE 
+ALTER TABLE boleta ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE ;
 ALTER TABLE boleta_item DROP CONSTRAINT "boleta_item_boleta_fkey";
-ALTER TABLE boleta_item ADD FOREIGN KEY ("boleta") REFERENCES boleta("id") ON DELETE CASCADE 
+ALTER TABLE boleta_item ADD FOREIGN KEY ("boleta") REFERENCES boleta("id") ON DELETE CASCADE ;
 ALTER TABLE comprobante DROP CONSTRAINT "comprobante_matricula_fkey";
-ALTER TABLE comprobante ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE 
+ALTER TABLE comprobante ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE ;
 ALTER TABLE comprobante_item DROP CONSTRAINT "comprobante_item_boleta_fkey";
-ALTER TABLE comprobante_item ADD FOREIGN KEY ("boleta") REFERENCES boleta("id") ON DELETE SET NULL 
+ALTER TABLE comprobante_item ADD FOREIGN KEY ("boleta") REFERENCES boleta("id") ON DELETE SET NULL ;
 ALTER TABLE volante_pago DROP CONSTRAINT "volante_pago_matricula_fkey";
-ALTER TABLE volante_pago ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE 
+ALTER TABLE volante_pago ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE ;
 ALTER TABLE volante_pago_boleta DROP CONSTRAINT "volante_pago_boleta_boleta_fkey";
-ALTER TABLE volante_pago_boleta ADD FOREIGN KEY ("boleta") REFERENCES boleta("id") ON DELETE SET NULL 
+ALTER TABLE volante_pago_boleta ADD FOREIGN KEY ("boleta") REFERENCES boleta("id") ON DELETE SET NULL ;
 
 
 DO $$
