@@ -1,8 +1,19 @@
 # UNRELEASED
 
+## Agregado:
+ - Entidad nueva `EntidadCondicionAfip`.
+ - Una `Entidad` puede contener múltiples condiciones impositivas.
+
+# 1.4.0 (2018-02-14)
+
 ## Modificado
 
 - **Formacion**: nuevo campo fechaEmision.
+
+## Solucionado
+
+- **Solicitud**: no devolvía bien el objeto resultante del POST.
+- Fix en migracion de domicilios (faltaban puntos y coma).
 
 # 1.3.1 (2018-02-15)
 

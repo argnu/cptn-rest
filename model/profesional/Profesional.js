@@ -6,6 +6,7 @@ const Formacion = require('./Formacion');
 const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
 const EntidadDomicilio = require('../EntidadDomicilio');
+const EntidadCondicionAfip = require('../EntidadCondicionAfip');
 const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
@@ -69,10 +70,6 @@ const table = sql.define({
     },
     {
       name: 'independiente',
-      dataType: 'boolean'
-    },
-    {
-      name: 'jubilado',
       dataType: 'boolean'
     },
     {
@@ -141,7 +138,6 @@ function addDatosBasicos(profesional, client) {
     table.observaciones.value(profesional.observaciones),
     table.relacionDependencia.value(profesional.relacionDependencia),
     table.independiente.value(profesional.independiente),
-    table.jubilado.value(profesional.jubilado),
     table.empresa.value(profesional.empresa),
     table.serviciosPrestados.value(profesional.serviciosPrestados),
     table.publicar.value(profesional.publicar),
@@ -160,8 +156,8 @@ module.exports.add = function (profesional, client) {
   return Entidad.add({
     tipo: profesional.tipo,
     cuit: profesional.cuit,
-    condafip: profesional.condafip,
     domicilios: profesional.domicilios,
+    condiciones_afip: profesional.condiciones_afip,
   }, client)
   .then(entidad => {
     profesional.id = entidad.id;
@@ -211,10 +207,8 @@ const select = [
   table.nacionalidad,
   table.relacionDependencia, 
   table.independiente, 
-  table.jubilado,
   TipoSexo.table.valor.as('sexo'),
   TipoEstadoCivil.table.valor.as('estadoCivil'),
-  TipoCondicionAfip.table.valor.as('condafip'),
   table.observaciones, 
   table.empresa,
   table.serviciosPrestados,
@@ -227,7 +221,6 @@ const select = [
 ];
 
 const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
-                         .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
 
@@ -254,8 +247,9 @@ module.exports.getAll = function(params) {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilios, contactos, formaciones, cajas_previsionales, subsidiarios ] = value;
+      [ domicilios, condiciones_afip, contactos, formaciones, cajas_previsionales, subsidiarios ] = value;
       profesionales[index].domicilios = domicilios;
+      profesionales[index].condiciones_afip = condiciones_afip;
       profesionales[index].contactos = contactos;
       profesionales[index].formaciones = formaciones;
       profesionales[index].cajas_previsionales = cajas_previsionales;
@@ -275,10 +269,10 @@ module.exports.getAll = function(params) {
 function getDatosProfesional(profesional) {
   return Promise.all([
       EntidadDomicilio.getByEntidad(profesional.id),
+      EntidadCondicionAfip.getByEntidad(profesional.id),
       Contacto.getAll(profesional.id),
       Formacion.getAll(profesional.id),
       ProfesionalCajaPrevisional.getByProfesional(profesional.id),
-      // Beneficiario.getAll(profesional.id),
       Subsidiario.getAll(profesional.id)
     ]);
 }
@@ -302,9 +296,10 @@ module.exports.get = function(id) {
     return getDatosProfesional(profesional);
   })
   .then(([
-      domicilios, contactos, formaciones, cajas_previsionales, subsidiarios
+      domicilios, condiciones_afip, contactos, formaciones, cajas_previsionales, subsidiarios
     ]) => {
       profesional.domicilios = domicilios;
+      profesional.condiciones_afip = condiciones_afip;
       profesional.contactos = contactos;
       profesional.formaciones = formaciones;
       profesional.cajas_previsionales = cajas_previsionales;
@@ -327,8 +322,8 @@ module.exports.getFirma = function(id) {
 module.exports.edit = function(id, profesional, client) {
   return Entidad.edit(id, {
     cuit: profesional.cuit,
-    condafip: profesional.condafip,
-    domicilios: profesional.domicilios
+    domicilios: profesional.domicilios,
+    condiciones_afip: profesional.condiciones_afip
   }, client)
   .then(r => {
     let obj_update = {
@@ -343,7 +338,6 @@ module.exports.edit = function(id, profesional, client) {
       observaciones: profesional.observaciones,
       relacionDependencia: profesional.relacionDependencia,
       independiente: profesional.independiente,
-      jubilado: profesional.jubilado,
       empresa: profesional.empresa,
       serviciosPrestados: profesional.serviciosPrestados,
       publicarAcervo: profesional.publicarAcervo,

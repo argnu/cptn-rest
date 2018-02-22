@@ -41,6 +41,7 @@ module.exports.MatriculaExterna = require('./MatriculaExterna');
 
 module.exports.Entidad = require('./Entidad');
 module.exports.EntidadDomicilio = require('./EntidadDomicilio');
+module.exports.EntidadCondicionAfip = require('./EntidadCondicionAfip');
 module.exports.Empresa = require('./empresa/Empresa');
 module.exports.EmpresaRepresentante = require('./empresa/EmpresaRepresentante');
 module.exports.EmpresaIncumbencia = require('./empresa/EmpresaIncumbencia');

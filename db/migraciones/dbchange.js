@@ -219,9 +219,12 @@ function openFile(file, content) {
 
 function addQuerys(file, titulo, sentencias) {
     if (!sentencias.length) return Promise.resolve();
-    let querys = `\n\n /*    ${titulo}   */\n\n` + sentencias.join('\n');
+    let querys = `\n\n /*    ${titulo}   */\n\n` + sentencias.map(s => s+';').join('\n');
 
-    if (!file) return console.log(querys);
+    if (!file) {
+        console.log(querys);
+        return Promise.resolve();
+    }
     else return new Promise(function(resolve, reject) {
         fs.appendFile(file, querys, (err) => {
             if (err) reject(err);

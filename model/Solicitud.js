@@ -130,11 +130,9 @@ module.exports.add = function(solicitud) {
       })
   })
   .catch(e => {
-    console.error('Error nueva solicitud, DNI:', solicitud.entidad.dni);
-    console.error('Error nueva solicitud, formaciones:', solicitud.entidad.formaciones);
     connector.rollback(connection.client);
     connection.done();
-    throw Error(e);
+    return Promise.reject(e);
   });          
 }
 

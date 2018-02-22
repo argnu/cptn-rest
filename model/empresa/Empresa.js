@@ -89,7 +89,6 @@ module.exports.add = function(empresa, client) {
   return Entidad.add({
     tipo: empresa.tipo,
     cuit: empresa.cuit,
-    condafip: empresa.condafip,
     domicilios: empresa.domicilios
   }, client)
   .then(entidad => {
@@ -144,14 +143,12 @@ const select = [
   Entidad.table.tipo,
   TipoEmpresa.table.valor.as('tipoEmpresa'),
   TipoSociedad.table.valor.as('tipoSociedad'),
-  TipoCondicionAfip.table.valor.as('condafip'),
   Entidad.table.cuit,
 ];
 
 const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
                          .leftJoin(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
                          .leftJoin(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
-                         .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
 
 module.exports.getAll = function(params) {
   let empresas = [];
@@ -216,7 +213,6 @@ module.exports.get = function(id) {
 module.exports.edit = function (id, empresa, client) {
   return Entidad.edit(id, {
     cuit: empresa.cuit,
-    condafip: empresa.condafip,
     domicilios: empresa.domicilios,
   }, client)
     .then(r => {
