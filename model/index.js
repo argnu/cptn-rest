@@ -30,6 +30,7 @@ module.exports.TipoPago = require('./tipos/TipoPago');
 module.exports.TipoFormaPago = require('./tipos/TipoFormaPago');
 module.exports.TipoVinculo = require('./tipos/TipoVinculo');
 module.exports.TipoTarjeta = require('./tipos/TipoTarjeta');
+module.exports.TipoDocumento = require('./tipos/TipoDocumento');
 
 module.exports.Persona = require('./Persona');
 module.exports.PersonaFisica = require('./PersonaFisica');
@@ -66,3 +67,5 @@ module.exports.VolantePago = require('./cobranzas/VolantePago');
 module.exports.VolantePagoBoleta = require('./cobranzas/VolantePagoBoleta');
 
 module.exports.ValoresGlobales = require('./ValoresGlobales');
+
+module.exports.Documento = require('./Documento');
