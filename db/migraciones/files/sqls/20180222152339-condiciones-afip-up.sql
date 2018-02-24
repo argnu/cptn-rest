@@ -6,3 +6,5 @@ CREATE TABLE "entidad_condicion_afip" ("id" serial PRIMARY KEY, "entidad" int NO
 
 ALTER TABLE "entidad" DROP COLUMN "condafip";
 ALTER TABLE "profesional" DROP COLUMN "jubilado";
+
+INSERT INTO t_estadomatricula (valor) VALUES ('Jubilado');
