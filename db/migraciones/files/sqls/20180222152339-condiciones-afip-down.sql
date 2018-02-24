@@ -6,3 +6,6 @@ DROP TABLE "entidad_condicion_afip";
 
 ALTER TABLE "entidad" ADD COLUMN "condafip" INT REFERENCES t_condicionafip("id") ON UPDATE CASCADE ON DELETE SET NULL;
 ALTER TABLE "profesional" ADD COLUMN "jubilado" BOOLEAN;
+
+
+DELETE FROM t_estadomatricula WHERE valor='Jubilado';
