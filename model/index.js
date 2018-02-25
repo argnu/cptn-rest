@@ -38,6 +38,7 @@ module.exports.PersonaJuridica = require('./PersonaJuridica');
 
 module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
+module.exports.MatriculaHistorial = require('./MatriculaHistorial');
 module.exports.MatriculaExterna = require('./MatriculaExterna');
 
 module.exports.Entidad = require('./Entidad');

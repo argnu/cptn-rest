@@ -3,9 +3,6 @@
 CREATE TABLE "entidad_condicion_afip" ("id" serial PRIMARY KEY, "entidad" int NOT NULL, "condicion_afip" int NOT NULL, "descripcion" text, FOREIGN KEY ( "entidad" ) REFERENCES "entidad" ( "id" ), FOREIGN KEY ( "condicion_afip" ) REFERENCES "t_condicionafip" ( "id" ));
 
 
-/*  AGREGAR ESTADO DE MATRICULA JUBILADO */
-INSERT INTO t_estadomatricula (valor) VALUES ('Jubilado');
-
 INSERT INTO t_condicionafip (id, valor) VALUES (7, 'Relación de Dependencia');
 INSERT INTO t_condicionafip (id, valor) VALUES (8, 'Desempleado');
 INSERT INTO t_condicionafip (id, valor) VALUES (9, 'Jubilado');

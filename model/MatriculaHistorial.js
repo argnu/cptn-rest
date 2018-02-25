@@ -20,6 +20,11 @@ sql.setDialect('postgres');
       notNull: true
     },
     {
+      name: 'documento',
+      dataType: 'int',
+      notNull: true
+    },
+    {
       name: 'fecha',
       dataType: 'date',
       notNull: true
@@ -40,6 +45,11 @@ sql.setDialect('postgres');
       {
         table: 't_estadomatricula',
         columns: ['estado'],
+        refColumns: ['id']          
+      },
+      {
+        table: 'documento',
+        columns: ['documento'],
         refColumns: ['id']          
       },
       {
@@ -66,5 +76,20 @@ module.exports.get = function(id) {
        .toQuery();
 
   return connector.execQuery(query)
+  .then(r => r.rows[0]);
+}
+
+module.exports.add = function(data, client) {
+  let query = table.insert(
+    table.matricula.value(data.matricula),
+    table.estado.value(data.estado),
+    table.documento.value(data.documento),
+    table.fecha.value(data.fecha),
+    table.usuario.value(data.usuario)
+  )
+  .returning(table.id, table.estado, table.documento, table.fecha, table.usuario)
+  .toQuery();
+
+  return connector.execQuery(query, client)
   .then(r => r.rows[0]);
 }

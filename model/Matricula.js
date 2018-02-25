@@ -11,6 +11,8 @@ const Entidad = require('./Entidad');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
+const MatriculaHistorial = require('./MatriculaHistorial');
+const Documento = require('./Documento');
 
 
 const table = sql.define({
@@ -225,6 +227,14 @@ function addBoleta(id, fecha, importe, delegacion, client) {
   return Boleta.add(boleta, client);
 }
 
+function getDocumento(documento, client) {
+  return Documento.getAll(documento)
+  .then(docs => {
+    if (docs.length > 0) return Promise.resolve(docs[0]);
+    else return Documento.add(documento, client);
+  })  
+}
+
 module.exports.aprobar = function(matricula) {
   let solicitud;
   let estado;
@@ -266,6 +276,22 @@ module.exports.aprobar = function(matricula) {
               else return Promise.resolve();
             })
             .then(r => {
+              let documento = {
+                tipo: 1, // 1 es RESOLUCION,
+                fecha: matricula.fechaResolucion,
+                numero: matricula.numeroActa 
+              };
+
+              return getDocumento(documento, connection.client);              
+            })
+            .then(documento => MatriculaHistorial.add({
+              matricula: matricula_added.id,
+              documento: documento.id,
+              estado: 12, // 12 es 'Pendiente de Pago'
+              fecha: moment(),
+              usuario: matricula.operador
+            }, connection.client))
+            .then(r => {
               return connector.commit(connection.client)
                 .then(r => {
                   connection.done();
@@ -281,6 +307,45 @@ module.exports.aprobar = function(matricula) {
         });
       }
       else throw ({ code: 400, message: "Ya existe una matrícula para dicha solicitud" });
+  })
+}
+
+module.exports.cambiarEstado = function(nuevo_estado) {
+  let connection;
+
+  return connector
+  .beginTransaction()
+  .then(conx => {
+    connection = conx;
+
+    return getDocumento(nuevo_estado.documento, connection.client)
+    .then(documento => 
+      MatriculaHistorial.add({
+        matricula: nuevo_estado.matricula,
+        documento: documento.id,
+        estado: nuevo_estado.estado,
+        fecha: moment(),
+        usuario: nuevo_estado.operador
+      }, connection.client)
+    )
+    .then(historial => {
+      let query = table.update({
+        estado: nuevo_estado.estado,
+        updated_by: nuevo_estado.operador
+      })
+      .returning(table.id, table.estado)
+      .toQuery();
+
+      return connector.execQuery(query, connection.client)
+      .then(r => r.rows[0]);
+    })
+    .then(matricula => {
+      return connector.commit(connection.client)
+        .then(r => {
+          connection.done();
+          return matricula;
+        })                            
+    })    
   })
 }
 

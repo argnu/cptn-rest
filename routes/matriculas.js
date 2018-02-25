@@ -39,6 +39,12 @@ router.post('/total', function(req, res) {
     .catch(e => handler(e, res));
 });
 
+router.post('/cambiar-estado', function(req, res) {
+  model.Matricula.cambiarEstado(req.body)
+    .then(total => res.status(200).json(total))
+    .catch(e => handler(e, res));
+});
+
 router.patch('/:id', function(req, res) {
   model.Matricula.patch(req.params.id, req.body)
     .then(r => res.status(200).json(r))
