@@ -4,13 +4,16 @@ module.exports.Departamento = require('./geograficos/Departamento');
 module.exports.Localidad = require('./geograficos/Localidad');
 module.exports.Domicilio = require('./Domicilio');
 
+module.exports.Delegacion = require('./Delegacion');
 module.exports.Usuario = require('./usuarios/Usuario');
 module.exports.UsuarioDelegacion = require('./usuarios/UsuarioDelegacion');
 
+module.exports.Banco = require('./Banco');
+
 module.exports.Institucion = require('./Institucion');
 module.exports.Titulo = require('./Titulo');
-module.exports.Delegacion = require('./Delegacion');
-module.exports.Banco = require('./Banco');
+module.exports.InstitucionTitulo = require('./InstitucionTitulo');
+module.exports.TituloIncumbencia = require('./TituloIncumbencia');
 
 module.exports.TipoSexo = require('./tipos/TipoSexo');
 module.exports.TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
@@ -31,6 +34,7 @@ module.exports.TipoFormaPago = require('./tipos/TipoFormaPago');
 module.exports.TipoVinculo = require('./tipos/TipoVinculo');
 module.exports.TipoTarjeta = require('./tipos/TipoTarjeta');
 module.exports.TipoDocumento = require('./tipos/TipoDocumento');
+module.exports.TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
 
 module.exports.Persona = require('./Persona');
 module.exports.PersonaFisica = require('./PersonaFisica');
@@ -50,6 +54,7 @@ module.exports.EmpresaIncumbencia = require('./empresa/EmpresaIncumbencia');
 module.exports.CajaPrevisional = require('./profesional/CajaPrevisional');
 module.exports.Profesional = require('./profesional/Profesional');
 module.exports.ProfesionalCajaPrevisional = require('./profesional/ProfesionalCajaPrevisional');
+module.exports.ProfesionalTitulo = require('./profesional/ProfesionalTitulo');
 module.exports.Subsidiario = require('./profesional/Subsidiario');
 module.exports.BeneficiarioCaja = require('./profesional/BeneficiarioCaja');
 module.exports.Formacion = require('./profesional/Formacion');
