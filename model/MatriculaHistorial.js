@@ -21,8 +21,7 @@ sql.setDialect('postgres');
     },
     {
       name: 'documento',
-      dataType: 'int',
-      notNull: true
+      dataType: 'int'
     },
     {
       name: 'fecha',
