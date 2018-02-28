@@ -21,7 +21,15 @@ const table = sql.define({
       name: 'profesional',
       dataType: 'int',
       notNull: true
-    }
+    },
+    {
+      name: 'fechaEmision',
+      dataType: 'date'
+    },
+    {
+      name: 'fechaEgreso',
+      dataType: 'date'
+    } 
   ],
 
   foreignKeys: [
