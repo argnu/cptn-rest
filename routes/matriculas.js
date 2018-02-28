@@ -27,6 +27,12 @@ router.get('/:id', function(req, res) {
     .catch(e => handler(e, res));
 });
 
+router.get('/:id/historial', function(req, res) {
+  model.MatriculaHistorial.getByMatricula(req.params.id)
+    .then(r => res.json(r))
+    .catch(e => handler(e, res));
+});
+
 router.post('/', function(req, res) {
   model.Matricula.aprobar(req.body)
     .then(matricula => res.status(201).json(matricula))
