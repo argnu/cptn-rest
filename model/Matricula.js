@@ -257,7 +257,7 @@ module.exports.aprobar = function(matricula) {
           .then(connection => {
             matricula.solicitud = solicitud.id;
             matricula.entidad = solicitud.entidad.id;
-            matricula.estado = 12; // 12 es 'Pendiente de Pago'
+            matricula.estado = matricula.generar_boleta ? 12 : 13; // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
             matricula.numeroMatricula = numero_nueva;            
 
             return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)  

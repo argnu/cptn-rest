@@ -42,6 +42,9 @@ module.exports.getAll = function(params) {
 
   if (params.numero) query.where(table.numero.equals(params.numero));
   if (params.tipo) query.where(table.tipo.equals(params.tipo));
+  if (params.fecha) query.where(table.fecha.equals(params.fecha));
+
+  if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
 
   return connector.execQuery(query.toQuery())
   .then(r => r.rows);
@@ -58,34 +61,17 @@ module.exports.get = function(id) {
 }
 
 module.exports.add = function(documento, client) {
-  try {
-    let query = table.select(table.star())
-    .where(
-      table.numero.equals(documento.numero)
-      .and(table.tipo.equals(documento.tipo))
+  try { 
+    let query = table.insert(
+      table.numero.value(documento.numero),
+      table.fecha.value(documento.fecha),
+      table.tipo.value(documento.tipo)
     )
+    .returning(table.id, table.numero, table.tipo, table.fecha)
     .toQuery();
-  
+
     return connector.execQuery(query)
-    .then(r => {
-      if (r.rows.length > 0) return Promise.reject({ code: 400, message: "Ya existe un documento con mismo número y tipo" })
-      else {
-        let query = table.insert(
-          table.numero.value(documento.numero),
-          table.fecha.value(documento.fecha),
-          table.tipo.value(documento.tipo)
-        )
-        .returning(table.id, table.numero, table.tipo, table.fecha)
-        .toQuery();
-  
-        return connector.execQuery(query, client)
-        .then(r => r.rows[0])
-        .catch(e => {
-          console.error(e);
-          return Promise.reject(e);          
-        })
-      }
-    });
+    .then(r => r.rows[0]);
   }
   catch (e) {
     console.error(e);
