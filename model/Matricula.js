@@ -333,6 +333,7 @@ module.exports.cambiarEstado = function(nuevo_estado) {
         estado: nuevo_estado.estado,
         updated_by: nuevo_estado.operador
       })
+      .where(table.id.equals(nuevo_estado.matricula))
       .returning(table.id, table.estado)
       .toQuery();
 
