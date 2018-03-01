@@ -10,16 +10,15 @@ UPDATE t_condicionafip SET valor='Monotributo' WHERE id=6;
 UPDATE t_condicionafip SET valor='IVA Responsable Inscripto' WHERE id=2;
 
 INSERT INTO entidad_condicion_afip (entidad, condicion_afip)
-select E.id as entidad,(Case WHEN (E.condafip=1) THEN (Case WHEN (P."relacionDependencia") THEN 7
-                                                 WHEN (P."jubilado") THEN 9
-                         WHEN (P."independiente") THEN 6
+select e.id as entidad,(Case WHEN (e.condafip=1) THEN (Case WHEN (p."relacionDependencia") THEN 7
+                                                 WHEN (p."jubilado") THEN 9
+                         WHEN (p."independiente") THEN 6
                                                  ELSE 8 END)
-                  WHEN (E.condafip=2) THEN 2
+                  WHEN (e.condafip=2) THEN 2
              ELSE 6
        end) as condicion_afip
-from matricula M
-INNER JOIN profesional P ON (M.entidad = P.id)
-INNER JOIN Entidad E ON (E.id = P.id);
+from profesional p 
+INNER JOIN entidad e ON (e.id = p.id);
 
 
  /*    SENTENCIAS DE ALTERACION DE TABLAS: ELIMINACION DE COLUMNAS   */
