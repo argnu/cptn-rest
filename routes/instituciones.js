@@ -22,7 +22,10 @@ router.get('/:id', function(req, res) {
 });
 
 router.get('/:id/titulos', function(req, res) {
-  model.InstitucionTitulo.getByInstitucion(req.params.id)
+  let query = req.query;
+  query.institucion = req.params.id;
+
+  model.InstitucionTitulo.getAll(query)
     .then(r => res.json(r))
     .catch(e => {
       console.error(e);

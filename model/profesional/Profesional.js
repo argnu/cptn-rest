@@ -2,7 +2,7 @@ const config = require('../../config.private');
 const connector = require('../../db/connector');
 const Contacto = require('../Contacto');
 const ProfesionalCajaPrevisional = require('./ProfesionalCajaPrevisional');
-const Formacion = require('./Formacion');
+const ProfesionalTitulo = require('./ProfesionalTitulo');
 const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
 const EntidadDomicilio = require('../EntidadDomicilio');
@@ -170,7 +170,7 @@ module.exports.add = function (profesional, client) {
 
             let proms_formaciones = (profesional.formaciones && profesional.formaciones.length) ? profesional.formaciones.map(f => {
               f.profesional = profesional.id;
-              return Formacion.add(f, client);
+              return ProfesionalTitulo.add(f, client);
             }) : [];
 
             let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
@@ -271,7 +271,7 @@ function getDatosProfesional(profesional) {
       EntidadDomicilio.getByEntidad(profesional.id),
       EntidadCondicionAfip.getByEntidad(profesional.id),
       Contacto.getAll(profesional.id),
-      Formacion.getAll(profesional.id),
+      ProfesionalTitulo.getByProfesional(profesional.id),
       ProfesionalCajaPrevisional.getByProfesional(profesional.id),
       Subsidiario.getAll(profesional.id)
     ]);
@@ -372,9 +372,9 @@ module.exports.edit = function(id, profesional, client) {
             ).toQuery(), client),
 
           connector.execQuery(
-            Formacion.table.delete().where(
-              Formacion.table.profesional.equals(id)
-              .and(Formacion.table.id.notIn(formaciones_existentes.map(f => f.id)))
+            ProfesionalTitulo.table.delete().where(
+              ProfesionalTitulo.table.profesional.equals(id)
+              .and(ProfesionalTitulo.table.id.notIn(formaciones_existentes.map(f => f.id)))
             ).toQuery(), client),
 
           connector.execQuery(
@@ -401,10 +401,10 @@ module.exports.edit = function(id, profesional, client) {
 
           let proms_formaciones_nuevas = formaciones_nuevas.map(f => {
             f.profesional = id;
-            return Formacion.add(f, client);
+            return ProfesionalTitulo.add(f, client);
           });
 
-          let proms_formaciones_edit = formaciones_existentes.map(f => Formacion.edit(f.id, f, client));
+          let proms_formaciones_edit = formaciones_existentes.map(f => ProfesionalTitulo.edit(f.id, f, client));
 
           let proms_subsidiarios_nuevos = subsidiarios_nuevos.map(s => {
             s.profesional = id;
