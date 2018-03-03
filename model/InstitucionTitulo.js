@@ -80,7 +80,10 @@ const select = [
 const from = table.join(TipoNivelTitulo.table).on(table.nivel.equals(TipoNivelTitulo.table.id));
 
 module.exports.getAll = function(params) {
-  let query = table.select(select).from(from)
+  let query = table.select(select).from(from);
+
+  if (params.institucion) query.where(table.institucion.equals(params.institucion));
+  if (params.nivel) query.where(table.nivel.equals(params.nivel));
 
   return connector.execQuery(query.toQuery())
   .then(r => r.rows.map(row => dot.object(row)));
