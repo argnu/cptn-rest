@@ -16,7 +16,7 @@ sql.setDialect('postgres');
     },
     {
       name: 'numero',
-      dataType: 'int',
+      dataType: 'varchar(10)',
       notNull: true
     },
     {
