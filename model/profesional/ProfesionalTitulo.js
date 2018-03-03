@@ -44,7 +44,7 @@ const table = sql.define({
       refColumns: [ 'id' ]
     },
     {
-      table: 'titulo',
+      table: 'institucion_titulo',
       columns: [ 'titulo' ],
       refColumns: [ 'id' ]
     }
