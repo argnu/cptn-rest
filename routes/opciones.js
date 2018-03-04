@@ -1,3 +1,4 @@
+const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
 const bodyParser = require('body-parser');
@@ -39,10 +40,7 @@ router.get('/', function(req, res) {
         vinculo, documento, niveles_titulos
       })
   )
-  .catch(e => {
-    console.error(e);
-    res.status(500).json({ msg: 'Error en el servidor' });
-  });
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 module.exports = router;

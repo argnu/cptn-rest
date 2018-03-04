@@ -18,8 +18,10 @@ module.exports.numberOrNull = function(value) {
 }
 
 module.exports.errorHandler = function(e, req, res) {
-  console.error(`Error en ${req.method} ${req.baseUrl}${req.path}`);
-  console.log(e)
   if (e.code) res.status(e.code).json({ message: e.message });
-  else res.status(500).json({ msg: 'Error en el servidor' });
+  else { 
+    console.error(`Error en ${req.method} ${req.baseUrl}${req.path}`);
+    console.log(e);    
+    res.status(500).json({ msg: 'Error en el servidor' });
+  }
 }
