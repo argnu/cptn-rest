@@ -60,8 +60,13 @@ else {
                 else return;
             }
 
-            if (column.dataType != column_bd.type)
-                return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            if (column.dataType == 'timestamptz' && !(column_bd.type == 'timestamp with time zone'))
+                return alters.alter.push(`ALTER TABL "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            else if (column_bd.type == 'timestamp with time zone') return;
+
+            if (column.dataType != column_bd.type) {
+                return alters.alter.push(`ALTER TABL "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            }
         }
 
         function checkForeignKeys(tablename, foreignKeys, constraints_bd) {
@@ -100,12 +105,15 @@ else {
                 else if (column_bd.type.includes('character')) column_bd.default.replace(/\:\:.+$/, '');
 
 
-                if (column.defaultValue != undefined && column_bd.default == null)
-                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
+                if (column.defaultValue != undefined && column_bd.default == null) 
+                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value.replace('"', "'")}`);
                 else if (column.defaultValue == undefined && column_bd.default != null)
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP DEFAULT`);
-                else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value)
-                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
+                else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value
+                    && column.defaultValue != 'now'
+                ) {
+                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value.replace('"', "'")}`);
+                }
             }
         }
 
