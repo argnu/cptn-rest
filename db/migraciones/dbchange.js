@@ -120,7 +120,11 @@ else {
         function checkColumns(table, table_bd) {
             for (let column of table.columns) {
                 let column_bd = table_bd.columns.find(c => c.name == column.name);
-                if (!column_bd) alters.add.push(table.alter().addColumn(column));
+                if (!column_bd)  {
+                    let query = table.alter().addColumn(column);
+                    if (column.defaultValue) query += ` DEFAULT '${column.defaultValue}' `;
+                    alters.add.push(query);
+                }
                 else {
                     checkColumn(column, column_bd);
                     column_bd.checked = true;
