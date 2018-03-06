@@ -61,6 +61,7 @@ const select = [
   table.fechaEgreso,
   InstitucionTitulo.table.id.as('titulo.id'),
   InstitucionTitulo.table.nombre.as('titulo.nombre'),
+  InstitucionTitulo.table.tipo_matricula.as('titulo.tipo_matricula'),
   Institucion.table.id.as('titulo.institucion.id'),
   Institucion.table.nombre.as('titulo.institucion.nombre'),
   Institucion.table.cue.as('titulo.institucion.cue'),
@@ -97,7 +98,7 @@ module.exports.add = function(data, client) {
 
 module.exports.edit = function(id, data, client) {
   let query = table.update({
-    titulo: data.titulo,
+    titulo: data.titulo.id,
     fechaEgreso: data.fechaEgreso,
     fechaEmision: data.fechaEmision
   })

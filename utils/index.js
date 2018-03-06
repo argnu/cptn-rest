@@ -9,7 +9,7 @@ module.exports.checkNull = function(value) {
 
 module.exports.getFloat = function(value) {
   if (typeof value == 'number') return value;
-  return value && value.length ? value.replace(',', '.') : null;
+  return value && value.length ? parseFloat(value.replace(',', '.')) : null;
 }
 
 module.exports.numberOrNull = function(value) {

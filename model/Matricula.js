@@ -1,18 +1,20 @@
 const moment = require('moment');
+const utils = require('../utils');
 const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
 
-const utils = require(`../utils`);
+const Entidad = require('./Entidad');
 const Solicitud = require('./Solicitud');
 const Profesional = require('./profesional/Profesional');
+const ProfesionalTitulo = require('./profesional/ProfesionalTitulo');
 const Empresa = require('./empresa/Empresa');
-const Entidad = require('./Entidad');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
 const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
 const MatriculaHistorial = require('./MatriculaHistorial');
 const Documento = require('./Documento');
+const InstitucionTitulo = require('./InstitucionTitulo');
 
 
 const table = sql.define({
@@ -87,12 +89,12 @@ const table = sql.define({
     {
       name: 'updated_by',
       dataType: 'varchar(45)',
-    },     
+    },
     {
       name: 'eliminado',
       dataType: 'boolean',
       defaultValue: false
-    }     
+    }
   ],
 
   foreignKeys: [{
@@ -119,7 +121,7 @@ const table = sql.define({
       table: 'usuario',
       columns: ['updated_by'],
       refColumns: ['id']
-    }     
+    }
   ]
 });
 
@@ -189,30 +191,12 @@ function completarConCeros(numero) {
     return ceros + result;
 }
 
-function getNumeroMatricula(tipo) {
-  tipo = tipo ? tipo : 'TECA';
-
-  let query = `
-    select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
-    from matricula
-    where "numeroMatricula" LIKE '${tipo}%' AND length(regexp_replace("numeroMatricula", '\\D','','g'))=5`
-
-  return connector.execRawQuery(query)
-    .then(r => {
-      let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
-      return tipo + completarConCeros(numero);
-    });
-}
-
-module.exports.getNumeroMatricula = getNumeroMatricula;
-
-
 function addBoleta(id, fecha, importe, delegacion, client) {
   let boleta = {
     matricula: id,
     tipo_comprobante: 18,  //18 ES PRI
     fecha: fecha,  //MISMA FECHA QUE EL PAGO
-    total: importe, 
+    total: importe,
     estado: 1,   //1 ES 'Pendiente de Pago'
     fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(15, 'days'),
     fecha_update: fecha,
@@ -221,9 +205,9 @@ function addBoleta(id, fecha, importe, delegacion, client) {
       item: 1,
       descripcion: `Derecho de inscripción profesional`,
       importe: importe
-    }]    
+    }]
   }
-  
+
   return Boleta.add(boleta, client);
 }
 
@@ -232,44 +216,70 @@ function getDocumento(documento, client) {
   .then(docs => {
     if (docs.length > 0) return Promise.resolve(docs[0]);
     else return Documento.add(documento, client);
-  })  
+  })
 }
 
+function getTipoMatricula(id_profesional) {
+  let tipos_mat = ['TECA', 'TEC-', 'IDO'];
+
+  return ProfesionalTitulo.getByProfesional(id_profesional)
+  .then(p_titulos => Promise.resolve(p_titulos.map(t => tipos_mat.indexOf(t.titulo.tipo_matricula))))
+  .then(tipos => tipos_mat[Math.min(...tipos)]);
+}
+
+function getNumeroMatricula(id_profesional) {
+  return getTipoMatricula(id_profesional)
+  .then(tipo => {
+    let query = `
+      select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
+      from matricula
+      where "numeroMatricula" LIKE '${tipo}%' AND length(regexp_replace("numeroMatricula", '\\D','','g'))=5`
+
+    return connector.execRawQuery(query)
+    .then(r => {
+      let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
+      return tipo + completarConCeros(numero);
+    });
+  });  
+}
+
+module.exports.getNumeroMatricula = getNumeroMatricula;
+
 module.exports.aprobar = function(matricula) {
-  let solicitud;
-  let estado;
-  let matricula_added;
+  let solicitud, matricula_added, valor_inscripcion;
+
 
   return existMatricula(matricula.solicitud)
   .then(exist => {
       if (!exist) {
         return Promise.all([
           Solicitud.get(matricula.solicitud),
-          getNumeroMatricula(matricula.tipo),
           ValoresGlobales.getAll({ nombre: 'inscripcion_matricula' })
         ])
-        .then(([solicitud_get, numero_nueva, valores_inscripcion]) => {
-          solicitud = solicitud_get;
-          let valor_inscripcion = valores_inscripcion[0].valor;
-
+        .then(rs => {
+          solicitud = rs[0];
+          valor_inscripcion = rs[1][0].valor;
+          return getNumeroMatricula(solicitud.entidad.id);
+        })
+        .then(numero_mat => {
           return connector
           .beginTransaction()
           .then(connection => {
             matricula.solicitud = solicitud.id;
             matricula.entidad = solicitud.entidad.id;
             matricula.estado = matricula.generar_boleta ? 12 : 13; // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
-            matricula.numeroMatricula = numero_nueva;            
+            matricula.numeroMatricula = numero_mat;
 
-            return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)  
+            return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)
             .then(r => addMatricula(matricula, connection.client))
             .then(r => {
               matricula_added = r;
               if (matricula.generar_boleta) {
                 return addBoleta(
-                  matricula_added.id, 
-                  matricula.fechaResolucion, 
-                  valor_inscripcion, 
-                  matricula.delegacion, 
+                  matricula_added.id,
+                  matricula.fechaResolucion,
+                  valor_inscripcion,
+                  matricula.delegacion,
                   connection.client
                 );
               }
@@ -279,15 +289,15 @@ module.exports.aprobar = function(matricula) {
               let documento = {
                 tipo: 1, // 1 es RESOLUCION,
                 fecha: matricula.fechaResolucion,
-                numero: matricula.numeroActa 
+                numero: matricula.numeroActa
               };
 
-              return getDocumento(documento, connection.client);              
+              return getDocumento(documento, connection.client);
             })
             .then(documento => MatriculaHistorial.add({
               matricula: matricula_added.id,
               documento: documento.id,
-              estado: 12, // 12 es 'Pendiente de Pago'
+              estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
               fecha: moment(),
               usuario: matricula.operador
             }, connection.client))
@@ -296,7 +306,7 @@ module.exports.aprobar = function(matricula) {
                 .then(r => {
                   connection.done();
                   return matricula_added;
-                })                            
+                })
             })
             .catch(e => {
               connector.rollback(connection.client);
@@ -319,7 +329,7 @@ module.exports.cambiarEstado = function(nuevo_estado) {
     connection = conx;
 
     return getDocumento(nuevo_estado.documento, connection.client)
-    .then(documento => 
+    .then(documento =>
       MatriculaHistorial.add({
         matricula: nuevo_estado.matricula,
         documento: documento.id,
@@ -345,23 +355,23 @@ module.exports.cambiarEstado = function(nuevo_estado) {
         .then(r => {
           connection.done();
           return matricula;
-        })                            
-    })    
+        })
+    })
   })
 }
 
 
 const select = [
-  table.id, 
-  table.legajo, 
+  table.id,
+  table.legajo,
   table.numeroMatricula,
-  table.fechaResolucion.cast('varchar(10)'), 
+  table.fechaResolucion.cast('varchar(10)'),
   table.numeroActa,
-  table.entidad, 
+  table.entidad,
   table.solicitud,
-  table.fechaBaja.cast('varchar(10)'), 
+  table.fechaBaja.cast('varchar(10)'),
   table.observaciones,
-  table.notasPrivadas, 
+  table.notasPrivadas,
   table.asientoBajaF,
   table.codBajaF,
   TipoEstadoMatricula.table.valor.as('estado'),
@@ -381,7 +391,7 @@ function getTotal(params) {
       table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
       .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
       .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-      .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))      
+      .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
     );
 
     if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
@@ -405,7 +415,7 @@ module.exports.getAll = function (params) {
     table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
     .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
     .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-    .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))    
+    .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
   )
   .where(table.eliminado.equals(false));
 
@@ -426,7 +436,7 @@ module.exports.getAll = function (params) {
     else if (params.sort.dni) query.order(Profesional.table.dni[params.sort.dni]);
     else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);
   }
-  
+
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);
 
@@ -487,7 +497,7 @@ module.exports.getMigracion = function (id, empresa) {
       .and(Entidad.table.tipo.equals(empresa ? 'empresa' : 'profesional'))
     )
     .toQuery();
-    
+
   return connector.execQuery(query)
     .then(r => r.rows[0]);
 }
@@ -496,6 +506,6 @@ module.exports.patch = function (id, matricula, client) {
   let query = table.update(matricula)
     .where(table.id.equals(id))
     .toQuery();
-    
+
   return connector.execQuery(query, client);
 }
