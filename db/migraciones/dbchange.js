@@ -97,7 +97,8 @@ else {
                 alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP NOT NULL`);
 
             if (column.dataType != 'serial') {
-                let def_value = typeof column.defaultValue == 'string' ? '"'+column.defaultValue+"'" : column.defaultValue;
+                let def_value = typeof column.defaultValue == 'string' ? `'${column.defaultValue}'` : column.defaultValue;
+                
                 if (!column_bd.default) def_db_value = null;
                 else if (column_bd.type == 'boolean') def_db_value = (column_bd.default === 'true');
                 else if (column_bd.type == 'integer') def_db_value = parseInt(column_bd.default);
@@ -106,13 +107,13 @@ else {
 
 
                 if (column.defaultValue != undefined && column_bd.default == null) 
-                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value.replace('"', "'")}`);
+                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
                 else if (column.defaultValue == undefined && column_bd.default != null)
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP DEFAULT`);
                 else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value
                     && column.defaultValue != 'now'
                 ) {
-                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value.replace('"', "'")}`);
+                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
                 }
             }
         }
@@ -120,7 +121,11 @@ else {
         function checkColumns(table, table_bd) {
             for (let column of table.columns) {
                 let column_bd = table_bd.columns.find(c => c.name == column.name);
-                if (!column_bd) alters.add.push(table.alter().addColumn(column));
+                if (!column_bd)  {
+                    let query = table.alter().addColumn(column);
+                    if (column.defaultValue) query += ` DEFAULT '${column.defaultValue}' `;
+                    alters.add.push(query);
+                }
                 else {
                     checkColumn(column, column_bd);
                     column_bd.checked = true;

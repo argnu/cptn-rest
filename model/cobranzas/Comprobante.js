@@ -85,6 +85,16 @@ const table = sql.define({
         {
             name: 'updated_by',
             dataType: 'varchar(45)',
+        },
+        {
+            name: 'created_at',
+            dataType: 'timestamptz',
+            defaultValue: 'now'
+        },
+        {
+            name: 'updated_at',
+            dataType: 'timestamptz',
+            defaultValue: 'now'
         }
     ],
 
@@ -285,7 +295,7 @@ module.exports.add = function (comprobante) {
                             .forEach(p => {
                                 proms_items.push(p);
                                 num_item++;
-                            })                            
+                            })
                         }
                     })
 

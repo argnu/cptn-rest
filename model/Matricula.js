@@ -91,6 +91,16 @@ const table = sql.define({
       dataType: 'varchar(45)',
     },
     {
+      name: 'created_at',
+      dataType: 'timestamptz',
+      defaultValue: 'now'
+    },
+    {
+      name: 'updated_at',
+      dataType: 'timestamptz',
+      defaultValue: 'now'
+    },     
+    {
       name: 'eliminado',
       dataType: 'boolean',
       defaultValue: false
@@ -341,7 +351,8 @@ module.exports.cambiarEstado = function(nuevo_estado) {
     .then(historial => {
       let query = table.update({
         estado: nuevo_estado.estado,
-        updated_by: nuevo_estado.operador
+        updated_by: nuevo_estado.operador,
+        updated_at: new Date()
       })
       .where(table.id.equals(nuevo_estado.matricula))
       .returning(table.id, table.estado)
@@ -503,6 +514,8 @@ module.exports.getMigracion = function (id, empresa) {
 }
 
 module.exports.patch = function (id, matricula, client) {
+  matricula.updated_at = new Date();
+
   let query = table.update(matricula)
     .where(table.id.equals(id))
     .toQuery();
