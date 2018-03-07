@@ -21,7 +21,6 @@ module.exports.errorHandler = function(e, req, res) {
   if (e.code) res.status(e.code).json({ message: e.message });
   else { 
     console.error(`Error en ${req.method} ${req.baseUrl}${req.path}`);
-    console.log(e);    
     res.status(500).json({ msg: 'Error en el servidor' });
   }
 }

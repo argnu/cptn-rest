@@ -106,38 +106,58 @@ module.exports.get = function(id) {
   .then(r => dot.object(r.rows[0]));
 }
 
-module.exports.add = function(titulo) {
-  let query = table.insert(
-    table.nombre.value(titulo.nombre),
-    table.tipo_matricula.value(titulo.tipo_matricula),
-    table.nivel.value(titulo.nivel),
-    table.validez_fecha_inicio.value(titulo.validez_fecha_inicio),
-    table.validez_fecha_fin.value(titulo.validez_fecha_fin),
-    table.institucion.value(titulo.institucion)
-  )
-  .returning(table.id, table.nombre, table.tipo_matricula, 
-    table.nivel, table.institucion, table.validez_fecha_fin, table.validez_fecha_inicio)
-  .toQuery();
+module.exports.add = function(titulo, client) {
+  try {
+    let query = table.insert(
+      table.nombre.value(titulo.nombre),
+      table.tipo_matricula.value(titulo.tipo_matricula),
+      table.nivel.value(titulo.nivel),
+      table.validez_fecha_inicio.value(titulo.validez_fecha_inicio),
+      table.validez_fecha_fin.value(titulo.validez_fecha_fin),
+      table.institucion.value(titulo.institucion)
+    )
+    .returning(table.id, table.nombre, table.tipo_matricula,
+      table.nivel, table.institucion, table.validez_fecha_fin, table.validez_fecha_inicio)
+    .toQuery();
 
-  return connector.execQuery(query)
-  .then(r => r.rows[0]);
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0])
+    .catch(e => {
+      console(e);
+      return Promise.reject(e);
+    })
+  }
+  catch(e) {
+    console(e);
+    return Promise.reject(e);
+  }
 }
 
 module.exports.edit = function(id, titulo) {
-  let query = table.update({
-    nombre: titulo.nombre,
-    tipo_matricula: titulo.tipo_matricula,
-    nivel: titulo.nivel,
-    validez_fecha_inicio: titulo.validez_fecha_inicio,
-    validez_fecha_fin: titulo.validez_fecha_fin
-  })
-  .where(table.id.equals(id))
-  .returning(table.id, table.nombre, table.tipo_matricula, 
-    table.nivel, table.institucion, table.validez_fecha_fin, table.validez_fecha_inicio)
-  .toQuery();
+  try {
+    let query = table.update({
+      nombre: titulo.nombre,
+      tipo_matricula: titulo.tipo_matricula,
+      nivel: titulo.nivel,
+      validez_fecha_inicio: titulo.validez_fecha_inicio,
+      validez_fecha_fin: titulo.validez_fecha_fin
+    })
+    .where(table.id.equals(id))
+    .returning(table.id, table.nombre, table.tipo_matricula,
+      table.nivel, table.institucion, table.validez_fecha_fin, table.validez_fecha_inicio)
+    .toQuery();
 
-  return connector.execQuery(query)
-  .then(r => r.rows[0]);
+    return connector.execQuery(query)
+    .then(r => r.rows[0])
+    .catch(e => {
+      console(e);
+      return Promise.reject(e);
+    });
+  }
+  catch(e) {
+    console(e);
+    return Promise.reject(e);
+  }  
 }
 
 module.exports.delete = function(id) {
