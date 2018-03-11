@@ -84,11 +84,13 @@ module.exports.add = function(institucion, client) {
     .catch(e => {
       connector.rollback(connection.client);
       connection.done();
-      throw Error(e);
+      console.error(e);
+      return Promise.reject(e);
     });  
   }
   catch(e) {
-    console.error(e);return Promise.reject(e);
+    console.error(e);
+    return Promise.reject(e);
   }
 }
 
