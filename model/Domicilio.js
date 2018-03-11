@@ -37,47 +37,79 @@ const table = sql.define({
 module.exports.table = table;
 
 module.exports.get = function(id) {
-  let query = table.select(
-                      table.id, 
-                      table.direccion,
-                      Localidad.table.nombre.as('localidad'),
-                      Departamento.table.nombre.as('departamento'),
-                      Provincia.table.nombre.as('provincia'),
-                      Pais.table.nombre.as('pais')
-                    )
-                   .from(
-                     table.join(Localidad.table).on(table.localidad.equals(Localidad.table.id))
-                     .join(Departamento.table).on(Localidad.table.departamento.equals(Departamento.table.id))
-                     .join(Provincia.table).on(Departamento.table.provincia.equals(Provincia.table.id))
-                     .join(Pais.table).on(Provincia.table.pais.equals(Pais.table.id))
-                   )
-                   .where(table.id.equals(id))
-                   .toQuery();
-  return connector.execQuery(query)
-         .then(r => r.rows[0]);
+  try {
+    let query = table.select(
+      table.id, 
+      table.direccion,
+      Localidad.table.nombre.as('localidad'),
+      Departamento.table.nombre.as('departamento'),
+      Provincia.table.nombre.as('provincia'),
+      Pais.table.nombre.as('pais')
+    )
+    .from(
+      table.join(Localidad.table).on(table.localidad.equals(Localidad.table.id))
+      .join(Departamento.table).on(Localidad.table.departamento.equals(Departamento.table.id))
+      .join(Provincia.table).on(Departamento.table.provincia.equals(Provincia.table.id))
+      .join(Pais.table).on(Provincia.table.pais.equals(Pais.table.id))
+    )
+    .where(table.id.equals(id))
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => r.rows[0])
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);      
+    })
+  }
+  catch(e) {
+    console.error(e);
+    return Promise.reject(e);
+  }
 }
 
 module.exports.add = function(domicilio, client) {
-  let query = table.insert(
-    table.direccion.value(domicilio.direccion),
-    table.localidad.value(domicilio.localidad)
-  )
-  .returning(table.star())
-  .toQuery();
+  try {
+    let query = table.insert(
+      table.direccion.value(domicilio.direccion),
+      table.localidad.value(domicilio.localidad)
+    )
+    .returning(table.star())
+    .toQuery();
 
-  return connector.execQuery(query, client)
-  .then(r => r.rows[0]);
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0])
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);      
+    })
+  }
+  catch(e) {
+    console.error(e);
+    return Promise.reject(e);
+  }
 }
 
 module.exports.edit = function(id, domicilio, client) {
-  let query = table.update({
-    direccion: domicilio.direccion,
-    localidad: domicilio.localidad
-  })
-  .where(table.id.equals(id))
-  .toQuery();
+  try {
+    let query = table.update({
+      direccion: domicilio.direccion,
+      localidad: domicilio.localidad
+    })
+    .where(table.id.equals(id))
+    .toQuery();
 
-  return connector.execQuery(query).then(r => ({ id }));
+    return connector.execQuery(query)
+    .then(r => ({ id }))
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);      
+    });
+  }
+  catch(e) {
+    console.error(e);
+    return Promise.reject(e);
+  }  
 }
 
 module.exports.delete = function(id, client) {

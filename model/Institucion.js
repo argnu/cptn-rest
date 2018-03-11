@@ -3,6 +3,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const InstitucionTitulo = require('./InstitucionTitulo');
+const Domicilio = require('./Domicilio');
 
 const table = sql.define({
   name: 'institucion',
@@ -36,17 +37,59 @@ const table = sql.define({
 });
 
 module.exports.add = function(institucion, client) {
-  if (institucion && institucion.nombre) {
-    let query = table.insert(
-      table.nombre.value(domicilio.nombre)
-    )
-    .returning(table.star())
-    .toQuery();
-    
-    return connector.execQuery(query, client)
-    .then(r => r.rows[0]);
+  try {
+    let connection;
+
+    return connector
+    .beginTransaction()
+    .then(con => {
+      connection = con;
+      if (institucion.domicilio.localidad && institucion.domicilio.direccion 
+        && institucion.domicilio.direccion.length) {
+          return Domicilio.add(institucion.domicilio, connection.client)
+      }
+      else return Promise.resolve(null);
+    })
+    .then(domicilio => {
+        let query = table.insert(
+          table.nombre.value(institucion.nombre),
+          table.cue.value(institucion.cue),
+          table.domicilio.value(domicilio ? domicilio.id : null)
+        )
+        .returning(table.star())
+        .toQuery();
+
+        return connector.execQuery(query, connection.client);
+    })
+    .then(r => {
+      institucion.id = r.rows[0].id;
+      let proms_titulos = institucion.titulos.map(t => {
+        t.institucion = institucion.id;
+        return InstitucionTitulo.add(t, connection.client);
+      });
+
+      return Promise.all(proms_titulos);
+    })
+    .then(titulos_nuevos => {
+      titulos_nuevos.forEach((tit_nuevo, i) => {
+        institucion.titulos[i].id = tit_nuevo.id;
+      });
+
+      return connector.commit(connection.client)
+      .then(r => {
+        connection.done();
+        return institucion;
+      });    
+    }) 
+    .catch(e => {
+      connector.rollback(connection.client);
+      connection.done();
+      throw Error(e);
+    });  
   }
-  else Promise.resolve();
+  catch(e) {
+    console.error(e);return Promise.reject(e);
+  }
 }
 
 module.exports.table = table;

@@ -1,8 +1,8 @@
 CREATE TABLE "t_estadosolicitud" ("id" serial PRIMARY KEY, "valor" varchar(255) NOT NULL);
 
 ALTER TABLE "delegacion" ADD COLUMN "domicilio" int;
-ALTER TABLE "t_estadomatricula" ADD COLUMN "eliminado" boolean;
-ALTER TABLE "matricula" ADD COLUMN "eliminado" boolean;
+ALTER TABLE "t_estadomatricula" ADD COLUMN "eliminado" boolean DEFAULT false;
+ALTER TABLE "matricula" ADD COLUMN "eliminado" boolean DEFAULT false;
 
 /* AGREGAR ESTADO DE SOLICITUD */
 INSERT INTO t_estadosolicitud (id, valor) VALUES (1, 'Pendiente');

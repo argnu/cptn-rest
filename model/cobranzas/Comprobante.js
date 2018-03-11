@@ -85,6 +85,16 @@ const table = sql.define({
         {
             name: 'updated_by',
             dataType: 'varchar(45)',
+        },
+        {
+            name: 'created_at',
+            dataType: 'timestamptz',
+            defaultValue: 'now'
+        },
+        {
+            name: 'updated_at',
+            dataType: 'timestamptz',
+            defaultValue: 'now'
         }
     ],
 
@@ -207,8 +217,8 @@ function addComprobante(comprobante, client) {
                     table.subtotal.value(comprobante.subtotal),
                     table.interes_total.value(comprobante.interes_total),
                     table.bonificacion_total.value(comprobante.bonificacion_total),
-                    table.importe_total.value(comprobante.importe_total),
-                    table.importe_cancelado.value(comprobante.importe_total),
+                    table.importe_total.value(utils.getFloat(comprobante.importe_total)),
+                    table.importe_cancelado.value(utils.getFloat(comprobante.importe_total)),
                     table.delegacion.value(comprobante.delegacion)
                 )
                 .returning(table.id, table.numero, table.matricula)
@@ -285,7 +295,7 @@ module.exports.add = function (comprobante) {
                             .forEach(p => {
                                 proms_items.push(p);
                                 num_item++;
-                            })                            
+                            })
                         }
                     })
 
