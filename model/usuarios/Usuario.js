@@ -108,7 +108,7 @@ module.exports.auth = function(usuario) {
           table.hash_password,
           table.nombre, 
           table.apellido,
-          table.emailg
+          table.email
         )
        .from(table)
        .where(table.id.equals(usuario.id))
