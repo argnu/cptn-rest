@@ -82,20 +82,23 @@ module.exports.add = function(usuario) {
   })
   .then(r => { 
     let usuario_nuevo = r.rows[0];
+    usuario.id = usuario_nuevo.id;
     let proms = usuario.delegaciones.map(d => addDelegacion(usuario_nuevo.id, d, connection.client));
     return Promise.all(proms);
   })  
-  .then(r => {
+  .then(delegaciones => {
+    usuario.delegaciones = delegaciones;
     return connector.commit(connection.client)
-        .then(r => {
-            connection.done();
-            return comprobante_nuevo;
-        });
+    .then(r => {
+        connection.done();
+        return usuario;
+    });
   })
   .catch(e => {
       connector.rollback(connection.client);
       connection.done();
-      throw Error(e);
+      console.error(e);
+      return Promise.reject(e);
   });  
 }
 
@@ -105,7 +108,7 @@ module.exports.auth = function(usuario) {
           table.hash_password,
           table.nombre, 
           table.apellido,
-          table.email
+          table.emailg
         )
        .from(table)
        .where(table.id.equals(usuario.id))
@@ -137,15 +140,26 @@ module.exports.getDelegaciones = function(id) {
     .then(r => Promise.all(r.rows.map(row => Delegacion.get(row.id))));
 }
 
-module.exports.addDelegacion = function(id, delegacion, client) {
-  let table = UsuarioDelegacion.table;
-  let query = table.insert(
-    table.usuario.value(id),
-    table.delegacion.value(delegacion)
-  )
-  .returning(table.id, table.usuario, table.delegacion)
-  .toQuery();
-
-  return connector.execQuery(query, client)
-    .then(r => r.rows[0]);    
+function addDelegacion(id, delegacion, client) {
+  try {
+    let table = UsuarioDelegacion.table;
+    let query = table.insert(
+      table.usuario.value(id),
+      table.delegacion.value(delegacion)
+    )
+    .returning(table.id, table.usuario, table.delegacion)
+    .toQuery();
+  
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0])
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);
+    })
+  }
+  catch(e) {
+    console.error(e);
+    return Promise.reject(e);    
+  }
 }
+module.exports.addDelegacion = addDelegacion;
