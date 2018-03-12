@@ -64,18 +64,42 @@ module.exports.get = function(id) {
 }
 
 module.exports.add = function(usuario) {
-  let query = table.insert(
-          table.id.value(usuario.id),
-          table.nombre.value(usuario.nombre),
-          table.apellido.value(usuario.apellido),
-          table.email.value(usuario.email),
-          table.hash_password.value(bcrypt.hashSync(usuario.password, 10))
-        )
-        .returning(table.id, table.nombre, table.apellido, table.email)
-       .toQuery();
+  let connection;
 
-  return connector.execQuery(query)
-  .then(r => r.rows[0]);
+  return connector.beginTransaction()
+  .then(con => {
+    connection = con;
+    let query = table.insert(
+      table.id.value(usuario.id),
+      table.nombre.value(usuario.nombre),
+      table.apellido.value(usuario.apellido),
+      table.email.value(usuario.email),
+      table.hash_password.value(bcrypt.hashSync(usuario.password, 10))
+    )
+    .returning(table.id, table.nombre, table.apellido, table.email)
+    .toQuery();    
+    return connector.execQuery(query, connection.client)
+  })
+  .then(r => { 
+    let usuario_nuevo = r.rows[0];
+    usuario.id = usuario_nuevo.id;
+    let proms = usuario.delegaciones.map(d => addDelegacion(usuario_nuevo.id, d, connection.client));
+    return Promise.all(proms);
+  })  
+  .then(delegaciones => {
+    usuario.delegaciones = delegaciones;
+    return connector.commit(connection.client)
+    .then(r => {
+        connection.done();
+        return usuario;
+    });
+  })
+  .catch(e => {
+      connector.rollback(connection.client);
+      connection.done();
+      console.error(e);
+      return Promise.reject(e);
+  });  
 }
 
 module.exports.auth = function(usuario) {
@@ -116,15 +140,26 @@ module.exports.getDelegaciones = function(id) {
     .then(r => Promise.all(r.rows.map(row => Delegacion.get(row.id))));
 }
 
-module.exports.addDelegacion = function(id, delegacion) {
-  let table = UsuarioDelegacion.table;
-  let query = table.insert(
-    table.usuario.value(id),
-    table.delegacion.value(delegacion)
-  )
-  .returning(table.id, table.usuario, table.delegacion)
-  .toQuery();
-
-  return connector.execQuery(query)
-    .then(r => r.rows[0]);    
+function addDelegacion(id, delegacion, client) {
+  try {
+    let table = UsuarioDelegacion.table;
+    let query = table.insert(
+      table.usuario.value(id),
+      table.delegacion.value(delegacion)
+    )
+    .returning(table.id, table.usuario, table.delegacion)
+    .toQuery();
+  
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0])
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);
+    })
+  }
+  catch(e) {
+    console.error(e);
+    return Promise.reject(e);    
+  }
 }
+module.exports.addDelegacion = addDelegacion;
