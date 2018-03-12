@@ -72,7 +72,7 @@ router.put('/:id',
     else solicitud = req.body;    
 
     model.Solicitud.edit(req.params.id, solicitud)
-      .then(id => res.status(201).json({ id }))
+      .then(id => res.status(200).json({ id }))
       .catch(e => utils.errorHandler(e, req, res));
 });
 
