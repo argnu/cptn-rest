@@ -35,7 +35,7 @@ const Documento = require('./Documento');
     },
     {
       name: 'usuario',
-      dataType: 'varchar(45)',
+      dataType: 'int',
       notNull: true
     }
   ],
@@ -44,22 +44,23 @@ const Documento = require('./Documento');
       {
         table: 'matricula',
         columns: ['matricula'],
-        refColumns: ['id']          
+        refColumns: ['id']
       },
       {
         table: 't_estadomatricula',
         columns: ['estado'],
-        refColumns: ['id']          
+        refColumns: ['id']
       },
       {
         table: 'documento',
         columns: ['documento'],
-        refColumns: ['id']          
+        refColumns: ['id']
       },
       {
         table: 'usuario',
         columns: ['usuario'],
-        refColumns: ['id']          
+        refColumns: ['id'],
+        onUpdate: 'CASCADE'
       }
   ]
 });

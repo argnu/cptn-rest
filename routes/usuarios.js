@@ -28,12 +28,24 @@ router.post('/', function(req, res) {
   .catch(e => utils.errorHandler(e, req, res));
 });
 
+router.post('/:id/delegaciones', function(req, res) {
+  model.Usuario.addDelegacion(req.params.id,req.body)
+  .then(r => res.json(r))
+  .catch(e => utils.errorHandler(e, req, res));
+});
+
 router.post('/auth', function(req, res) {
   model.Usuario.auth(req.body)
   .then(r => {
     if (!r) res.status(403).json({ msg: 'Combinación de usuario/contraseña incorrecta' });
-    else res.json(r)
+    else res.json(r);
   })
+  .catch(e => utils.errorHandler(e, req, res));
+});
+
+router.patch('/:id', function(req, res) {
+  model.Usuario.patch(req.params.id, req.body)
+  .then(r => res.json(r))
   .catch(e => utils.errorHandler(e, req, res));
 });
 
@@ -43,6 +55,12 @@ router.put('/:id', function(req, res) {
 
 router.delete('/:id', function(req, res) {
 
+});
+
+router.delete('/:id/delegaciones/:id_del', function(req, res) {
+  model.Usuario.borrarDelegacion(req.params.id_del)
+  .then(r => res.json(r))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 module.exports = router;

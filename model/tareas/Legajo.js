@@ -142,11 +142,11 @@ const table = sql.define({
         },
         {
             name: 'created_by',
-            dataType: 'varchar(45)',
+            dataType: 'int',
         },
         {
             name: 'updated_by',
-            dataType: 'varchar(45)',
+            dataType: 'int',
         },
         {
           name: 'created_at',
@@ -190,12 +190,14 @@ const table = sql.define({
         {
             table: 'usuario',
             columns: ['created_by'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
         },
         {
             table: 'usuario',
             columns: ['updated_by'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
         }
     ]
 });
