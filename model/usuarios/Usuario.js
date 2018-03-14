@@ -217,7 +217,9 @@ module.exports.auth = function(usuario) {
           table.nombre, 
           table.apellido,
           table.email,
-          table.admin])
+          table.admin,
+          table.activo
+        ])
        .from(table)
        .where(table.username.equals(usuario.username))
        .toQuery();
@@ -226,14 +228,14 @@ module.exports.auth = function(usuario) {
   .then(r => {
       if (r.rows.length == 1) {
         let usuario_bd =r.rows[0];
-        if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password)) {
+        if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password) && usuario.activo) {
           usuario_bd.token = jwt.sign({ id: usuario_bd.id, admin: usuario_bd.admin }, config.secret);
           delete(usuario_bd.hash_password);
           return usuario_bd
         }
-        else return null;
+        else return Promise.reject({ code: 403, msg: 'Datos de usuario inválidos' });
       }
-      else return null;
+      else return Promise.reject({ code: 403, msg: 'Datos de usuario inválidos' });
   })
   .catch(e => {
       console.error(e);
@@ -283,11 +285,11 @@ module.exports.borrarDelegacion = function(id_delegacion) {
   try {
     let table = UsuarioDelegacion.table;
     let query = table.delete()
-    .where(table.id.equals(id_delegacion))
+    .where(table.delegacion.equals(id_delegacion))
     .returning(table.id, table.usuario, table.delegacion)
     .toQuery();
   
-    return connector.execQuery(query, client)
+    return connector.execQuery(query)
     .then(r => r.rows[0])
     .catch(e => {
       console.error(e);
