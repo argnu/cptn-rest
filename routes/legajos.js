@@ -17,6 +17,7 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
+  req.body.operador = req.user.id;
   model.tareas.Legajo.add(req.body)
   .then(legajo => res.json(legajo))
   .catch(e => utils.errorHandler(e, req, res));

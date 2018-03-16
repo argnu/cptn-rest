@@ -124,88 +124,62 @@ module.exports.get = function(id) {
 }
 
 module.exports.add = function(usuario) {
-  let query = table.select(table.star())
-  .where(usuario.id.equals(usuario.operador)).toQuery();
-
-  return connector.execQuery(query)
-  .then(r => {
-    let operador = r.rows[0];
-    if (!operador.admin) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
-    else {
-      let connection;
-      return connector.beginTransaction()
-      .then(con => {
-        connection = con;
-        let query = table.insert(
-          table.id.value(usuario.id),
-          table.username.value(usuario.username),
-          table.nombre.value(usuario.nombre),
-          table.apellido.value(usuario.apellido),
-          table.email.value(usuario.email),
-          table.hash_password.value(bcrypt.hashSync(usuario.password, 10))
-        )
-        .returning(table.id, table.nombre, table.apellido, table.email)
-        .toQuery();    
-        return connector.execQuery(query, connection.client)
-      })
-      .then(r => { 
-        let usuario_nuevo = r.rows[0];
-        usuario.id = usuario_nuevo.id;
-        let proms = usuario.delegaciones.map(d => addDelegacion(usuario_nuevo.id, d, connection.client));
-        return Promise.all(proms);
-      })  
-      .then(delegaciones => {
-        usuario.delegaciones = delegaciones;
-        return connector.commit(connection.client)
-        .then(r => {
-            connection.done();
-            return usuario;
-        });
-      })
-      .catch(e => {
-          connector.rollback(connection.client);
-          connection.done();
-          console.error(e);
-          return Promise.reject(e);
-      });  
-    }
+  let connection;
+  return connector.beginTransaction()
+  .then(con => {
+    connection = con;
+    let query = table.insert(
+      table.id.value(usuario.id),
+      table.username.value(usuario.username),
+      table.nombre.value(usuario.nombre),
+      table.apellido.value(usuario.apellido),
+      table.email.value(usuario.email),
+      table.hash_password.value(bcrypt.hashSync(usuario.password, 10))
+    )
+    .returning(table.id, table.nombre, table.apellido, table.email)
+    .toQuery();    
+    return connector.execQuery(query, connection.client)
   })
+  .then(r => { 
+    let usuario_nuevo = r.rows[0];
+    usuario.id = usuario_nuevo.id;
+    let proms = usuario.delegaciones.map(d => addDelegacion(usuario_nuevo.id, d, connection.client));
+    return Promise.all(proms);
+  })  
+  .then(delegaciones => {
+    usuario.delegaciones = delegaciones;
+    return connector.commit(connection.client)
+    .then(r => {
+        connection.done();
+        return usuario;
+    });
+  })
+  .catch(e => {
+      connector.rollback(connection.client);
+      connection.done();
+      console.error(e);
+      return Promise.reject(e);
+  });  
 }
 
 
 module.exports.patch = function(id, usuario) {
-  let query = table.select(table.star())
-  .where(table.id.equals(usuario.operador)).toQuery();
+  if (usuario.password) { 
+    usuario.hash_password = bcrypt.hashSync(usuario.password, 10);
+    delete(usuario.password);
+  }
 
-  delete(usuario.operador);
-
+  let query = table.update(usuario)
+  .where(table.id.equals(id))
+  .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.admin)
+  .toQuery(); 
+    
   return connector.execQuery(query)
-  .then(r => {
-    let operador = r.rows[0];
-    if (!operador.admin) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
-    else {
-      if (usuario.password) { 
-        usuario.hash_password = bcrypt.hashSync(usuario.password, 10);
-        delete(usuario.password);
-      }
-
-      let query = table.update(usuario)
-      .where(table.id.equals(id))
-      .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.admin)
-      .toQuery(); 
-        
-      return connector.execQuery(query)
-      .then(r => r.rows[0])
-      .catch(e => {
-          console.error(e);
-          return Promise.reject(e);
-      });      
-    }
-  })
+  .then(r => r.rows[0])
   .catch(e => {
       console.error(e);
       return Promise.reject(e);
-  });   
+  });      
 }
 
 
@@ -228,8 +202,8 @@ module.exports.auth = function(usuario) {
   .then(r => {
       if (r.rows.length == 1) {
         let usuario_bd =r.rows[0];
-        if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password) && usuario.activo) {
-          usuario_bd.token = jwt.sign({ id: usuario_bd.id, admin: usuario_bd.admin }, config.secret);
+        if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password) && usuario_bd.activo) {
+          usuario_bd.token = jwt.sign({ id: usuario_bd.id }, config.secret);
           delete(usuario_bd.hash_password);
           return usuario_bd
         }

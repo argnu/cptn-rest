@@ -313,6 +313,7 @@ module.exports.edit = function(id, solicitud) {
 
 module.exports.patch = function (id, solicitud, client) {
   solicitud.updated_at = new Date();
+  solicitud.updated_by = solicitud.operador;
   
   let query = table.update(solicitud)
     .where(table.id.equals(id))

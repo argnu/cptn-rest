@@ -18,6 +18,7 @@ router.get('/:id', function(req, res) {
 
 
 router.post('/', function(req, res) {
+  req.body.operador = req.user.id;
   model.Comprobante.add(req.body)
     .then(r => res.status(201).json(r))
     .catch(e => utils.errorHandler(e, req, res));

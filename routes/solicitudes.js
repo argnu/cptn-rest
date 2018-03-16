@@ -51,6 +51,7 @@ router.post('/',
     }
     else solicitud = req.body;
 
+    solicitud.operador = req.user.id;
     model.Solicitud.add(solicitud)
       .then(solicitud => res.status(201).json(solicitud))
       .catch(e => utils.errorHandler(e, req, res));
@@ -71,12 +72,14 @@ router.put('/:id',
     }
     else solicitud = req.body;    
 
+    solicitud.operador = req.user.id;
     model.Solicitud.edit(req.params.id, solicitud)
       .then(id => res.status(200).json({ id }))
       .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.patch('/:id', function(req, res) {
+  req.body.operador = req.user.id;
   model.Solicitud.patch(req.params.id, req.body)
     .then(r => res.status(200).json(r))
     .catch(e => utils.errorHandler(e, req, res));
