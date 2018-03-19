@@ -461,6 +461,7 @@ module.exports.add = function (legajo) {
                 });
         })
         .catch(e => {
+            console.log(e);
             connector.rollback(connection.client);
             connection.done();
             throw Error(e);

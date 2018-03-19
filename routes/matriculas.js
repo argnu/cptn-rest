@@ -75,7 +75,7 @@ router.put('/:id/legajos', function(req, res) {
   req.body.operador = req.user.id;
   req.body.matricula = req.params.id;
   model.tareas.Legajo.add(req.body)
-    .then(legajo => res.json(legajo))
+    .then(legajo => res.status(201).json(legajo))
     .catch(e => utils.errorHandler(e, req, res));
 });
 

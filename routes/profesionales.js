@@ -1,4 +1,5 @@
 const utils = require('../utils');
+const fs = require('fs');
 const path = require('path');
 const multer  = require('multer');
 const router = require('express').Router();
@@ -54,32 +55,22 @@ router.get('/:id/subsidiarios', function(req, res) {
 
 router.get('/:id/foto', function (req, res) {
   model.Profesional.getFoto(req.params.id)
-    .then(r => res.sendFile(path.join(__dirname, '..', 'files/fotos', r)))
+    .then(r => {
+      let file_path = path.join(__dirname, '..', 'files/fotos', r);
+      if (fs.existsSync(file_path)) res.sendFile(file_path);
+      else return Promise.reject({ code: 404, msg: 'El recurso solicitado no existe' });
+    })
     .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.put('/:id/foto', upload.fields([{ name: 'foto', maxCount: 1 }]), function(req, res) {
-    if (req.body.foto) {
-      model.Profesional.patch(req.params.id, { foto: req.body.foto })
-        .then(id => res.status(200).json({ id }))
-        .catch(e => utils.errorHandler(e, req, res));
-    }
-    else res.status(500).json({ msg: 'Error en el servidor' });
 });
 
 router.get('/:id/firma', function (req, res) {
   model.Profesional.getFirma(req.params.id)
-    .then(r => res.sendFile(path.join(__dirname, '..', 'files/firmas', r)))
+    .then(r => {
+      let file_path = path.join(__dirname, '..', 'files/firmas', r);
+      if (fs.existsSync(file_path)) res.sendFile(file_path);
+      else return Promise.reject({ code: 404, msg: 'El recurso solicitado no existe' });
+    })
     .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.put('/:id/firma', upload.fields([{ name: 'firma', maxCount: 1 }]), function(req, res) {
-    if (req.body.firma) {
-      model.Profesional.patch(req.params.id, { firma: req.body.firma })
-        .then(id => res.status(200).json({ id }))
-        .catch(e => utils.errorHandler(e, req, res));
-    }
-    else res.status(500).json({ msg: 'Error en el servidor' });
 });
 
 router.get('/:id', function (req, res) {
@@ -92,6 +83,24 @@ router.post('/', function(req, res) {
   model.Profesional.add(req.body)
     .then(r => res.status(201).json(r))
     .catch(e => utils.errorHandler(e, req, res));
+});
+
+router.put('/:id/foto', upload.fields([{ name: 'foto', maxCount: 1 }]), function(req, res) {
+    if (req.body.foto) {
+      model.Profesional.patch(req.params.id, { foto: req.body.foto })
+        .then(id => res.status(200).json({ id }))
+        .catch(e => utils.errorHandler(e, req, res));
+    }
+    else res.status(500).json({ msg: 'Error en el servidor' });
+});
+
+router.put('/:id/firma', upload.fields([{ name: 'firma', maxCount: 1 }]), function(req, res) {
+    if (req.body.firma) {
+      model.Profesional.patch(req.params.id, { firma: req.body.firma })
+        .then(id => res.status(200).json({ id }))
+        .catch(e => utils.errorHandler(e, req, res));
+    }
+    else res.status(500).json({ msg: 'Error en el servidor' });
 });
 
 router.put('/:id', function(req, res) {

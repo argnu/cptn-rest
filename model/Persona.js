@@ -70,36 +70,43 @@ module.exports.get = function(id) {
     })
 }
 
-module.exports.getByCuit = function(cuit) {
+function getByCuit (cuit) {
     let persona;
     let query = table.select(table.star())
                      .where(table.cuit.equals(cuit))
                      .toQuery();
     return connector.execQuery(query)
     .then(r => {
-        if (!r.rows.length) return Promise.resolve(null);
-        persona = r.rows[0];
-        if (persona.tipo == 'fisica') return PersonaFisica.get(id)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
+        if (!r.rows.length) return Promise.resolve([]);
+        if (r.rows[0].tipo == 'fisica') return PersonaFisica.get(id)
+        else if (r.rows[0].tipo == 'juridica') return PersonaJuridica.get(id);
     })
 }
 
+module.exports.getByCuit = getByCuit;
+
 
 module.exports.add = function(persona, client) {
-    let query = table.insert(
-        table.tipo.value(persona.tipo),
-        table.nombre.value(persona.nombre),
-        table.cuit.value(persona.cuit),
-        table.telefono.value(persona.telefono)
-    )
-    .returning(table.star())
-    .toQuery();
+    return getByCuit(persona.cuit)
+    .then(personas => {
+        if (personas.length) return Promise.reject({ code: 400, msg: 'Ya existe una persona con dicho el mismo CUIT/CUIL'});
+        else {
+            let query = table.insert(
+                table.tipo.value(persona.tipo),
+                table.nombre.value(persona.nombre),
+                table.cuit.value(persona.cuit),
+                table.telefono.value(persona.telefono)
+            )
+            .returning(table.star())
+            .toQuery();
 
-    return connector.execQuery(query, client)
-    .then(r => {
-        persona.id = r.rows[0].id;
-        if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
+            return connector.execQuery(query, client)
+            .then(r => {
+                persona.id = r.rows[0].id;
+                if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
+                else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
+            })
+            .then(r => persona);
+        }
     })
-    .then(r => persona);
 }
