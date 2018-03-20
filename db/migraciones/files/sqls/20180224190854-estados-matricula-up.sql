@@ -13,3 +13,5 @@ INSERT INTO "t_documento" ("valor") VALUES ('Resolución');
 INSERT INTO "t_documento" ("valor") VALUES ('Acta');
 INSERT INTO "t_documento" ("valor") VALUES ('Acta Especial');
 INSERT INTO "t_documento" ("valor") VALUES ('Acta de Asamblea Ordinaria');
+
+UPDATE t_estadomatricula SET valor='Rechazada por Colegio' WHERE valor='Rechazada por Consejo';
