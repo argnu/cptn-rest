@@ -328,7 +328,7 @@ module.exports.aprobar = function(matricula) {
           })
         });
       }
-      else throw ({ code: 400, message: "Ya existe una matrícula para dicha solicitud" });
+      else throw ({ code: 409, message: "Ya existe una matrícula para dicha solicitud" });
   })
 }
 

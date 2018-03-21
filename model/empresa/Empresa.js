@@ -5,13 +5,13 @@ sql.setDialect('postgres');
 const utils = require(`../../utils`);
 const connector = require(`../../db/connector`);
 const EntidadDomicilio = require(`../EntidadDomicilio`);
+const EntidadCondicionAfip = require('../EntidadCondicionAfip');
 const Entidad = require(`../Entidad`);
 const Contacto = require(`../Contacto`);
 const TipoEmpresa = require(`../tipos/TipoEmpresa`);
 const TipoSociedad = require(`../tipos/TipoSociedad`);
 const TipoCondicionAfip = require(`../tipos/TipoCondicionAfip`);
 const EmpresaRepresentante = require('./EmpresaRepresentante');
-const EmpresaIncumbencia = require('./EmpresaIncumbencia');
 
 
 const table = sql.define({
@@ -89,7 +89,8 @@ module.exports.add = function(empresa, client) {
   return Entidad.add({
     tipo: empresa.tipo,
     cuit: empresa.cuit,
-    domicilios: empresa.domicilios
+    domicilios: empresa.domicilios,
+    condiciones_afip: empresa.condiciones_afip 
   }, client)
   .then(entidad => {
     empresa.id = entidad.id;
@@ -112,22 +113,14 @@ module.exports.add = function(empresa, client) {
               }, client))
               : [];
 
-              let proms_incumbencias = empresa.incumbencias ?
-                empresa.incumbencias.map(i => EmpresaIncumbencia.add({
-                  empresa: empresa_added.id,
-                  incumbencia: i
-                }, client))
-              : [];
 
             return Promise.all([
               Promise.all(proms_contactos),
-              Promise.all(proms_representantes),
-              Promise.all(proms_incumbencias)
+              Promise.all(proms_representantes)
             ])
-            .then(([contactos, representantes, incumbencias]) => {
+            .then(([contactos, representantes]) => {
               empresa_added.contactos = contactos;
               empresa_added.representantes = representantes;
-              empresa_added.incumbencias = incumbencias;
               return empresa_added;
             });
           });
@@ -168,10 +161,10 @@ module.exports.getAll = function(params) {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilios, contactos, incumbencias, representantes ] = value;
+      [ domicilios, condiciones_afip, contactos, representantes ] = value;
       empresas[index].domicilios = domicilios;
       empresas[index].contactos = contactos;
-      empresas[index].incumbencias = incumbencias;
+      empresas[index].condiciones_afip = condiciones_afip;
       empresas[index].representantes = representantes;
     });
     return empresas;
@@ -182,8 +175,8 @@ module.exports.getAll = function(params) {
 function getDatosEmpresa(empresa) {
   return Promise.all([
       EntidadDomicilio.getByEntidad(empresa.id),
+      EntidadCondicionAfip.getByEntidad(empresa.id),
       Contacto.getAll(empresa.id),
-      EmpresaIncumbencia.getAll(empresa.id),
       EmpresaRepresentante.getAll(empresa.id)
     ]);
 }
@@ -200,13 +193,17 @@ module.exports.get = function(id) {
     empresa = r.rows[0];
     return getDatosEmpresa(empresa);
   })
-  .then(([ domicilios, contactos, incumbencias, representantes ]) => {
+  .then(([ domicilios, condiciones_afip, contactos, representantes ]) => {
       empresa.domicilios = domicilios;
       empresa.contactos = contactos;
-      empresa.incumbencias = incumbencias;
+      empresa.condiciones_afip = condiciones_afip;
       empresa.representantes = representantes;
       return empresa;
-  });
+  })
+  .catch(e => {
+    console.error(e);
+    return Promise.reject(e);
+  })
 }
 
 
@@ -214,6 +211,7 @@ module.exports.edit = function (id, empresa, client) {
   return Entidad.edit(id, {
     cuit: empresa.cuit,
     domicilios: empresa.domicilios,
+    condiciones_afip: empresa.condiciones_afip 
   }, client)
     .then(r => {
       let query = table.update({
@@ -228,18 +226,15 @@ module.exports.edit = function (id, empresa, client) {
 
       return Promise.all([
         Contacto.getAll(empresa.id),
-        EmpresaRepresentante.getAll(empresa.id),
-        EmpresaIncumbencia.getAll(empresa.id)
+        EmpresaRepresentante.getAll(empresa.id)
       ])
-        .then(([contactos, representantes, incumbencias]) => {
+        .then(([contactos, representantes]) => {
           return connector.execQuery(query, client)
             .then(r => {
               let contactos_nuevos = empresa.contactos.filter(c => !c.id);
               let contactos_existentes = empresa.contactos.filter(c => !!c.id);
               let representantes_nuevos = empresa.representantes.filter(r => !r.id);
               let representantes_existentes = empresa.representantes.filter(r => !!r.id).map(r => r.id);
-              let incumbencias_nuevas = empresa.incumbencias.filter(i => !i.id);
-              let incumbencias_existentes = empresa.incumbencias.filter(i => !!i.id).map(i => i.id);
               
               return Promise.all([
                 connector.execQuery(
@@ -252,13 +247,7 @@ module.exports.edit = function (id, empresa, client) {
                   EmpresaRepresentante.table.delete().where(
                     EmpresaRepresentante.table.empresa.equals(id)
                     .and(EmpresaRepresentante.table.id.notIn(representantes_existentes))
-                ).toQuery(), client),
-
-                connector.execQuery(
-                  EmpresaIncumbencia.table.delete().where(
-                    EmpresaIncumbencia.table.empresa.equals(id)
-                    .and(EmpresaIncumbencia.table.id.notIn(incumbencias_existentes))
-                ).toQuery())
+                ).toQuery(), client)
               ])
               .then(r => {
                 let proms_contactos_nuevos = contactos_nuevos.map(c => {
@@ -278,17 +267,11 @@ module.exports.edit = function (id, empresa, client) {
                   }, client)
                 });
 
-                let proms_incumbencias = incumbencias_nuevas.map(i => EmpresaIncumbencia.add({
-                      empresa: id,
-                      incumbencia: i,                
-                }, client));
-
 
                 return Promise.all([
                   Promise.all(proms_contactos_nuevos),
                   Promise.all(proms_contactos_edit),
-                  Promise.all(proms_representantes),
-                  Promise.all(proms_incumbencias)
+                  Promise.all(proms_representantes)
                 ])
                 .then(rs => id);
               })

@@ -58,7 +58,7 @@ function getByDni(dni) {
     .toQuery();
     
     return connector.execQuery(query).then(r => {
-        if (!r.rows.length) return null;
+        if (!r.rows.length) return [];
         else return r.rows[0];
     });
 }
@@ -68,7 +68,7 @@ module.exports.getByDni = getByDni;
 module.exports.add = function (persona, client) {
     return getByDni(persona.dni)
     .then(personas => {
-        if (personas.length) return Promise.reject({ code: 400, msg: 'Ya existe una persona con dicho el mismo dni'});
+        if (personas.length) return Promise.reject({ code: 409, msg: 'Ya existe una persona con dicho el mismo dni'});
         else {
             let query = table.insert(
                 table.id.value(persona.id),
@@ -78,7 +78,12 @@ module.exports.add = function (persona, client) {
             .returning(table.star())
             .toQuery();
 
-            return connector.execQuery(query, client).then(r => r.rows[0]);
+            return connector.execQuery(query, client)
+            .then(r => r.rows[0])
+            .catch(e => {
+                console.error(e);
+                return Promise.reject(e);
+            })
         }
     })
 }

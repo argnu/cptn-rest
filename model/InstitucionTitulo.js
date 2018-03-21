@@ -205,7 +205,7 @@ module.exports.delete = function(id) {
   .then(r => r.rows[0])
   .catch(e => {
     if (e.code == 23503) {
-      return Promise.reject({ code: 400, message: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
+      return Promise.reject({ code: 409, message: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
     }
     else return Promise.reject(e);
   });
