@@ -52,8 +52,7 @@ const table = sql.define({
     {
       table: 'matricula',
       columns: [ 'matricula' ],
-      refColumns: [ 'id' ],
-      onDelete: 'cascade'
+      refColumns: [ 'id' ]
     },
     {
       table: 'matricula_externa',

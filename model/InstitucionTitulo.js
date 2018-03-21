@@ -4,6 +4,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
+const TituloIncumbencia = require('./TituloIncumbencia');
 
 const table = sql.define({
   name: 'institucion_titulo',
@@ -90,11 +91,22 @@ module.exports.getAll = function(params) {
 }
 
 module.exports.getByInstitucion = function(institucion) {
+  let titulos;
   let query = table.select(select).from(from)
   .where(table.institucion.equals(institucion));
 
   return connector.execQuery(query.toQuery())
-  .then(r => r.rows.map(row => dot.object(row)));
+  .then(r => {
+    titulos = r.rows.map(row => dot.object(row));
+    return Promise.all(titulos.map(t => TituloIncumbencia.getByTitulo(t.id)));
+  })
+  .then(list_incumbencias => {
+    list_incumbencias.forEach((incumbencias, i) => {
+      titulos[i].incumbencias = incumbencias;
+    });
+
+    return titulos;
+  })
 }
 
 module.exports.get = function(id) {
@@ -108,6 +120,7 @@ module.exports.get = function(id) {
 
 module.exports.add = function(titulo, client) {
   try {
+    let titulo_nuevo;
     let query = table.insert(
       table.nombre.value(titulo.nombre),
       table.tipo_matricula.value(titulo.tipo_matricula),
@@ -121,20 +134,31 @@ module.exports.add = function(titulo, client) {
     .toQuery();
 
     return connector.execQuery(query, client)
-    .then(r => r.rows[0])
+    .then(r => {
+      titulo_nuevo = r.rows[0];
+      return Promise.all(titulo.incumbencias.map(i => TituloIncumbencia.add({
+        titulo: titulo_nuevo.id,
+        incumbencia: i
+      }, client)));
+    })
+    .then(incumbencias => {
+      titulo_nuevo.incumbencias = incumbencias;
+      return titulo_nuevo;
+    })
     .catch(e => {
-      console(e);
+      console.error(e);
       return Promise.reject(e);
     })
   }
   catch(e) {
-    console(e);
+    console.error(e);
     return Promise.reject(e);
   }
 }
 
 module.exports.edit = function(id, titulo) {
   try {
+    let titulo_edit;
     let query = table.update({
       nombre: titulo.nombre,
       tipo_matricula: titulo.tipo_matricula,
@@ -148,16 +172,27 @@ module.exports.edit = function(id, titulo) {
     .toQuery();
 
     return connector.execQuery(query)
-    .then(r => r.rows[0])
+    .then(r => {
+        return connector.execQuery(
+          TituloIncumbencia.table.delete().where(TituloIncumbencia.table.titulo.equals(id)).toQuery()
+        );
+    })
+    .then(r => {
+      return Promise.all(titulo.incumbencias.map(i => TituloIncumbencia.add({
+        titulo: id,
+        incumbencia: i
+      })));
+    })
+    .then(r => titulo)
     .catch(e => {
-      console(e);
+      console.error(e);
       return Promise.reject(e);
     });
   }
   catch(e) {
-    console(e);
+    console.error(e);
     return Promise.reject(e);
-  }  
+  }
 }
 
 module.exports.delete = function(id) {

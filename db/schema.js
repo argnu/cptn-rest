@@ -2,7 +2,7 @@ const connector = require(`./connector`);
 
 function getConstraints(tablename) {
     let sql = `SELECT t.constraint_name as name, t.constraint_type as type, r.update_rule on_update, r.delete_rule on_delete
-               FROM information_schema.table_constraints t JOIN information_schema.referential_constraints r
+               FROM information_schema.table_constraints t LEFT JOIN information_schema.referential_constraints r
                ON t.constraint_name = r.constraint_name
                WHERE table_name = '${tablename}'`;
 

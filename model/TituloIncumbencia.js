@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const connector = require(`../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -40,17 +41,23 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.getAll = function(id_titulo) {
-  let query = table.select(
-    TipoIncumbencia.table.id,
-    TipoIncumbencia.table.valor
-  )
-  .from(table.join(TipoIncumbencia.table).on(table.incumbencia.equals(TipoIncumbencia.table.id)))
+const select = [
+  table.id,
+  table.titulo,
+  TipoIncumbencia.table.id.as('incumbencia.id'),
+  TipoIncumbencia.table.valor.as('incumbencia.valor')  
+]
+
+const from = table.join(TipoIncumbencia.table).on(table.incumbencia.equals(TipoIncumbencia.table.id));
+
+module.exports.getByTitulo = function(id_titulo) {
+  let query = table.select(select)
+  .from(from)
   .where(table.titulo.equals(id_titulo))
   .toQuery();
 
   return connector.execQuery(query)
-        .then(r => r.rows);
+  .then(r => r.rows.map(row => dot.object(row)));
 }
 
 module.exports.add = function(data, client) {
@@ -62,12 +69,13 @@ module.exports.add = function(data, client) {
   .toQuery();
 
   return connector.execQuery(query, client)
-        .then(r => r.rows[0]);  
+  .then(r => r.rows[0]);  
 }
 
-module.exports.delete = function (titulo, incumbencia, client) {
+module.exports.delete = function (id, client) {
   let query = table.delete()
-  .where(table.incumbencia.equals(incumbencia).and(table.titulo.equals(titulo)))
+  .where(table.id.equals(id))
   .toQuery();
+
   return connector.execQuery(query, client);
 }
