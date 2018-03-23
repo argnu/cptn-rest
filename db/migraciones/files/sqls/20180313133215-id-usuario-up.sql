@@ -63,7 +63,7 @@ ALTER TABLE matricula_historial DROP CONSTRAINT "matricula_historial_usuario_fke
 
 ALTER TABLE "usuario" ALTER COLUMN "id" TYPE integer USING "id"::integer;
 
-CREATE SEQUENCE IF NOT EXISTS "usuario_id_seq";
+CREATE SEQUENCE "usuario_id_seq";
 ALTER SEQUENCE "usuario_id_seq" OWNED BY usuario.id;
 ALTER TABLE "usuario" ALTER COLUMN "id" SET DEFAULT nextval('usuario_id_seq'::regclass);
 ALTER SEQUENCE "usuario_id_seq" RESTART WITH 18;
