@@ -29,7 +29,8 @@ const table = sql.define({
       {
         table: 'volante_pago',
         columns: ['volante'],
-        refColumns: ['id']
+        refColumns: ['id'],
+        onDelete: 'cascade'
       },
       {
         table: 'boleta',

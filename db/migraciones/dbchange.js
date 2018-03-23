@@ -73,7 +73,7 @@ else {
             for(let fkey of foreignKeys) {
                 let fkey_name = `${tablename}_${fkey.columns[0]}_fkey`;
                 let constraint_fkey = constraints_bd.find(k => k.name == fkey_name);
-                if (!constraints_bd.find(k => k.name == fkey_name))
+                if (!constraint_fkey)
                     alters.keys.push(`ALTER TABLE "${tablename}" ADD FOREIGN KEY("${fkey.columns[0]}") REFERENCES ${fkey.table}("${fkey.refColumns[0]}")`
                         + (fkey.onDelete ? ` ON DELETE ${fkey.onDelete} ` : '')
                         + (fkey.onUpdate ? ` ON UPDATE ${fkey.onUpdate} ` : '')
@@ -84,6 +84,17 @@ else {
                     if (fkey.onDelete && fkey.onDelete.toUpperCase() != constraint_fkey.on_delete) query_chg += ` ON DELETE ${fkey.onDelete.toUpperCase()} `;
                     if (fkey.onUpdate && fkey.onUpdate.toUpperCase() != constraint_fkey.on_update) query_chg += ` ON UPDATE ${fkey.onUpdate.toUpperCase()} `;
                     alters.keys.push(query_chg);
+                }
+            }
+        }
+
+        function checkUniqueKeys(table, constraints_bd) {
+            for(let column of table.columns) {
+                if (column.unique) {
+                    let uniquekey_name = `${table._name}_${column.name}_key`;
+                    let constraint_uniquekey = constraints_bd.find(k => k.name == uniquekey_name);
+                    if (!constraint_uniquekey)
+                        alters.keys.push(`ALTER TABLE "${table._name}" ADD CONSTRAINT "${uniquekey_name}" UNIQUE ("${column.name}")`);
                 }
             }
         }
@@ -142,6 +153,7 @@ else {
             else {
                 checkColumns(table, table_bd);
                 checkForeignKeys(table._name, table.foreignKeys, table_bd.constraints);
+                checkUniqueKeys(table, table_bd.constraints);
                 table_bd.checked = true;
             }
 
@@ -192,26 +204,6 @@ function init(file_name) {
     .then(tables => [file, tables]);
 }
 
-// function createDir(name) {
-//     let newdir_name = path.join(__dirname, name);
-//     if (fs.existsSync(newdir_name)) return Promise.resolve(newdir_name);
-
-//     return new Promise(function(resolve, reject) {
-
-//         fs.mkdir(newdir_name, (err) => {
-//             if (err) reject(err);
-//             else resolve(newdir_name);
-//         });
-//     })
-// }
-
-// function createFiles() {
-//     let num = +process.argv[2];
-//     return Promise.all([
-//         openFile(path.join(__dirname, `${num}-${num+1}.sql`)),
-//         openFile(path.join(__dirname, `${num+1}-${num}.sql`)),
-//     ]);
-// }
 
 function openFile(file, content) {
     return new Promise(function(resolve, reject) {

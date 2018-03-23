@@ -57,8 +57,8 @@ router.post('/:id/delegaciones', function(req, res) {
 router.post('/auth', function(req, res) {
   model.Usuario.auth(req.body)
   .then(r => {
-    if (!r) res.status(403).json({ msg: 'Combinación de usuario/contraseña incorrecta' });
-    else res.json(r);
+    if (r.code == 403) res.status(r.code).json({ message: r.message });
+    else res.json(r.user);
   })
   .catch(e => utils.errorHandler(e, req, res));
 });

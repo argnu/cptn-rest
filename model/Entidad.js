@@ -37,7 +37,7 @@ const table = sql.define({
 module.exports.table = table;
 
 module.exports.add = function(entidad, client) {
-  try{
+  try {
     let entidad_added;
     let query = table.insert(
       table.tipo.value(entidad.tipo),

@@ -43,7 +43,6 @@ function createEntidades() {
     .then(r => createTable(model.PersonaJuridica.table))
     .then(r => createTable(model.MatriculaExterna.table))    
     .then(r => createTable(model.EmpresaRepresentante.table))
-    .then(r => createTable(model.EmpresaIncumbencia.table))
     .then(r => createTable(model.EntidadDomicilio.table))
 }
 

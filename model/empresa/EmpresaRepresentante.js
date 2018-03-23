@@ -4,7 +4,10 @@ sql.setDialect('postgres');
 
 const utils = require(`../../utils`);
 const Matricula = require(`../Matricula`);
+const MatriculaExterna = require(`../MatriculaExterna`);
 const Profesional = require(`../profesional/Profesional`);
+const Persona = require(`../Persona`);
+const PersonaFisica = require(`../PersonaFisica`);
 
 
 const table = sql.define({
@@ -52,8 +55,7 @@ const table = sql.define({
     {
       table: 'matricula',
       columns: [ 'matricula' ],
-      refColumns: [ 'id' ],
-      onDelete: 'cascade'
+      refColumns: [ 'id' ]
     },
     {
       table: 'matricula_externa',
@@ -81,10 +83,11 @@ module.exports.add = function(representante, client) {
 
 function getMatricula(id) {
   let query = table.select(
-    table.id, table.tipo,
+    table.id, 
+    table.tipo,
     table.matricula,
-    table.fechaInicio,
-    table.fechaFin,
+    table.fechaInicio.cast('varchar(10)'),
+    table.fechaFin.cast('varchar(10)'),
     Matricula.table.numeroMatricula,
     Profesional.table.nombre,
     Profesional.table.apellido,
@@ -97,54 +100,55 @@ function getMatricula(id) {
   .where(table.id.equals(id))
   .toQuery();
 
-  return connector.execQuery(query).then(r => r.rows[0]);
+  return connector.execQuery(query)
+  .then(r => r.rows[0]);
 }
 
 function getMatriculaExterna(id) {
   let query = table.select(
-    table.id, table.tipo,
-    table.matricula,
+    table.id, 
+    table.tipo,
+    table.matricula_externa,
     table.fechaInicio,
     table.fechaFin,
     MatriculaExterna.table.numeroMatricula,
-    PersonaFisica.table.nombre,
+    MatriculaExterna.table.nombreInstitucion,
+    Persona.table.nombre,
     PersonaFisica.table.apellido,
     PersonaFisica.table.dni
   )
   .from(
     table.join(MatriculaExterna.table).on(table.matricula_externa.equals(MatriculaExterna.table.id))
-         .join(PersonaFisica.table).on(MatriculaExterna.table.entidad.equals(PersonaFisica.table.id))
+         .join(Persona.table).on(MatriculaExterna.table.persona.equals(Persona.table.id))
+         .join(PersonaFisica.table).on(MatriculaExterna.table.persona.equals(PersonaFisica.table.id))
   )
   .where(table.id.equals(id))
   .toQuery();
 
-  return connector.execQuery(query).then(r => r.rows[0]);  
+  return connector.execQuery(query)
+  .then(r => r.rows[0]);  
 }
 
 
-const select = [
-  table.id, table.tipo,
-  table.matricula,
-  table.fechaInicio.cast('varchar(10)'),
-  table.fechaFin.cast('varchar(10)'),
-  Matricula.table.numeroMatricula,
-  Profesional.table.nombre,
-  Profesional.table.apellido,
-  Profesional.table.dni  
-]
-
-
 module.exports.getAll = function(id_empresa) {
-  let query = table.select(select)
-  .from(
-    table.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
-         .join(Profesional.table).on(Matricula.table.entidad.equals(Profesional.table.id))
-  )
+  let query = table.select(table.star())
   .where(table.empresa.equals(id_empresa))
   .toQuery();
 
   return connector.execQuery(query)
-        .then(r => r.rows);
+  .then(r => {
+      let proms = r.rows.map(row => {
+        if (row.matricula) return getMatricula(row.id)
+        else if (row.matricula_externa) return getMatriculaExterna(row.id);
+      });   
+      
+      return Promise.all(proms);
+  })
+  .then(representantes => representantes)
+  .catch(e => {
+    console.error(e);
+    return Promise.reject(e);
+  })
 }
 
 module.exports.delete = function (data, client) {

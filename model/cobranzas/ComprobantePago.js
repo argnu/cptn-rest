@@ -44,7 +44,8 @@ const table = sql.define({
         {
             table: 'comprobante',
             columns: ['comprobante'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onDelete: 'cascade'
         },
         {
             table: 't_formapago',

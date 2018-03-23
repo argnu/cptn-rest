@@ -52,6 +52,7 @@ router.post('/',
     else solicitud = req.body;
 
     solicitud.operador = req.user.id;
+    
     model.Solicitud.add(solicitud)
       .then(solicitud => res.status(201).json(solicitud))
       .catch(e => utils.errorHandler(e, req, res));

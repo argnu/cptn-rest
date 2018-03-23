@@ -98,7 +98,7 @@ module.exports.add = function(data, client) {
 
 module.exports.edit = function(id, data, client) {
   let query = table.update({
-    titulo: data.titulo.id,
+    titulo: data.titulo,
     fechaEgreso: data.fechaEgreso,
     fechaEmision: data.fechaEmision
   })

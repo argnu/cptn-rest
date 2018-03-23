@@ -170,14 +170,10 @@ function addMatricula(matricula, client) {
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
     table.numeroMatricula.value(matricula.numeroMatricula),
-    table.fechaResolucion.value(utils.checkNull(matricula.fechaResolucion)),
-    table.numeroActa.value(matricula.numeroActa),
     table.estado.value(matricula.estado),
     table.eliminado.value(false)
   )
-  .returning(table.id, table.entidad, table.numeroMatricula,
-    table.solicitud, table.fechaResolucion, table.numeroActa
-  )
+  .returning(table.id, table.entidad, table.numeroMatricula, table.solicitud)
   .toQuery()
 
   return connector.execQuery(query, client)
@@ -289,7 +285,7 @@ module.exports.aprobar = function(matricula) {
               if (matricula.generar_boleta) {
                 return addBoleta(
                   matricula_added.id,
-                  matricula.fechaResolucion,
+                  matricula.documento.fecha,
                   valor_inscripcion,
                   matricula.delegacion,
                   connection.client
@@ -297,15 +293,7 @@ module.exports.aprobar = function(matricula) {
               }
               else return Promise.resolve();
             })
-            .then(r => {
-              let documento = {
-                tipo: 1, // 1 es RESOLUCION,
-                fecha: matricula.fechaResolucion,
-                numero: matricula.numeroActa
-              };
-
-              return getDocumento(documento, connection.client);
-            })
+            .then(r => getDocumento(matricula.documento, connection.client))
             .then(documento => MatriculaHistorial.add({
               matricula: matricula_added.id,
               documento: documento.id,
@@ -321,6 +309,7 @@ module.exports.aprobar = function(matricula) {
                 })
             })
             .catch(e => {
+              console.error(e)
               connector.rollback(connection.client);
               connection.done();
               throw Error(e);
@@ -328,7 +317,7 @@ module.exports.aprobar = function(matricula) {
           })
         });
       }
-      else throw ({ code: 400, message: "Ya existe una matrícula para dicha solicitud" });
+      else throw ({ code: 409, message: "Ya existe una matrícula para dicha solicitud" });
   })
 }
 

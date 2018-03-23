@@ -29,7 +29,8 @@ const table = sql.define({
   foreignKeys: {
       table: 'legajo',
       columns: [ 'legajo' ],
-      refColumns: [ 'id' ]
+      refColumns: [ 'id' ],
+      onDelete: 'cascade'
   }
 });
 

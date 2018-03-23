@@ -265,9 +265,12 @@ module.exports.get = function(id) {
 
 
 module.exports.edit = function(id, solicitud) {
+  let connection;
+
   return connector
     .beginTransaction()
-    .then(connection => {
+    .then(conn => {
+        connection = conn;
         let datos_solicitud = {
           fecha: solicitud.fecha,
           delegacion: solicitud.delegacion,
@@ -282,30 +285,23 @@ module.exports.edit = function(id, solicitud) {
         return connector.execQuery(query, connection.client)
         .then(r => {
             if (solicitud.entidad.tipo == 'profesional') {
-              return Profesional.edit(solicitud.entidad.id, solicitud.entidad, connection.client)
-                .then(r => {
-                    return connector.commit(connection.client)
-                          .then(r => {
-                            connection.done();
-                            return id
-                          });
-                })
+              return Profesional.edit(solicitud.entidad.id, solicitud.entidad, connection.client);
             }
             else if (solicitud.entidad.tipo == 'empresa') {
               return Empresa.edit(solicitud.entidad.id, solicitud.entidad, connection.client)
-                .then(r => {
-                    return connector.commit(connection.client)
-                          .then(r => {
-                            connection.done();
-                            return id
-                          });
-                })
             }
         })
+        .then(r => {
+            return connector.commit(connection.client)
+            .then(r => {
+              connection.done();
+              return solicitud;
+            });
+        })        
         .catch(e => {
           connector.rollback(connection.client);
           connection.done();
-          throw Error(e);
+          return Promise.reject(e);
         });
     })
 }

@@ -44,5 +44,10 @@ module.exports.add = function(persona, client) {
     .returning(table.star())
     .toQuery();
 
-    return connector.execQuery(query, client).then(r => r.rows[0]);
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0])
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })    
 }

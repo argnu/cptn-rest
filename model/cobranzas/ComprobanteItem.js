@@ -45,7 +45,8 @@ const table = sql.define({
     foreignKeys: [{
             table: 'comprobante',
             columns: ['comprobante'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onDelete: 'cascade'
         },
         {
             table: 'boleta',
