@@ -308,12 +308,13 @@ module.exports.edit = function(id, solicitud) {
 
 
 module.exports.patch = function (id, solicitud, client) {
-  solicitud.updated_at = new Date();
-  solicitud.updated_by = solicitud.operador;
-  
-  let query = table.update(solicitud)
-    .where(table.id.equals(id))
-    .toQuery();
+  let query = table.update({
+    updated_at: new Date(),
+    updated_by: solicitud.operador,
+    estado: solicitud.estado
+  })
+  .where(table.id.equals(id))
+  .toQuery();
 
   return connector.execQuery(query, client);
 }

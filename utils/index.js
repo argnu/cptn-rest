@@ -7,6 +7,10 @@ module.exports.checkNull = function(value) {
   return value && value.length ? value : null;
 }
 
+module.exports.checkFecha = function(value) {
+  return value && value.length ? value : null;
+}
+
 module.exports.getFloat = function(value) {
   if (typeof value == 'number') return value;
   return value && value.length ? parseFloat(value.replace(',', '.')) : null;

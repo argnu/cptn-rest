@@ -148,7 +148,7 @@ module.exports.add = function(titulo, client) {
     .catch(e => {
       console.error(e);
       return Promise.reject(e);
-    })
+    })  
   }
   catch(e) {
     console.error(e);
@@ -180,7 +180,7 @@ module.exports.edit = function(id, titulo) {
     .then(r => {
       return Promise.all(titulo.incumbencias.map(i => TituloIncumbencia.add({
         titulo: id,
-        incumbencia: i
+        incumbencia: i.id ? i.id : i
       })));
     })
     .then(r => titulo)

@@ -87,7 +87,7 @@ module.exports.add = function(data, client) {
     table.profesional.value(data.profesional),
     table.titulo.value(data.titulo),
     table.fechaEgreso.value(data.fechaEgreso),
-    table.fechaEmision.value(data.fechaEmision)
+    table.fechaEmision.value(utils.checkFecha(data.fechaEmision))
   )
   .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)
   .toQuery();
@@ -98,9 +98,9 @@ module.exports.add = function(data, client) {
 
 module.exports.edit = function(id, data, client) {
   let query = table.update({
-    titulo: data.titulo,
+    titulo: data.titulo.id ? data.titulo.id : data.titulo,
     fechaEgreso: data.fechaEgreso,
-    fechaEmision: data.fechaEmision
+    fechaEmision: utils.checkFecha(data.fechaEmision)
   })
   .where(table.id.equals(id))
   .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)
