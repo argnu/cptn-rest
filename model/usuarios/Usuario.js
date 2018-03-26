@@ -129,7 +129,6 @@ module.exports.add = function(usuario) {
   .then(con => {
     connection = con;
     let query = table.insert(
-      table.id.value(usuario.id),
       table.username.value(usuario.username),
       table.nombre.value(usuario.nombre),
       table.apellido.value(usuario.apellido),
