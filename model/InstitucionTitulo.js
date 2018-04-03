@@ -30,14 +30,6 @@ const table = sql.define({
       notNull: true
     },
     {
-      name: 'validez_fecha_inicio',
-      dataType: 'date'
-    },
-    {
-      name: 'validez_fecha_fin',
-      dataType: 'date'
-    },
-    {
       name: 'valido',
       dataType: 'boolean',
       notNull: true,
@@ -70,8 +62,6 @@ const select = [
   table.id,
   table.nombre,
   table.tipo_matricula,
-  table.validez_fecha_inicio,
-  table.validez_fecha_fin,
   table.valido,
   table.institucion  ,
   TipoNivelTitulo.table.id.as('nivel.id'),
@@ -125,12 +115,10 @@ module.exports.add = function(titulo, client) {
       table.nombre.value(titulo.nombre),
       table.tipo_matricula.value(titulo.tipo_matricula),
       table.nivel.value(titulo.nivel),
-      table.validez_fecha_inicio.value(titulo.validez_fecha_inicio),
-      table.validez_fecha_fin.value(titulo.validez_fecha_fin),
       table.institucion.value(titulo.institucion)
     )
     .returning(table.id, table.nombre, table.tipo_matricula,
-      table.nivel, table.institucion, table.validez_fecha_fin, table.validez_fecha_inicio)
+      table.nivel, table.institucion)
     .toQuery();
 
     return connector.execQuery(query, client)
@@ -162,13 +150,11 @@ module.exports.edit = function(id, titulo) {
     let query = table.update({
       nombre: titulo.nombre,
       tipo_matricula: titulo.tipo_matricula,
-      nivel: titulo.nivel,
-      validez_fecha_inicio: titulo.validez_fecha_inicio,
-      validez_fecha_fin: titulo.validez_fecha_fin
+      nivel: titulo.nivel
     })
     .where(table.id.equals(id))
     .returning(table.id, table.nombre, table.tipo_matricula,
-      table.nivel, table.institucion, table.validez_fecha_fin, table.validez_fecha_inicio)
+      table.nivel, table.institucion)
     .toQuery();
 
     return connector.execQuery(query)
