@@ -60,15 +60,20 @@ else {
                 else return;
             }
 
-            if (column.dataType != column_bd.type)
-                return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            if (column.dataType == 'timestamptz' && !(column_bd.type == 'timestamp with time zone'))
+                return alters.alter.push(`ALTER TABL "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            else if (column_bd.type == 'timestamp with time zone') return;
+
+            if (column.dataType != column_bd.type) {
+                return alters.alter.push(`ALTER TABL "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            }
         }
 
         function checkForeignKeys(tablename, foreignKeys, constraints_bd) {
             for(let fkey of foreignKeys) {
                 let fkey_name = `${tablename}_${fkey.columns[0]}_fkey`;
                 let constraint_fkey = constraints_bd.find(k => k.name == fkey_name);
-                if (!constraints_bd.find(k => k.name == fkey_name))
+                if (!constraint_fkey)
                     alters.keys.push(`ALTER TABLE "${tablename}" ADD FOREIGN KEY("${fkey.columns[0]}") REFERENCES ${fkey.table}("${fkey.refColumns[0]}")`
                         + (fkey.onDelete ? ` ON DELETE ${fkey.onDelete} ` : '')
                         + (fkey.onUpdate ? ` ON UPDATE ${fkey.onUpdate} ` : '')
@@ -83,6 +88,17 @@ else {
             }
         }
 
+        function checkUniqueKeys(table, constraints_bd) {
+            for(let column of table.columns) {
+                if (column.unique) {
+                    let uniquekey_name = `${table._name}_${column.name}_key`;
+                    let constraint_uniquekey = constraints_bd.find(k => k.name == uniquekey_name);
+                    if (!constraint_uniquekey)
+                        alters.keys.push(`ALTER TABLE "${table._name}" ADD CONSTRAINT "${uniquekey_name}" UNIQUE ("${column.name}")`);
+                }
+            }
+        }
+
         function checkColumn(column, column_bd) {
             checkTypes(column, column_bd);
 
@@ -92,7 +108,8 @@ else {
                 alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP NOT NULL`);
 
             if (column.dataType != 'serial') {
-                let def_value = typeof column.defaultValue == 'string' ? '"'+column.defaultValue+"'" : column.defaultValue;
+                let def_value = typeof column.defaultValue == 'string' ? `'${column.defaultValue}'` : column.defaultValue;
+                
                 if (!column_bd.default) def_db_value = null;
                 else if (column_bd.type == 'boolean') def_db_value = (column_bd.default === 'true');
                 else if (column_bd.type == 'integer') def_db_value = parseInt(column_bd.default);
@@ -100,19 +117,26 @@ else {
                 else if (column_bd.type.includes('character')) column_bd.default.replace(/\:\:.+$/, '');
 
 
-                if (column.defaultValue != undefined && column_bd.default == null)
+                if (column.defaultValue != undefined && column_bd.default == null) 
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
                 else if (column.defaultValue == undefined && column_bd.default != null)
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP DEFAULT`);
-                else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value)
+                else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value
+                    && column.defaultValue != 'now'
+                ) {
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
+                }
             }
         }
 
         function checkColumns(table, table_bd) {
             for (let column of table.columns) {
                 let column_bd = table_bd.columns.find(c => c.name == column.name);
-                if (!column_bd) alters.add.push(table.alter().addColumn(column));
+                if (!column_bd)  {
+                    let query = table.alter().addColumn(column);
+                    if (column.defaultValue) query += ` DEFAULT '${column.defaultValue}' `;
+                    alters.add.push(query);
+                }
                 else {
                     checkColumn(column, column_bd);
                     column_bd.checked = true;
@@ -129,6 +153,7 @@ else {
             else {
                 checkColumns(table, table_bd);
                 checkForeignKeys(table._name, table.foreignKeys, table_bd.constraints);
+                checkUniqueKeys(table, table_bd.constraints);
                 table_bd.checked = true;
             }
 
@@ -179,26 +204,6 @@ function init(file_name) {
     .then(tables => [file, tables]);
 }
 
-// function createDir(name) {
-//     let newdir_name = path.join(__dirname, name);
-//     if (fs.existsSync(newdir_name)) return Promise.resolve(newdir_name);
-
-//     return new Promise(function(resolve, reject) {
-
-//         fs.mkdir(newdir_name, (err) => {
-//             if (err) reject(err);
-//             else resolve(newdir_name);
-//         });
-//     })
-// }
-
-// function createFiles() {
-//     let num = +process.argv[2];
-//     return Promise.all([
-//         openFile(path.join(__dirname, `${num}-${num+1}.sql`)),
-//         openFile(path.join(__dirname, `${num+1}-${num}.sql`)),
-//     ]);
-// }
 
 function openFile(file, content) {
     return new Promise(function(resolve, reject) {
@@ -219,9 +224,12 @@ function openFile(file, content) {
 
 function addQuerys(file, titulo, sentencias) {
     if (!sentencias.length) return Promise.resolve();
-    let querys = `\n\n /*    ${titulo}   */\n\n` + sentencias.join('\n');
+    let querys = `\n\n /*    ${titulo}   */\n\n` + sentencias.map(s => s+';').join('\n');
 
-    if (!file) return console.log(querys);
+    if (!file) {
+        console.log(querys);
+        return Promise.resolve();
+    }
     else return new Promise(function(resolve, reject) {
         fs.appendFile(file, querys, (err) => {
             if (err) reject(err);

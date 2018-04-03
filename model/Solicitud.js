@@ -41,12 +41,22 @@ const table = sql.define({
     },
     {
       name: 'created_by',
-      dataType: 'varchar(45)',
+      dataType: 'int',
     },
     {
       name: 'updated_by',
-      dataType: 'varchar(45)',
-    }     
+      dataType: 'int',
+    },
+    {
+      name: 'created_at',
+      dataType: 'timestamptz',
+      defaultValue: 'now'
+    },
+    {
+      name: 'updated_at',
+      dataType: 'timestamptz',
+      defaultValue: 'now'
+    }    
   ],
 
   foreignKeys: [
@@ -68,13 +78,15 @@ const table = sql.define({
     {
       table: 'usuario',
       columns: ['created_by'],
-      refColumns: ['id']
+      refColumns: ['id'],
+      onUpdate: 'CASCADE'
     },
     {
       table: 'usuario',
       columns: ['updated_by'],
-      refColumns: ['id']
-    }     
+      refColumns: ['id'],
+      onUpdate: 'CASCADE'
+    }
   ]
 });
 
@@ -130,12 +142,10 @@ module.exports.add = function(solicitud) {
       })
   })
   .catch(e => {
-    console.error('Error nueva solicitud, DNI:', solicitud.entidad.dni);
-    console.error('Error nueva solicitud, formaciones:', solicitud.entidad.formaciones);
     connector.rollback(connection.client);
     connection.done();
-    throw Error(e);
-  });          
+    return Promise.reject(e);
+  });
 }
 
 const select = [
@@ -170,16 +180,16 @@ function getTotal(params) {
     if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
     if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
     if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
-  
+
     if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
     if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
     if (params.dni) query.where(Profesional.table.dni.like(`%${params.dni}%`));
     if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
-  }  
-  
+  }
+
   return connector.execQuery(query.toQuery())
-  .then(r => +r.rows[0].total);  
-  
+  .then(r => +r.rows[0].total);
+
 }
 
 module.exports.getAll = function(params) {
@@ -205,8 +215,8 @@ module.exports.getAll = function(params) {
       else if (params.sort.nombre) query.order(Profesional.table.nombre[params.sort.nombre]);
       else if (params.sort.apellido) query.order(Profesional.table.apellido[params.sort.apellido]);
       else if (params.sort.dni) query.order(Profesional.table.dni[params.sort.dni]);
-      else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);   
-    } 
+      else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);
+    }
 
 
     /* ---------------- LIMIT AND OFFSET ------------------ */
@@ -255,55 +265,56 @@ module.exports.get = function(id) {
 
 
 module.exports.edit = function(id, solicitud) {
+  let connection;
+
   return connector
     .beginTransaction()
-    .then(connection => {
+    .then(conn => {
+        connection = conn;
         let datos_solicitud = {
           fecha: solicitud.fecha,
           delegacion: solicitud.delegacion,
-          updated_by: solicitud.operador
+          updated_by: solicitud.operador,
+          updated_at: new Date()
         }
 
         let query = table.update(datos_solicitud)
         .where(table.id.equals(id))
         .toQuery();
-      
+
         return connector.execQuery(query, connection.client)
         .then(r => {
             if (solicitud.entidad.tipo == 'profesional') {
-              return Profesional.edit(solicitud.entidad.id, solicitud.entidad, connection.client)
-                .then(r => {
-                    return connector.commit(connection.client)
-                          .then(r => {
-                            connection.done();
-                            return id
-                          });                  
-                })
-            }  
+              return Profesional.edit(solicitud.entidad.id, solicitud.entidad, connection.client);
+            }
             else if (solicitud.entidad.tipo == 'empresa') {
               return Empresa.edit(solicitud.entidad.id, solicitud.entidad, connection.client)
-                .then(r => {
-                    return connector.commit(connection.client)
-                          .then(r => {
-                            connection.done();
-                            return id
-                          });                  
-                })
-            }  
+            }
         })
+        .then(r => {
+            return connector.commit(connection.client)
+            .then(r => {
+              connection.done();
+              return solicitud;
+            });
+        })        
         .catch(e => {
           connector.rollback(connection.client);
           connection.done();
-          throw Error(e);
-        });       
+          return Promise.reject(e);
+        });
     })
 }
 
 
 module.exports.patch = function (id, solicitud, client) {
-  let query = table.update(solicitud)
-    .where(table.id.equals(id))
-    .toQuery();
-    
+  let query = table.update({
+    updated_at: new Date(),
+    updated_by: solicitud.operador,
+    estado: solicitud.estado
+  })
+  .where(table.id.equals(id))
+  .toQuery();
+
   return connector.execQuery(query, client);
 }

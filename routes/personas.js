@@ -1,3 +1,4 @@
+const utils = require('../utils');
 const path = require('path');
 const router = require('express').Router();
 const model = require('../model');
@@ -7,19 +8,13 @@ router.use(bodyParser.json());
 router.get('/', function (req, res) {
     model.Persona.getAll(req.query)
         .then(r => res.json(r))
-        .catch(e => {
-            console.error(e);
-            res.status(500).json({ msg: 'Error en el servidor' });
-        });
+        .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.get('/:id', function (req, res) {
     model.Persona.get(req.params.id)
         .then(r => res.json(r))
-        .catch(e => {
-            console.error(e);
-            res.status(500).json({ msg: 'Error en el servidor' });
-        });
+        .catch(e => utils.errorHandler(e, req, res));
 });
 
 

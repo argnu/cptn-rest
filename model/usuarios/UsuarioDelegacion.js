@@ -12,7 +12,7 @@ const table = sql.define({
         },        
         {
             name: 'usuario',
-            dataType: 'varchar(45)',
+            dataType: 'int',
             notNull: true
         },
         {
@@ -26,7 +26,8 @@ const table = sql.define({
         {
             table: 'usuario',
             columns: ['usuario'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
         },
         {
             table: 'delegacion',

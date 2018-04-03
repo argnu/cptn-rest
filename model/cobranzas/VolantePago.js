@@ -19,7 +19,7 @@ const table = sql.define({
           name: 'matricula',
           dataType: 'int',
           notNull: true
-        },        
+        },
         {
             name: 'fecha',
             dataType: 'date',
@@ -56,12 +56,22 @@ const table = sql.define({
         },
         {
           name: 'created_by',
-          dataType: 'varchar(45)',
+          dataType: 'int',
         },
         {
           name: 'updated_by',
-          dataType: 'varchar(45)',
-        }       
+          dataType: 'int',
+        },
+        {
+          name: 'created_at',
+          dataType: 'timestamptz',
+          defaultValue: 'now'
+        },
+        {
+          name: 'updated_at',
+          dataType: 'timestamptz',
+          defaultValue: 'now'
+        }
     ],
 
     foreignKeys: [
@@ -79,14 +89,16 @@ const table = sql.define({
       {
         table: 'usuario',
         columns: ['created_by'],
-        refColumns: ['id']
+        refColumns: ['id'],
+        onUpdate: 'CASCADE'
       },
       {
         table: 'usuario',
         columns: ['updated_by'],
-        refColumns: ['id']
-      }      
-  ]    
+        refColumns: ['id'],
+        onUpdate: 'CASCADE'
+      }
+  ]
 })
 
 module.exports.table = table;
@@ -109,7 +121,7 @@ const select = [
 function addVolante(volante, client) {
   let query = table.insert(
     table.created_by.value(volante.operador),
-    table.updated_by.value(volante.operador),    
+    table.updated_by.value(volante.operador),
     table.matricula.value(volante.matricula),
     table.fecha.value(volante.fecha),
     table.fecha_vencimiento.value(utils.checkNull(volante.fecha_vencimiento)),
@@ -132,7 +144,7 @@ function addVolante(volante, client) {
 
 module.exports.add = function(volante) {
   let volante_nuevo;
-  
+
   return connector
       .beginTransaction()
       .then(connection => {
@@ -140,12 +152,12 @@ module.exports.add = function(volante) {
               .then(volante_added => {
                 volante_nuevo = volante_added;
                 let proms_items = volante.boletas
-                                 .map(b => VolantePagoBoleta.add({ 
-                                    volante: volante_nuevo.id, 
+                                 .map(b => VolantePagoBoleta.add({
+                                    volante: volante_nuevo.id,
                                     boleta: b.id,
-                                    interes: b.interes 
+                                    interes: b.interes
                                   }, connection.client));
-                                  
+
                 return Promise.all(proms_items);
               })
               .then(r => {
@@ -169,6 +181,8 @@ module.exports.add = function(volante) {
 }
 
 module.exports.patch = function(id, volante, client) {
+  volante.updated_at = new Date();
+  
   let query = table.update(volante).where(table.id.equals(id)).toQuery();
   return connector.execQuery(query, client);
 }
@@ -182,7 +196,7 @@ function getBoletas(id_volante) {
        .toQuery();
 
   return connector.execQuery(query)
-         .then(r => { 
+         .then(r => {
             datos_volante = r.rows;
             return Promise.all(r.rows.map(b => Boleta.get(b.boleta)));
           })
@@ -222,7 +236,7 @@ module.exports.getAll = function(params) {
   if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
 
   if (params.limit) query.limit(+params.limit);
-  if (params.limit && params.offset) query.offset(+params.offset);  
+  if (params.limit && params.offset) query.offset(+params.offset);
 
   query.where(table.fecha_vencimiento.gte(moment()));
 
@@ -237,5 +251,5 @@ module.exports.getAll = function(params) {
           volantes[index].boletas = boletas;
       });
     return volantes;
-  })  
+  })
 }

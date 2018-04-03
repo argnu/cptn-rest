@@ -19,7 +19,8 @@ const table = sql.define({
         {
             name: 'dni',
             dataType: 'varchar(20)',
-            notNull: true
+            notNull: true,
+            // unique: true
         }
     ],
     foreignKeys: [
@@ -46,7 +47,7 @@ module.exports.get = function(id) {
     return connector.execQuery(query).then(r => r.rows[0]);
 }
 
-module.exports.getByDni = function(dni) {
+function getByDni(dni) {
     let query = table.select(
         table.id, table.apellido, table.dni,
         Persona.table.nombre, Persona.table.cuit,
@@ -57,19 +58,32 @@ module.exports.getByDni = function(dni) {
     .toQuery();
     
     return connector.execQuery(query).then(r => {
-        if (!r.rows.length) return null;
+        if (!r.rows.length) return [];
         else return r.rows[0];
     });
 }
 
-module.exports.add = function (persona, client) {
-    let query = table.insert(
-        table.id.value(persona.id),
-        table.apellido.value(persona.apellido),
-        table.dni.value(persona.dni)
-    )
-    .returning(table.star())
-    .toQuery();
+module.exports.getByDni = getByDni;
 
-    return connector.execQuery(query, client).then(r => r.rows[0]);
+module.exports.add = function (persona, client) {
+    return getByDni(persona.dni)
+    .then(personas => {
+        if (personas.length) return Promise.reject({ code: 409, msg: 'Ya existe una persona con dicho el mismo dni'});
+        else {
+            let query = table.insert(
+                table.id.value(persona.id),
+                table.apellido.value(persona.apellido),
+                table.dni.value(persona.dni)
+            )
+            .returning(table.star())
+            .toQuery();
+
+            return connector.execQuery(query, client)
+            .then(r => r.rows[0])
+            .catch(e => {
+                console.error(e);
+                return Promise.reject(e);
+            })
+        }
+    })
 }

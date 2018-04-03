@@ -1,3 +1,4 @@
+const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
 const bodyParser = require('body-parser');
@@ -6,25 +7,20 @@ router.use(bodyParser.json());
 router.get('/', function(req, res) {
   model.tareas.Legajo.getAll(req.query)
     .then(r => res.json(r))
-    .catch(e => {
-      console.error(e);
-      res.status(500).json({ msg: 'Error en el servidor' });
-    });
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.get('/:id', function(req, res) {
   model.tareas.Legajo.get(req.params.id)
     .then(r => res.json(r))
-    .catch(e => {
-      console.error(e);
-      res.status(500).json({ msg: 'Error en el servidor' });
-    });
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.post('/', function(req, res) {
+  req.body.operador = req.user.id;
   model.tareas.Legajo.add(req.body)
-    .then(legajo => res.json(legajo))
-    .catch(e => handler(e, res));
+  .then(legajo => res.json(legajo))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.put('/:id', function(req, res) {

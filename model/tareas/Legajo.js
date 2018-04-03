@@ -142,13 +142,22 @@ const table = sql.define({
         },
         {
             name: 'created_by',
-            dataType: 'varchar(45)',
+            dataType: 'int',
         },
         {
             name: 'updated_by',
-            dataType: 'varchar(45)',
-        }          
-
+            dataType: 'int',
+        },
+        {
+          name: 'created_at',
+          dataType: 'timestamptz',
+          defaultValue: 'now'
+        },
+        {
+          name: 'updated_at',
+          dataType: 'timestamptz',
+          defaultValue: 'now'
+        }        
     ],
 
     foreignKeys: [
@@ -181,13 +190,15 @@ const table = sql.define({
         {
             table: 'usuario',
             columns: ['created_by'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
         },
         {
             table: 'usuario',
             columns: ['updated_by'],
-            refColumns: ['id']
-        }         
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
+        }
     ]
 });
 
@@ -404,7 +415,7 @@ module.exports.add = function (legajo) {
         .then(con => {
             connection = con;
             if (legajo.domicilio.localidad && legajo.domicilio.direccion.length) {
-                return Domicilio.add(legajo.domicilio, connection.client)    
+                return Domicilio.add(legajo.domicilio, connection.client)
             }
             else return Promise.resolve(null)
         })
@@ -450,6 +461,7 @@ module.exports.add = function (legajo) {
                 });
         })
         .catch(e => {
+            console.log(e);
             connector.rollback(connection.client);
             connection.done();
             throw Error(e);
@@ -457,6 +469,8 @@ module.exports.add = function (legajo) {
 }
 
 module.exports.patch = function (id, legajo, client) {
+    legajo.updated_at = new Date();
+
     let query = table.update(legajo)
         .where(table.id.equals(id))
         .toQuery();

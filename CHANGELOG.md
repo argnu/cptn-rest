@@ -1,5 +1,11 @@
 # 1.4.0 (2018-02-14)
 
+## Agregado:
+ - Entidad nueva `EntidadCondicionAfip`.
+ - Una `Entidad` puede contener múltiples condiciones impositivas.
+
+# 1.4.0 (2018-02-14)
+
 ## Modificado
 
 - **Formacion**: nuevo campo fechaEmision.

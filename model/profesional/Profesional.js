@@ -2,10 +2,11 @@ const config = require('../../config.private');
 const connector = require('../../db/connector');
 const Contacto = require('../Contacto');
 const ProfesionalCajaPrevisional = require('./ProfesionalCajaPrevisional');
-const Formacion = require('./Formacion');
+const ProfesionalTitulo = require('./ProfesionalTitulo');
 const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
 const EntidadDomicilio = require('../EntidadDomicilio');
+const EntidadCondicionAfip = require('../EntidadCondicionAfip');
 const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
@@ -69,10 +70,6 @@ const table = sql.define({
     },
     {
       name: 'independiente',
-      dataType: 'boolean'
-    },
-    {
-      name: 'jubilado',
       dataType: 'boolean'
     },
     {
@@ -141,7 +138,6 @@ function addDatosBasicos(profesional, client) {
     table.observaciones.value(profesional.observaciones),
     table.relacionDependencia.value(profesional.relacionDependencia),
     table.independiente.value(profesional.independiente),
-    table.jubilado.value(profesional.jubilado),
     table.empresa.value(profesional.empresa),
     table.serviciosPrestados.value(profesional.serviciosPrestados),
     table.publicar.value(profesional.publicar),
@@ -160,8 +156,8 @@ module.exports.add = function (profesional, client) {
   return Entidad.add({
     tipo: profesional.tipo,
     cuit: profesional.cuit,
-    condafip: profesional.condafip,
     domicilios: profesional.domicilios,
+    condiciones_afip: profesional.condiciones_afip,
   }, client)
   .then(entidad => {
     profesional.id = entidad.id;
@@ -174,7 +170,7 @@ module.exports.add = function (profesional, client) {
 
             let proms_formaciones = (profesional.formaciones && profesional.formaciones.length) ? profesional.formaciones.map(f => {
               f.profesional = profesional.id;
-              return Formacion.add(f, client);
+              return ProfesionalTitulo.add(f, client);
             }) : [];
 
             let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
@@ -201,33 +197,30 @@ module.exports.add = function (profesional, client) {
 
 const select = [
   table.id,
-  Entidad.table.tipo, 
+  Entidad.table.tipo,
   Entidad.table.cuit,
-  table.nombre, 
-  table.apellido, 
+  table.nombre,
+  table.apellido,
   table.dni,
   table.fechaNacimiento.cast('varchar(10)'),
-  table.lugarNacimiento, 
+  table.lugarNacimiento,
   table.nacionalidad,
-  table.relacionDependencia, 
-  table.independiente, 
-  table.jubilado,
+  table.relacionDependencia,
+  table.independiente,
   TipoSexo.table.valor.as('sexo'),
   TipoEstadoCivil.table.valor.as('estadoCivil'),
-  TipoCondicionAfip.table.valor.as('condafip'),
-  table.observaciones, 
+  table.observaciones,
   table.empresa,
   table.serviciosPrestados,
-  table.foto, 
+  table.foto,
   table.firma,
-  table.publicarAcervo, 
+  table.publicarAcervo,
   table.publicarCelular,
-  table.publicarDireccion, 
+  table.publicarDireccion,
   table.publicarEmail
 ];
 
 const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
-                         .leftJoin(TipoCondicionAfip.table).on(Entidad.table.condafip.equals(TipoCondicionAfip.table.id))
                          .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
                          .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
 
@@ -254,8 +247,9 @@ module.exports.getAll = function(params) {
   })
   .then(rs => {
     rs.forEach((value, index) => {
-      [ domicilios, contactos, formaciones, cajas_previsionales, subsidiarios ] = value;
+      [ domicilios, condiciones_afip, contactos, formaciones, cajas_previsionales, subsidiarios ] = value;
       profesionales[index].domicilios = domicilios;
+      profesionales[index].condiciones_afip = condiciones_afip;
       profesionales[index].contactos = contactos;
       profesionales[index].formaciones = formaciones;
       profesionales[index].cajas_previsionales = cajas_previsionales;
@@ -275,10 +269,10 @@ module.exports.getAll = function(params) {
 function getDatosProfesional(profesional) {
   return Promise.all([
       EntidadDomicilio.getByEntidad(profesional.id),
+      EntidadCondicionAfip.getByEntidad(profesional.id),
       Contacto.getAll(profesional.id),
-      Formacion.getAll(profesional.id),
+      ProfesionalTitulo.getByProfesional(profesional.id),
       ProfesionalCajaPrevisional.getByProfesional(profesional.id),
-      // Beneficiario.getAll(profesional.id),
       Subsidiario.getAll(profesional.id)
     ]);
 }
@@ -302,9 +296,10 @@ module.exports.get = function(id) {
     return getDatosProfesional(profesional);
   })
   .then(([
-      domicilios, contactos, formaciones, cajas_previsionales, subsidiarios
+      domicilios, condiciones_afip, contactos, formaciones, cajas_previsionales, subsidiarios
     ]) => {
       profesional.domicilios = domicilios;
+      profesional.condiciones_afip = condiciones_afip;
       profesional.contactos = contactos;
       profesional.formaciones = formaciones;
       profesional.cajas_previsionales = cajas_previsionales;
@@ -325,10 +320,19 @@ module.exports.getFirma = function(id) {
 
 
 module.exports.edit = function(id, profesional, client) {
+  let contactos_nuevos = profesional.contactos.filter(c => !c.id);
+  let contactos_existentes = profesional.contactos.filter(c => !!c.id);
+  let formaciones_nuevas = profesional.formaciones.filter(f => !f.id);
+  let formaciones_existentes = profesional.formaciones.filter(f => !!f.id);
+  let subsidiarios_nuevos = profesional.subsidiarios.filter(s => !s.id);
+  let subsidiarios_existentes = profesional.subsidiarios.filter(s => !!s.id);
+  let cajas_nuevas = profesional.cajas_previsionales.filter(c => !c.id);
+  let cajas_existentes = profesional.cajas_previsionales.filter(c => !!c.id);
+
   return Entidad.edit(id, {
     cuit: profesional.cuit,
-    condafip: profesional.condafip,
-    domicilios: profesional.domicilios
+    domicilios: profesional.domicilios,
+    condiciones_afip: profesional.condiciones_afip
   }, client)
   .then(r => {
     let obj_update = {
@@ -343,7 +347,6 @@ module.exports.edit = function(id, profesional, client) {
       observaciones: profesional.observaciones,
       relacionDependencia: profesional.relacionDependencia,
       independiente: profesional.independiente,
-      jubilado: profesional.jubilado,
       empresa: profesional.empresa,
       serviciosPrestados: profesional.serviciosPrestados,
       publicarAcervo: profesional.publicarAcervo,
@@ -359,85 +362,77 @@ module.exports.edit = function(id, profesional, client) {
     .where(table.id.equals(id))
     .toQuery();
 
-    return connector.execQuery(query, client)
-      .then(r => {
-        let contactos_nuevos = profesional.contactos.filter(c => !c.id);
-        let contactos_existentes = profesional.contactos.filter(c => !!c.id);
-        let formaciones_nuevas = profesional.formaciones.filter(f => !f.id);
-        let formaciones_existentes = profesional.formaciones.filter(f => !!f.id);
-        let subsidiarios_nuevos = profesional.subsidiarios.filter(s => !s.id);
-        let subsidiarios_existentes = profesional.subsidiarios.filter(s => !!s.id);
-        let cajas_nuevas = profesional.cajas_previsionales.filter(c => !c.id);
-        let cajas_existentes = profesional.cajas_previsionales.filter(c => !!c.id);
-        
-        let proms = [
-          connector.execQuery(
-            Contacto.table.delete().where(
-              Contacto.table.entidad.equals(id)
-              .and(Contacto.table.id.notIn(contactos_existentes.map(c => c.id)))
-            ).toQuery(), client),
+    return connector.execQuery(query, client);
+  })
+  .then(r => {
+    let proms = [
+      connector.execQuery(
+        Contacto.table.delete().where(
+          Contacto.table.entidad.equals(id)
+          .and(Contacto.table.id.notIn(contactos_existentes.map(c => c.id)))
+        ).toQuery(), client),
 
-          connector.execQuery(
-            Formacion.table.delete().where(
-              Formacion.table.profesional.equals(id)
-              .and(Formacion.table.id.notIn(formaciones_existentes.map(f => f.id)))
-            ).toQuery(), client),
+      connector.execQuery(
+        ProfesionalTitulo.table.delete().where(
+          ProfesionalTitulo.table.profesional.equals(id)
+          .and(ProfesionalTitulo.table.id.notIn(formaciones_existentes.map(f => f.id)))
+        ).toQuery(), client),
 
-          connector.execQuery(
-            Subsidiario.table.delete().where(
-              Subsidiario.table.profesional.equals(id)
-             .and(Subsidiario.table.id.notIn(subsidiarios_existentes.map(s => s.id)))
-          ).toQuery(), client),
+      connector.execQuery(
+        Subsidiario.table.delete().where(
+          Subsidiario.table.profesional.equals(id)
+          .and(Subsidiario.table.id.notIn(subsidiarios_existentes.map(s => s.id)))
+      ).toQuery(), client),
 
-          connector.execQuery(
-            ProfesionalCajaPrevisional.table.delete().where(
-              ProfesionalCajaPrevisional.table.profesional.equals(id)
-             .and(ProfesionalCajaPrevisional.table.id.notIn(cajas_existentes.map(c => c.id)))
-          ).toQuery(), client)
-        ];
+      connector.execQuery(
+        ProfesionalCajaPrevisional.table.delete().where(
+          ProfesionalCajaPrevisional.table.profesional.equals(id)
+          .and(ProfesionalCajaPrevisional.table.id.notIn(cajas_existentes.map(c => c.id)))
+      ).toQuery(), client)
+    ];
 
-        return Promise.all(proms)
-        .then(r => {
-          let proms_contactos_nuevos = contactos_nuevos.map(c => { 
-            c.entidad = id;
-            return Contacto.add(c, client);
-          });
+    return Promise.all(proms)
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e)
+    })    
+  })
+  .then(r => {
+    let proms = [];
 
-          let proms_contactos_edit = contactos_existentes.map(c => Contacto.edit(c.id, c, client));
+    contactos_nuevos.forEach(c => {
+      c.entidad = id;
+      proms.push(Contacto.add(c, client));
+    });
 
-          let proms_formaciones_nuevas = formaciones_nuevas.map(f => {
-            f.profesional = id;
-            return Formacion.add(f, client);
-          });
+    contactos_existentes.forEach(c => proms.push(Contacto.edit(c.id, c, client)));
 
-          let proms_formaciones_edit = formaciones_existentes.map(f => Formacion.edit(f.id, f, client));
+    formaciones_nuevas.forEach(f => {
+      f.profesional = id;
+      proms.push(ProfesionalTitulo.add(f, client));
+    });
 
-          let proms_subsidiarios_nuevos = subsidiarios_nuevos.map(s => {
-            s.profesional = id;
-            return Subsidiario.add(s, client);
-          });
+    formaciones_existentes.forEach(f => proms.push(ProfesionalTitulo.edit(f.id, f, client)));
 
-          let proms_subsidiarios_edit = subsidiarios_existentes.map(s => Subsidiario.edit(s.id, s, client));
+    subsidiarios_nuevos.forEach(s => {
+      s.profesional = id;
+      proms.push(Subsidiario.add(s, client));
+    });
 
-          let proms_cajas = cajas_nuevas.map(c => {
-            return ProfesionalCajaPrevisional.add({
-              profesional: id,
-              caja: c
-            }, client);
-          });
+    subsidiarios_existentes.forEach(s => proms.push(Subsidiario.edit(s.id, s, client)));
 
-          return Promise.all([
-            Promise.all(proms_contactos_nuevos),
-            Promise.all(proms_contactos_edit),
-            Promise.all(proms_formaciones_nuevas),
-            Promise.all(proms_formaciones_edit),
-            Promise.all(proms_subsidiarios_nuevos),
-            Promise.all(proms_subsidiarios_edit),
-            Promise.all(proms_cajas)
-          ])
-          .then(rs => id);
-        })
-      })
+    cajas_nuevas.forEach(c => {
+      proms.push(ProfesionalCajaPrevisional.add({
+        profesional: id,
+        caja: c
+      }, client));
+    });
+
+    return Promise.all(proms)
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e)
+    })
   })
 }
 
@@ -446,6 +441,6 @@ module.exports.patch = function (id, profesional, client) {
     .where(table.id.equals(id))
     .returning(table.star())
     .toQuery();
-    
+
   return connector.execQuery(query, client)
 }

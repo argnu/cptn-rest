@@ -75,6 +75,7 @@ function getTotal(params) {
 
 module.exports.getAll = function(params) {
     let query = table.select(
+        table.id,
         Persona.table.nombre,
         Persona.table.cuit,
         Persona.table.telefono,
@@ -103,6 +104,7 @@ module.exports.getAll = function(params) {
 
 module.exports.get = function(id) {
     let query = table.select(
+        table.id,
         Persona.table.nombre,
         Persona.table.cuit,
         Persona.table.telefono,
@@ -131,25 +133,35 @@ function addPersona(persona) {
 }
 
 module.exports.add = function(matricula, client) {
-    let persona_added = {};
+    try {
+        let persona_added = {};
 
-    return addPersona(matricula.persona)
-    .then(persona => {
-        persona_added = persona;
+        return addPersona(matricula.persona)
+        .then(persona => {
+            persona_added = persona;
 
-        let query = table.insert(
-            table.persona.value(persona.id),
-            table.numeroMatricula.value(matricula.numeroMatricula),
-            table.nombreInstitucion.value(matricula.nombreInstitucion),
-            table.localidad.value(matricula.localidad)
-        )
-        .returning(table.star())
-        .toQuery();
+            let query = table.insert(
+                table.persona.value(persona.id),
+                table.numeroMatricula.value(matricula.numeroMatricula),
+                table.nombreInstitucion.value(matricula.nombreInstitucion),
+                table.localidad.value(matricula.localidad)
+            )
+            .returning(table.star())
+            .toQuery();
 
-        return connector.execQuery(query).then(r => {
-            let result = r.rows[0];
-            result.persona = persona_added;
-            return result;
-        });
-    })
+            return connector.execQuery(query).then(r => {
+                let result = r.rows[0];
+                result.persona = persona_added;
+                return result;
+            })
+            .catch(e => {
+                console.error(e);
+                return Promise.reject(e);
+            })
+        })
+    }
+    catch(e) {
+        console.error(e);
+        return Promise.reject(e);
+    }
 }

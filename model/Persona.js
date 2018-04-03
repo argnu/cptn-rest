@@ -61,8 +61,8 @@ module.exports.get = function(id) {
     let query = table.select(table.star())
                      .where(table.id.equals(id))
                      .toQuery();
-    return connector.execQuery(query)
 
+    return connector.execQuery(query)
     .then(r => {
         persona = r.rows[0];
         if (persona.tipo == 'fisica') return PersonaFisica.get(id)
@@ -70,36 +70,59 @@ module.exports.get = function(id) {
     })
 }
 
-module.exports.getByCuit = function(cuit) {
-    let persona;
+function getByCuit(cuit) {
+    if (!cuit.length) return Promise.resolve([]);
+
+    let personas;
     let query = table.select(table.star())
                      .where(table.cuit.equals(cuit))
                      .toQuery();
+
     return connector.execQuery(query)
     .then(r => {
-        if (!r.rows.length) return Promise.resolve(null);
-        persona = r.rows[0];
-        if (persona.tipo == 'fisica') return PersonaFisica.get(id)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.get(id);
-    })
+        personas = r.rows;
+        let proms = personas.map(p => {
+            if (p.tipo == 'fisica') return PersonaFisica.get(p.id)
+            else if (p.tipo == 'juridica') return PersonaJuridica.get(p.id);
+        })
+        return Promise.all(proms);
+    });
 }
+
+module.exports.getByCuit = getByCuit;
 
 
 module.exports.add = function(persona, client) {
-    let query = table.insert(
-        table.tipo.value(persona.tipo),
-        table.nombre.value(persona.nombre),
-        table.cuit.value(persona.cuit),
-        table.telefono.value(persona.telefono)
-    )
-    .returning(table.star())
-    .toQuery();
+    try {
+        return getByCuit(persona.cuit)
+        .then(personas => {
+            if (personas.length) return Promise.reject({ code: 409, msg: 'Ya existe una persona con dicho el mismo CUIT/CUIL'});
+            else {
+                let query = table.insert(
+                    table.tipo.value(persona.tipo),
+                    table.nombre.value(persona.nombre),
+                    table.cuit.value(persona.cuit),
+                    table.telefono.value(persona.telefono)
+                )
+                .returning(table.star())
+                .toQuery();
 
-    return connector.execQuery(query, client)
-    .then(r => {
-        persona.id = r.rows[0].id;
-        if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
-        else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
-    })
-    .then(r => persona);
+                return connector.execQuery(query, client)
+                .then(r => {
+                    persona.id = r.rows[0].id;
+                    if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
+                    else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
+                })
+                .then(r => persona)
+                .catch(e => {
+                    console.error(e);
+                    return Promise.reject(e);
+                })
+            }
+        })
+    }
+    catch(e) {
+        console.error(e);
+        return Promise.reject(e);
+    }
 }

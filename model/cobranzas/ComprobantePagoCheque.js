@@ -33,7 +33,8 @@ const table = sql.define({
         {
             table: 'comprobante_pago',
             columns: ['id'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onDelete: 'cascade'
         },
         {
             table: 'banco',
