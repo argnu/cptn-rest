@@ -39,7 +39,7 @@ UPDATE "usuario" SET "id"='8' WHERE "id"='BILBAOD';
 UPDATE "usuario" SET "id"='9' WHERE "id"='LASTRAD';
 UPDATE "usuario" SET "id"='10' WHERE "id"='MARQUEZM';
 UPDATE "usuario" SET "id"='11' WHERE "id"='VALDEZA';
-UPDATE "usuario" SET "id"='12' WHERE "id"='FEDELEF';
+UPDATE "usuario" SET "id"='12' WHERE "id"='FEDELEJ';
 UPDATE "usuario" SET "id"='13' WHERE "id"='BARBAGELATAL';
 UPDATE "usuario" SET "id"='14', "admin"=true WHERE "id"='BRAVOL';
 UPDATE "usuario" SET "id"='15', "admin"=true WHERE "id"='HUENCHUMANN';
