@@ -35,6 +35,7 @@ module.exports.TipoVinculo = require('./tipos/TipoVinculo');
 module.exports.TipoTarjeta = require('./tipos/TipoTarjeta');
 module.exports.TipoDocumento = require('./tipos/TipoDocumento');
 module.exports.TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
+module.exports.TipoMovimientoMatricula = require('./tipos/TipoMovimientoMatricula');
 
 module.exports.Persona = require('./Persona');
 module.exports.PersonaFisica = require('./PersonaFisica');
@@ -44,6 +45,7 @@ module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
 module.exports.MatriculaHistorial = require('./MatriculaHistorial');
 module.exports.MatriculaExterna = require('./MatriculaExterna');
+module.exports.MatriculaMovimiento = require('./MatriculaMovimiento');
 
 module.exports.Entidad = require('./Entidad');
 module.exports.EntidadDomicilio = require('./EntidadDomicilio');

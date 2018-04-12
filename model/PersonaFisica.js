@@ -48,6 +48,8 @@ module.exports.get = function(id) {
 }
 
 function getByDni(dni) {
+    if (!dni || !dni.length || dni===0) return Promise.resolve([]);
+    
     let query = table.select(
         table.id, table.apellido, table.dni,
         Persona.table.nombre, Persona.table.cuit,
