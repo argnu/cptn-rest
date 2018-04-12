@@ -22,6 +22,8 @@ module.exports.table = table;
 module.exports.getAll = function(params) {
   let query = table.select(table.star()).from(table);
 
+  if (params.sort && params.sort.nombre) query.order(table.nombre[params.sort.nombre]);
+
   return connector.execQuery(query.toQuery())
   .then(r => r.rows);
 }
