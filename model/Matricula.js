@@ -235,18 +235,18 @@ function getTipoMatricula(id_profesional) {
   .then(tipos => tipos_mat[Math.min(...tipos)]);
 }
 
-function getNumeroMatricula(id_profesional) {
+function getNumeroMatricula(id_profesional, tipo_provisorio) {
   return getTipoMatricula(id_profesional)
   .then(tipo => {
     let query = `
       select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
       from matricula
-      where "numeroMatricula" LIKE '${tipo}%' AND length(regexp_replace("numeroMatricula", '\\D','','g'))=5`
+      where "numeroMatricula" LIKE '${tipo_provisorio}%' AND length(regexp_replace("numeroMatricula", '\\D','','g'))=5`
 
     return connector.execRawQuery(query)
     .then(r => {
       let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
-      return tipo + completarConCeros(numero);
+      return tipo_provisorio + completarConCeros(numero);
     });
   });  
 }
@@ -267,7 +267,7 @@ module.exports.aprobar = function(matricula) {
         .then(rs => {
           solicitud = rs[0];
           valor_inscripcion = rs[1][0].valor;
-          return getNumeroMatricula(solicitud.entidad.id);
+          return getNumeroMatricula(solicitud.entidad.id, matricula.tipo);
         })
         .then(numero_mat => {
           return connector
@@ -396,6 +396,8 @@ function getTotal(params) {
       .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
     );
 
+    if (params.entidad) query.where(table.entidad.equals(params.entidad));
+
     if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
     if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
     if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
@@ -420,6 +422,8 @@ module.exports.getAll = function (params) {
     .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
   )
   .where(table.eliminado.equals(false));
+
+  if (params.entidad) query.where(table.entidad.equals(params.entidad));
 
   if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
