@@ -2,6 +2,7 @@
 config.private.js
 node_modules
 npm-debug.log
+db/migraciones/database.json
 
 files/fotos/*
 !files/fotos/.gitkeep

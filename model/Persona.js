@@ -71,7 +71,7 @@ module.exports.get = function(id) {
 }
 
 function getByCuit(cuit) {
-    if (!cuit.length) return Promise.resolve([]);
+    if (!cuit || !cuit.length) return Promise.resolve([]);
 
     let personas;
     let query = table.select(table.star())
