@@ -3,7 +3,6 @@ const connector = require('../../db/connector');
 const Contacto = require('../Contacto');
 const ProfesionalCajaPrevisional = require('./ProfesionalCajaPrevisional');
 const ProfesionalTitulo = require('./ProfesionalTitulo');
-const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
 const EntidadDomicilio = require('../EntidadDomicilio');
 const EntidadCondicionAfip = require('../EntidadCondicionAfip');

@@ -57,8 +57,6 @@ module.exports.Profesional = require('./profesional/Profesional');
 module.exports.ProfesionalCajaPrevisional = require('./profesional/ProfesionalCajaPrevisional');
 module.exports.ProfesionalTitulo = require('./profesional/ProfesionalTitulo');
 module.exports.Subsidiario = require('./profesional/Subsidiario');
-module.exports.BeneficiarioCaja = require('./profesional/BeneficiarioCaja');
-module.exports.Formacion = require('./profesional/Formacion');
 module.exports.Contacto = require('./Contacto');
 
 module.exports.tareas = require('./tareas');

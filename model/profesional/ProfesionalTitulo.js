@@ -41,7 +41,8 @@ const table = sql.define({
     {
       table: 'profesional',
       columns: [ 'profesional' ],
-      refColumns: [ 'id' ]
+      refColumns: [ 'id' ],
+      onDelete: 'CASCADE'
     },
     {
       table: 'institucion_titulo',

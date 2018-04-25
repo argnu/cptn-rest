@@ -24,6 +24,12 @@ const table = sql.define({
     {
       name: 'domicilio',
       dataType: 'int'
+    },
+    {
+      name: 'valida',
+      dataType: 'boolean',
+      notNull: true,
+      defaultValue: true
     }
   ],
 
@@ -118,7 +124,7 @@ module.exports.getAll = function(params) {
   let instituciones = [];
 
   let query = table.select(
-    table.id, table.nombre, table.cue
+    table.id, table.nombre, table.cue, table.valida
   );
 
   if (params.filter) {
@@ -152,7 +158,7 @@ module.exports.get = function(id) {
   let institucion;
 
   let query = table.select(
-    table.id, table.nombre, table.cue
+    table.id, table.nombre, table.cue, table.valida
   ).from(
     table
   ).where(table.id.equals(id))
@@ -170,9 +176,14 @@ module.exports.get = function(id) {
 }
 
 module.exports.patch = function(id, institucion) {
-  let query = table.update(institucion)
+  let institucion_patch = {};
+  if (institucion.cue) institucion_patch.cue = institucion.cue;
+  if (institucion.nombre) institucion_patch.nombre = institucion.nombre;
+  if (institucion.valida) institucion_patch.valida = institucion.valida;
+
+  let query = table.update(institucion_patch)
   .where(table.id.equals(id))
-  .returning(table.id, table.nombre, table.cue)
+  .returning(table.id, table.nombre, table.cue, table.valida)
   .toQuery();
 
   return connector.execQuery(query)

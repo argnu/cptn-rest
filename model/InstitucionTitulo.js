@@ -51,7 +51,8 @@ const table = sql.define({
     {
         table: 'institucion',
         columns: ['institucion'],
-        refColumns: ['id']
+        refColumns: ['id'],
+        onDelete: 'cascade'
     }
   ]
 });
@@ -115,10 +116,11 @@ module.exports.add = function(titulo, client) {
       table.nombre.value(titulo.nombre),
       table.tipo_matricula.value(titulo.tipo_matricula),
       table.nivel.value(titulo.nivel),
-      table.institucion.value(titulo.institucion)
+      table.institucion.value(titulo.institucion),
+      table.valido.value(titulo.valido)
     )
     .returning(table.id, table.nombre, table.tipo_matricula,
-      table.nivel, table.institucion)
+      table.nivel, table.institucion, table.valido)
     .toQuery();
 
     return connector.execQuery(query, client)
@@ -150,11 +152,12 @@ module.exports.edit = function(id, titulo) {
     let query = table.update({
       nombre: titulo.nombre,
       tipo_matricula: titulo.tipo_matricula,
-      nivel: titulo.nivel
+      nivel: titulo.nivel,
+      valido: titulo.valido
     })
     .where(table.id.equals(id))
     .returning(table.id, table.nombre, table.tipo_matricula,
-      table.nivel, table.institucion)
+      table.nivel, table.institucion, table.valido)
     .toQuery();
 
     return connector.execQuery(query)
