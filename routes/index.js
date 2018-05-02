@@ -49,5 +49,6 @@ router.use('/tareas', require('./tareas'));
 router.use('/cajas-previsionales', require('./cajas-previsionales'));
 
 router.use('/personas', require('./personas'));
+router.use('/valores_globales', require('./valores_globales'));
 
 module.exports = router;

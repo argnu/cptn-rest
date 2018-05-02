@@ -15,7 +15,7 @@ const table = sql.define({
         },
         {
             name: 'fecha',
-            dataType: 'date',
+            dataType: 'timestamp',
             primaryKey: true
         },
         {

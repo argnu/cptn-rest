@@ -61,11 +61,11 @@ else {
             }
 
             if (column.dataType == 'timestamptz' && !(column_bd.type == 'timestamp with time zone'))
-                return alters.alter.push(`ALTER TABL "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+                return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
             else if (column_bd.type == 'timestamp with time zone') return;
 
             if (column.dataType != column_bd.type) {
-                return alters.alter.push(`ALTER TABL "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+                return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
             }
         }
 

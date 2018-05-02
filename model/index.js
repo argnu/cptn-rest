@@ -36,6 +36,7 @@ module.exports.TipoTarjeta = require('./tipos/TipoTarjeta');
 module.exports.TipoDocumento = require('./tipos/TipoDocumento');
 module.exports.TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
 module.exports.TipoMovimientoMatricula = require('./tipos/TipoMovimientoMatricula');
+module.exports.TipoVariableGlobal = require('./tipos/TipoVariableGlobal');
 
 module.exports.Persona = require('./Persona');
 module.exports.PersonaFisica = require('./PersonaFisica');
