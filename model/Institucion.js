@@ -179,7 +179,7 @@ module.exports.patch = function(id, institucion) {
   let institucion_patch = {};
   if (institucion.cue) institucion_patch.cue = institucion.cue;
   if (institucion.nombre) institucion_patch.nombre = institucion.nombre;
-  if (institucion.valida) institucion_patch.valida = institucion.valida;
+  if (institucion.valida != undefined || institucion.valida != null) institucion_patch.valida = institucion.valida;
 
   let query = table.update(institucion_patch)
   .where(table.id.equals(id))
