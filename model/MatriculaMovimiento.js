@@ -42,7 +42,8 @@ const Documento = require('./Documento');
       {
         table: 'matricula',
         columns: ['matricula'],
-        refColumns: ['id']
+        refColumns: ['id'],
+        onDelete: 'CASCADE'
       },
       {
         table: 't_movimiento_matricula',
