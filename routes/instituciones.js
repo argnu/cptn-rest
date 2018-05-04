@@ -39,7 +39,9 @@ router.post('/:id/titulos', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-
+  model.Institucion.edit(req.params.id, req.body)
+    .then(r => res.json(r))
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.put('/:id_inst/titulos/:id', function(req, res) {

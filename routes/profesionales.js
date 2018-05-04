@@ -35,17 +35,6 @@ router.get('/:id/contactos', function(req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
-router.get('/:id/formaciones', function(req, res) {
-  model.Formacion.getAll(req.params.id)
-    .then(r => res.json(r))
-    .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.get('/:id/beneficiarios', function(req, res) {
-  model.BeneficiarioCaja.getAll(req.params.id)
-    .then(r => res.json(r))
-    .catch(e => utils.errorHandler(e, req, res));
-});
 
 router.get('/:id/subsidiarios', function(req, res) {
   model.Subsidiario.getAll(req.params.id)
