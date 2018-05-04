@@ -146,13 +146,13 @@ module.exports.add = function(titulo, client) {
   }
 }
 
-module.exports.edit = function(id, titulo) {
+module.exports.edit = function(id, titulo, client) {
   try {
     let titulo_edit;
     let query = table.update({
       nombre: titulo.nombre,
       tipo_matricula: titulo.tipo_matricula,
-      nivel: titulo.nivel,
+      nivel: typeof titulo.nivel == 'object' ? titulo.nivel.id : titulo.nivel,
       valido: titulo.valido
     })
     .where(table.id.equals(id))
@@ -160,17 +160,18 @@ module.exports.edit = function(id, titulo) {
       table.nivel, table.institucion, table.valido)
     .toQuery();
 
-    return connector.execQuery(query)
+    return connector.execQuery(query, client)
     .then(r => {
         return connector.execQuery(
-          TituloIncumbencia.table.delete().where(TituloIncumbencia.table.titulo.equals(id)).toQuery()
+          TituloIncumbencia.table.delete().where(TituloIncumbencia.table.titulo.equals(id)).toQuery(),
+          client
         );
     })
     .then(r => {
       return Promise.all(titulo.incumbencias.map(i => TituloIncumbencia.add({
         titulo: id,
-        incumbencia: i.id ? i.id : i
-      })));
+        incumbencia: typeof i == 'object' ? i.incumbencia.id : i
+      }, client)));
     })
     .then(r => titulo)
     .catch(e => {
