@@ -87,7 +87,7 @@ module.exports.getAll = function(params) {
     table.activo
   ).from(table);
 
-  
+
   if (params.filter) {
     if (params.filter.nombre) query.where(table.nombre.ilike(`%${params.filter.nombre}%`));
     if (params.filter.username) query.where(table.username.ilike(`%${params.filter.username}%`));
@@ -101,13 +101,13 @@ module.exports.getAll = function(params) {
     else if (params.sort.apellido) query.order(table.apellido[params.sort.apellido]);
     else if (params.sort.email) query.order(table.email[params.sort.email]);
   }
-  
+
   if (params.limit) query.limit(+params.limit);
-  if (params.limit && params.offset) query.offset(+params.offset);    
+  if (params.limit && params.offset) query.offset(+params.offset);
 
   return connector.execQuery(query.toQuery())
-  .then(r => { 
-    usuarios = r.rows 
+  .then(r => {
+    usuarios = r.rows
     return Promise.all([ getTotal(), getTotal(params) ]);
   })
   .then(([total, totalQuery]) => ({ resultados: usuarios, total, totalQuery }))
@@ -136,15 +136,15 @@ module.exports.add = function(usuario) {
       table.hash_password.value(bcrypt.hashSync(usuario.password, 10))
     )
     .returning(table.id, table.nombre, table.apellido, table.email)
-    .toQuery();    
+    .toQuery();
     return connector.execQuery(query, connection.client)
   })
-  .then(r => { 
+  .then(r => {
     let usuario_nuevo = r.rows[0];
     usuario.id = usuario_nuevo.id;
     let proms = usuario.delegaciones.map(d => addDelegacion(usuario_nuevo.id, d, connection.client));
     return Promise.all(proms);
-  })  
+  })
   .then(delegaciones => {
     usuario.delegaciones = delegaciones;
     return connector.commit(connection.client)
@@ -158,12 +158,12 @@ module.exports.add = function(usuario) {
       connection.done();
       console.error(e);
       return Promise.reject(e);
-  });  
+  });
 }
 
 
 module.exports.patch = function(id, usuario) {
-  if (usuario.password) { 
+  if (usuario.password) {
     usuario.hash_password = bcrypt.hashSync(usuario.password, 10);
     delete(usuario.password);
   }
@@ -171,23 +171,65 @@ module.exports.patch = function(id, usuario) {
   let query = table.update(usuario)
   .where(table.id.equals(id))
   .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.admin)
-  .toQuery(); 
-    
+  .toQuery();
+
   return connector.execQuery(query)
   .then(r => r.rows[0])
   .catch(e => {
       console.error(e);
       return Promise.reject(e);
-  });      
+  });
+}
+
+module.exports.edit = function(id, usuario) {
+  let connection;
+
+  if (usuario.password) {
+    usuario.hash_password = bcrypt.hashSync(usuario.password, 10);
+    delete(usuario.password);
+  }
+
+  return connector.beginTransaction()
+  .then(con => {
+    connection = con;
+    return connector.execQuery(
+      UsuarioDelegacion.table.delete().where(
+        UsuarioDelegacion.table.usuario.equals(id)
+      ).toQuery(), connection.client);
+  })
+  .then(r => {
+    return Promise.all(usuario.delegaciones.map(d => addDelegacion(id, d, connection.client)))
+  })
+  .then(delegaciones => {
+    delete(usuario.delegaciones);
+    let query = table.update(usuario)
+    .where(table.id.equals(id))
+    .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.admin)
+    .toQuery();
+
+    return connector.execQuery(query, connection.client)
+  })
+  .then(usuario => {
+    return connector.commit(connection.client)
+    .then(r => {
+      connection.done();
+      return usuario;
+    });
+  })
+  .catch(e => {
+    connector.rollback(connection.client);
+    connection.done();
+    return Promise.reject(e);
+  });  
 }
 
 
 module.exports.auth = function(usuario) {
   let query = table.select(
-          [table.id, 
-          table.username, 
+          [table.id,
+          table.username,
           table.hash_password,
-          table.nombre, 
+          table.nombre,
           table.apellido,
           table.email,
           table.admin,
@@ -213,7 +255,7 @@ module.exports.auth = function(usuario) {
   .catch(e => {
       console.error(e);
       return Promise.reject(e);
-  });   
+  });
 }
 
 module.exports.getDelegaciones = function(id) {
@@ -238,7 +280,7 @@ function addDelegacion(id, delegacion, client) {
     )
     .returning(table.id, table.usuario, table.delegacion)
     .toQuery();
-  
+
     return connector.execQuery(query, client)
     .then(r => r.rows[0])
     .catch(e => {
@@ -248,7 +290,7 @@ function addDelegacion(id, delegacion, client) {
   }
   catch(e) {
     console.error(e);
-    return Promise.reject(e);    
+    return Promise.reject(e);
   }
 }
 
@@ -261,7 +303,7 @@ module.exports.borrarDelegacion = function(id_delegacion) {
     .where(table.delegacion.equals(id_delegacion))
     .returning(table.id, table.usuario, table.delegacion)
     .toQuery();
-  
+
     return connector.execQuery(query)
     .then(r => r.rows[0])
     .catch(e => {
@@ -271,6 +313,6 @@ module.exports.borrarDelegacion = function(id_delegacion) {
   }
   catch(e) {
     console.error(e);
-    return Promise.reject(e);    
-  }  
+    return Promise.reject(e);
+  }
 };
