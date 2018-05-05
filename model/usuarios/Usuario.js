@@ -163,12 +163,20 @@ module.exports.add = function(usuario) {
 
 
 module.exports.patch = function(id, usuario) {
+  let usuario_patch = {};
+
   if (usuario.password) {
-    usuario.hash_password = bcrypt.hashSync(usuario.password, 10);
-    delete(usuario.password);
+    usuario_patch.hash_password = bcrypt.hashSync(usuario.password, 10);
   }
 
-  let query = table.update(usuario)
+  if (usuario.nombre) usuario_patch.nombre = usuario.nombre;
+  if (usuario.apellido) usuario_patch.apellido = usuario.apellido;
+  if (usuario.email) usuario_patch.email = usuario.email;
+  if (usuario.activo != null || usuario.activo != undefined) usuario_patch.activo = usuario.activo;
+
+  console.log(usuario_patch)
+
+  let query = table.update(usuario_patch)
   .where(table.id.equals(id))
   .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.admin)
   .toQuery();

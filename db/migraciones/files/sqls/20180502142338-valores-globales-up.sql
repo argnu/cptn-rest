@@ -49,6 +49,9 @@ ALTER TABLE volante_pago_boleta DROP CONSTRAINT "volante_pago_boleta_volante_fke
 ALTER TABLE volante_pago_boleta ADD FOREIGN KEY ("volante") REFERENCES volante_pago("id") ON DELETE CASCADE ;
 ALTER TABLE "valores_globales" ADD FOREIGN KEY("variable") REFERENCES t_variable_global("id");
 
+ALTER TABLE titulo_incumbencia DROP CONSTRAINT "titulo_incumbencia_titulo_fkey";
+ALTER TABLE titulo_incumbencia ADD FOREIGN KEY ("titulo") REFERENCES institucion_titulo("id") ON DELETE CASCADE ;
+
 DROP TABLE "beneficiariocaja";
 DROP TABLE "empresa_incumbencia";
 DROP TABLE "formacion";
