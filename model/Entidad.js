@@ -116,9 +116,8 @@ module.exports.edit = function(id, entidad, client) {
           return EntidadDomicilio.add(d, client);
         });
 
-        let proms_domicilios_edit = domicilios_existentes.filter(d => typeof d.domicilio.pais == 'number')
-                                                         .map(d => Domicilio.edit(d.domicilio.id, d.domicilio, client));
-
+        let proms_domicilios_edit = domicilios_existentes.map(d => Domicilio.edit(d.domicilio.id, d.domicilio, client));
+        
         let proms_condiciones_nuevas = condiciones_nuevas.map(c => {
           c.entidad = id;
           return EntidadCondicionAfip.add(c, client);
