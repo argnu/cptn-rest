@@ -279,8 +279,6 @@ module.exports.getDelegaciones = function(id) {
 
 function addDelegacion(id, delegacion, client) {
   try {
-    if (typeof delegacion == 'object' && delegacion.id) delegacion = delegacion.id;
-
     let table = UsuarioDelegacion.table;
     let query = table.insert(
       table.usuario.value(id),
