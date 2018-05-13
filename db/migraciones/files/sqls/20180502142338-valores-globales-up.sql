@@ -1,6 +1,6 @@
-CREATE TABLE "t_variable_global" ("id" serial PRIMARY KEY, "nombre" varchar(45), "descripcion" varchar(255));
-CREATE TABLE "t_movimiento_matricula" ("id" serial PRIMARY KEY, "valor" varchar(255) NOT NULL);
-CREATE TABLE "matricula_movimiento" ("id" serial PRIMARY KEY, "matricula" int NOT NULL, "movimiento" int NOT NULL, "documento" int, "created_at" date NOT NULL, "created_by" int, FOREIGN KEY ( "matricula" ) REFERENCES "matricula" ( "id" ) ON DELETE CASCADE, FOREIGN KEY ( "movimiento" ) REFERENCES "t_movimiento_matricula" ( "id" ), FOREIGN KEY ( "documento" ) REFERENCES "documento" ( "id" ), FOREIGN KEY ( "created_by" ) REFERENCES "usuario" ( "id" ) ON UPDATE CASCADE);
+CREATE TABLE IF NOT EXISTS "t_variable_global" ("id" serial PRIMARY KEY, "nombre" varchar(45), "descripcion" varchar(255));
+CREATE TABLE IF NOT EXISTS "t_movimiento_matricula" ("id" serial PRIMARY KEY, "valor" varchar(255) NOT NULL);
+CREATE TABLE IF NOT EXISTS "matricula_movimiento" ("id" serial PRIMARY KEY, "matricula" int NOT NULL, "movimiento" int NOT NULL, "documento" int, "created_at" date NOT NULL, "created_by" int, FOREIGN KEY ( "matricula" ) REFERENCES "matricula" ( "id" ) ON DELETE CASCADE, FOREIGN KEY ( "movimiento" ) REFERENCES "t_movimiento_matricula" ( "id" ), FOREIGN KEY ( "documento" ) REFERENCES "documento" ( "id" ), FOREIGN KEY ( "created_by" ) REFERENCES "usuario" ( "id" ) ON UPDATE CASCADE);
 
 INSERT INTO "t_variable_global" ("nombre", "descripcion") VALUES ('matriculacion_importe', 'Importe de Inscripción de Matrícula');
 insert into t_variable_global (nombre, descripcion) values ('matriculacion_comprobante', 'Tipo de Comprobante de Matriculación');
@@ -54,4 +54,3 @@ ALTER TABLE titulo_incumbencia ADD FOREIGN KEY ("titulo") REFERENCES institucion
 
 DROP TABLE "beneficiariocaja";
 DROP TABLE "empresa_incumbencia";
-DROP TABLE "formacion";
