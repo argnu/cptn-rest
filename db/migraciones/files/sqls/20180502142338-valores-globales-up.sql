@@ -21,7 +21,7 @@ insert into valores_globales (fecha, valor, variable) values (now(), 18, 2);
 
 
 ALTER TABLE "institucion" ADD COLUMN "valida" boolean DEFAULT 'true' ;
-
+ALTER TABLE "profesional" ADD COLUMN "jubilado" boolean;
 
 ALTER TABLE institucion_titulo DROP CONSTRAINT "institucion_titulo_institucion_fkey";
 ALTER TABLE institucion_titulo ADD FOREIGN KEY ("institucion") REFERENCES institucion("id") ON DELETE CASCADE ;
