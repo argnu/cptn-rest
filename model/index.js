@@ -36,6 +36,7 @@ module.exports.TipoTarjeta = require('./tipos/TipoTarjeta');
 module.exports.TipoDocumento = require('./tipos/TipoDocumento');
 module.exports.TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
 module.exports.TipoMovimientoMatricula = require('./tipos/TipoMovimientoMatricula');
+module.exports.TipoVariableGlobal = require('./tipos/TipoVariableGlobal');
 
 module.exports.Persona = require('./Persona');
 module.exports.PersonaFisica = require('./PersonaFisica');
@@ -57,8 +58,6 @@ module.exports.Profesional = require('./profesional/Profesional');
 module.exports.ProfesionalCajaPrevisional = require('./profesional/ProfesionalCajaPrevisional');
 module.exports.ProfesionalTitulo = require('./profesional/ProfesionalTitulo');
 module.exports.Subsidiario = require('./profesional/Subsidiario');
-module.exports.BeneficiarioCaja = require('./profesional/BeneficiarioCaja');
-module.exports.Formacion = require('./profesional/Formacion');
 module.exports.Contacto = require('./Contacto');
 
 module.exports.tareas = require('./tareas');

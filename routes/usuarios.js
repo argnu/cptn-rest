@@ -70,7 +70,9 @@ router.patch('/:id', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-
+  model.Usuario.edit(req.params.id, req.body)
+  .then(r => res.json(r))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.delete('/:id', function(req, res) {

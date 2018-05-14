@@ -51,7 +51,7 @@ module.exports.getByEntidad = function(id_entidad) {
   return connector.execQuery(query)
          .then(r => {
             domicilios = r.rows;
-            return Promise.all(domicilios.map(d => Domicilio.get(d.domicilio)));
+            return Promise.all(domicilios.map(d => Domicilio.getFull(d.domicilio)));
          })
          .then(ds => {
             ds.forEach((d, i) => {

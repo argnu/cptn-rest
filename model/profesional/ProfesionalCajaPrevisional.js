@@ -29,7 +29,8 @@ const CajaPrevisional = require('./CajaPrevisional');
       {
           table: 'profesional',
           columns: ['profesional'],
-          refColumns: ['id']
+          refColumns: ['id'],
+          onDelete: 'CASCADE'
       },
       {
           table: 'caja_previsional',

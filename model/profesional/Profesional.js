@@ -3,7 +3,6 @@ const connector = require('../../db/connector');
 const Contacto = require('../Contacto');
 const ProfesionalCajaPrevisional = require('./ProfesionalCajaPrevisional');
 const ProfesionalTitulo = require('./ProfesionalTitulo');
-const Beneficiario = require('./BeneficiarioCaja');
 const Subsidiario = require('./Subsidiario');
 const EntidadDomicilio = require('../EntidadDomicilio');
 const EntidadCondicionAfip = require('../EntidadCondicionAfip');
@@ -81,6 +80,10 @@ const table = sql.define({
       dataType: 'varchar(255)'
     },
     {
+      name: 'jubilado',
+      dataType: 'boolean'
+    },
+    {
       name: 'publicar',
       dataType: 'boolean'
     },
@@ -140,6 +143,7 @@ function addDatosBasicos(profesional, client) {
     table.independiente.value(profesional.independiente),
     table.empresa.value(profesional.empresa),
     table.serviciosPrestados.value(profesional.serviciosPrestados),
+    table.jubilado.value(profesional.jubilado),
     table.publicar.value(profesional.publicar),
     table.publicarCelular.value(profesional.publicarCelular),
     table.publicarEmail.value(profesional.publicarEmail),
@@ -217,7 +221,8 @@ const select = [
   table.publicarAcervo,
   table.publicarCelular,
   table.publicarDireccion,
-  table.publicarEmail
+  table.publicarEmail,
+  table.jubilado
 ];
 
 const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
@@ -349,6 +354,7 @@ module.exports.edit = function(id, profesional, client) {
       independiente: profesional.independiente,
       empresa: profesional.empresa,
       serviciosPrestados: profesional.serviciosPrestados,
+      jubilado: profesional.jubilado,
       publicarAcervo: profesional.publicarAcervo,
       publicarCelular: profesional.publicarCelular,
       publicarDireccion: profesional.publicarDireccion,

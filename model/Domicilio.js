@@ -1,4 +1,5 @@
 const connector = require(`../db/connector`);
+const dot = require('dot-object');
 const sql = require('sql');
 sql.setDialect('postgres');
 const Localidad = require('./geograficos/Localidad');
@@ -68,6 +69,43 @@ module.exports.get = function(id) {
   }
 }
 
+//HABRIA Q REEMPLEZAR EL GET POR ESTE, FALTARIA CAMBIARLO EN ENTIDADDOMICILIO Y EN LEGAJO PERO PUEDE AFECTAR A LA WEB APP
+module.exports.getFull = function(id) {
+  try {
+    let query = table.select(
+      table.id, 
+      table.direccion,
+      Localidad.table.id.as('localidad.id'),
+      Localidad.table.nombre.as('localidad.nombre'),
+      Departamento.table.id.as('departamento.id'),
+      Departamento.table.nombre.as('departamento.nombre'),
+      Provincia.table.id.as('provincia.id'),
+      Provincia.table.nombre.as('provincia.nombre'),
+      Pais.table.id.as('pais.id'),
+      Pais.table.nombre.as('pais.nombre')
+    )
+    .from(
+      table.join(Localidad.table).on(table.localidad.equals(Localidad.table.id))
+      .join(Departamento.table).on(Localidad.table.departamento.equals(Departamento.table.id))
+      .join(Provincia.table).on(Departamento.table.provincia.equals(Provincia.table.id))
+      .join(Pais.table).on(Provincia.table.pais.equals(Pais.table.id))
+    )
+    .where(table.id.equals(id))
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => r.rows[0] ? dot.object(r.rows[0]) : r.rows[0])
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);      
+    })
+  }
+  catch(e) {
+    console.error(e);
+    return Promise.reject(e);
+  }
+}
+
 module.exports.add = function(domicilio, client) {
   try {
     let query = table.insert(
@@ -94,9 +132,10 @@ module.exports.edit = function(id, domicilio, client) {
   try {
     let query = table.update({
       direccion: domicilio.direccion,
-      localidad: domicilio.localidad
+      localidad: typeof domicilio.localidad == 'object' ? domicilio.localidad.id : domicilio.localidad
     })
     .where(table.id.equals(id))
+    .returning(table.id)
     .toQuery();
 
     return connector.execQuery(query)

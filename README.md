@@ -93,3 +93,15 @@ Ver enlace: https://blog.codeship.com/running-node-js-linux-systemd/
 ## Backup
 
 `pg_dump -d $DB -U $USUARIO -F c -f "./backup"`
+
+
+## Migraciones
+
+Para que funcionen las migraciones de esquema debe existir una archivo llamado `database.json`en la carpeta `db/migraciones/database.json`, con el siguiente contenido:
+
+`{
+    "sql-file": true,
+    "migrations-dir": "db/migraciones/files",
+    "defaultEnv": "dev",
+    "dev": "postgres://mweingart:mwei090@localhost/cptn"
+}`

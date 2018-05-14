@@ -262,7 +262,7 @@ module.exports.aprobar = function(matricula) {
       if (!exist) {
         return Promise.all([
           Solicitud.get(matricula.solicitud),
-          ValoresGlobales.getAll({ nombre: 'inscripcion_matricula' })
+          ValoresGlobales.getAll({ nombre: 'matriculacion_importe' })
         ])
         .then(rs => {
           solicitud = rs[0];
