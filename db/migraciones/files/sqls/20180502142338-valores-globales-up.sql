@@ -52,5 +52,5 @@ ALTER TABLE "valores_globales" ADD FOREIGN KEY("variable") REFERENCES t_variable
 ALTER TABLE titulo_incumbencia DROP CONSTRAINT "titulo_incumbencia_titulo_fkey";
 ALTER TABLE titulo_incumbencia ADD FOREIGN KEY ("titulo") REFERENCES institucion_titulo("id") ON DELETE CASCADE ;
 
-DROP TABLE "beneficiariocaja";
-DROP TABLE "empresa_incumbencia";
+DROP TABLE IF EXISTS "beneficiariocaja";
+DROP TABLE IF EXISTS "empresa_incumbencia";
