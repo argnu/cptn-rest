@@ -85,10 +85,7 @@ module.exports.add = function (contacto, client) {
   ).returning(table.id, table.tipo, table.valor).toQuery();
 
   return connector.execQuery(query, client)
-         .then(r => {
-           let contacto_added = r.rows[0];
-           return contacto_added;
-         })
+  .then(r => r.rows[0]);
 };
 
 module.exports.edit = function (id, contacto, client) {

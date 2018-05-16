@@ -98,13 +98,9 @@ module.exports.add = function(data, client) {
 
 module.exports.edit = function(id, data, client) {
   try {
-    let condicion_afip = typeof data.condicion_afip == 'number' 
-      ? data.condicion_afip
-      : data.condicion_afip.id;
-
     let query = table.update({
       descripcion: data.descripcion,
-      condicion_afip: condicion_afip
+      condicion_afip: data.condicion_afip
     })
     .where(table.id.equals(id))
     .returning(table.id, table.descripcion, table.entidad, table.condicion_afip)

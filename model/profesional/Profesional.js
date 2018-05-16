@@ -166,36 +166,36 @@ module.exports.add = function (profesional, client) {
   .then(entidad => {
     profesional.id = entidad.id;
     return addDatosBasicos(profesional, client)
-          .then(r => {
-            let proms_contactos = (profesional.contactos && profesional.contactos.length) ? profesional.contactos.map(c => {
-              c.entidad = entidad.id;
-              return Contacto.add(c, client);
-            }) : [];
+    .then(r => {
+      let proms_contactos = (profesional.contactos && profesional.contactos.length) ? profesional.contactos.map(c => {
+        c.entidad = entidad.id;
+        return Contacto.add(c, client);
+      }) : [];
 
-            let proms_formaciones = (profesional.formaciones && profesional.formaciones.length) ? profesional.formaciones.map(f => {
-              f.profesional = profesional.id;
-              return ProfesionalTitulo.add(f, client);
-            }) : [];
+      let proms_formaciones = (profesional.formaciones && profesional.formaciones.length) ? profesional.formaciones.map(f => {
+        f.profesional = profesional.id;
+        return ProfesionalTitulo.add(f, client);
+      }) : [];
 
-            let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
-              s.profesional = profesional.id;
-              return Subsidiario.add(s, client);
-            }) : [];
+      let proms_subsidiarios = (profesional.subsidiarios && profesional.subsidiarios.length) ? profesional.subsidiarios.map(s => {
+        s.profesional = profesional.id;
+        return Subsidiario.add(s, client);
+      }) : [];
 
-            let proms_cajas = (profesional.cajas_previsionales && profesional.cajas_previsionales.length) ? profesional.cajas_previsionales.map(c => {
-              return ProfesionalCajaPrevisional.add({
-                profesional: profesional.id,
-                caja: c
-              }, client)
-            }) : [];
+      let proms_cajas = (profesional.cajas_previsionales && profesional.cajas_previsionales.length) ? profesional.cajas_previsionales.map(c => {
+        return ProfesionalCajaPrevisional.add({
+          profesional: profesional.id,
+          caja: c
+        }, client)
+      }) : [];
 
 
-            return Promise.all(proms_contactos)
-            .then(rs => Promise.all(proms_formaciones))
-            .then(rs => Promise.all(proms_subsidiarios))
-            .then(rs => Promise.all(proms_cajas))
-            .then(rs => profesional);
-          });
+      return Promise.all(proms_contactos)
+      .then(rs => Promise.all(proms_formaciones))
+      .then(rs => Promise.all(proms_subsidiarios))
+      .then(rs => Promise.all(proms_cajas))
+      .then(rs => profesional);
+    });
   })
 }
 
