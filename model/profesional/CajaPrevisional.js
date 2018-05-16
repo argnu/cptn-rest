@@ -39,22 +39,27 @@ module.exports.get = function(id) {
 }
 
 module.exports.add = function(caja, client) {
-  let query = table.select(table.star())
-  .where(table.nombre.equals(caja.nombre))
-  .toQuery();
-
-  return connector.execQuery(query)
-  .then(r => {
-    if (r.rows.length > 0) return Promise.resolve(r.rows[0]);
-    else {
-      let query = table.insert(
-          table.nombre.value(caja.nombre)
-      )
-      .returning(table.star())
-      .toQuery();
-
-      return connector.execQuery(query, client)
-      .then(r => r.rows[0]);
-    }
-  }); 
+  try {
+    let query = table.select(table.star())
+    .where(table.nombre.equals(caja.nombre))
+    .toQuery();
+  
+    return connector.execQuery(query)
+    .then(r => {
+      if (r.rows.length > 0) return Promise.resolve(r.rows[0]);
+      else {
+        let query = table.insert(
+            table.nombre.value(caja.nombre)
+        )
+        .returning(table.star())
+        .toQuery();
+  
+        return connector.execQuery(query, client)
+        .then(r => r.rows[0]);
+      }
+    }); 
+  }
+  catch(e) {
+    return Promise.reject(e);
+  }
 }

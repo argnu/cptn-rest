@@ -84,17 +84,22 @@ module.exports.getByProfesional = function(id) {
 }
 
 module.exports.add = function(data, client) {
-  let query = table.insert(
-    table.profesional.value(data.profesional),
-    table.titulo.value(data.titulo),
-    table.fechaEgreso.value(data.fechaEgreso),
-    table.fechaEmision.value(utils.checkFecha(data.fechaEmision))
-  )
-  .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)
-  .toQuery();
-
-  return connector.execQuery(query, client)
-  .then(r => r.rows[0]);
+  try {
+    let query = table.insert(
+      table.profesional.value(data.profesional),
+      table.titulo.value(data.titulo),
+      table.fechaEgreso.value(data.fechaEgreso),
+      table.fechaEmision.value(utils.checkFecha(data.fechaEmision))
+    )
+    .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)
+    .toQuery();
+  
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0]);
+  }
+  catch(e) {
+    return Promise.reject(e);
+  }
 }
 
 module.exports.edit = function(id, data, client) {

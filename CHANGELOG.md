@@ -1,14 +1,18 @@
-# UNRELEASED
+# 1.5.0 (2018-04-03)
 
-## Agregado:
- - Entidad nueva `EntidadCondicionAfip`.
- - Una `Entidad` puede contener múltiples condiciones impositivas.
+- Nuevas entidades y cambios para gestión de instituciones y títulos.
+- Nuevas rutas para titulos, instituciones y usuarios.
+- Nuevas entidades y cambios para registrar historial de matrícula.
 
 # 1.4.0 (2018-02-14)
 
 ## Modificado
 
 - **Formacion**: nuevo campo fechaEmision.
+
+## Agregado:
+ - Entidad nueva `EntidadCondicionAfip`.
+ - Una `Entidad` puede contener múltiples condiciones impositivas.
 
 ## Solucionado
 

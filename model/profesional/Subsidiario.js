@@ -62,17 +62,28 @@ module.exports.getAll = function(id_profesional) {
 }
 
 module.exports.add = function(subsidiario, client) {
-  let query = table.insert(
-    table.dni.value(subsidiario.dni), table.nombre.value(subsidiario.nombre),
-    table.apellido.value(subsidiario.apellido), table.porcentaje.value(subsidiario.porcentaje),
-    table.profesional.value(subsidiario.profesional)
-  ).returning(table.id).toQuery();
-
-  return connector.execQuery(query, client)
-         .then(r => {
-           subsidiario.id = r.rows[0].id;
-           return subsidiario;
-         })
+  console.log(subsidiario)
+  try {
+    let query = table.insert(
+      table.dni.value(subsidiario.dni), 
+      table.nombre.value(subsidiario.nombre),
+      table.apellido.value(subsidiario.apellido), 
+      table.porcentaje.value(subsidiario.porcentaje),
+      table.profesional.value(subsidiario.profesional)
+    )
+    .returning(table.id)
+    .toQuery();
+  
+    return connector.execQuery(query, client)
+    .then(r => {
+      console.log('llego subsidiarios')
+      subsidiario.id = r.rows[0].id;
+      return subsidiario;
+    })
+  }
+  catch(e) {
+    return Promise.reject(e);
+  }
 };
 
 module.exports.edit = function(id, subsidiario, client) {
