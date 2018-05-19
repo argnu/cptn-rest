@@ -89,13 +89,13 @@ module.exports.getByProfesional = function(id) {
 }
 
 module.exports.add = function(data, client) {
-<<<<<<< HEAD
   try {
     let query = table.insert(
       table.profesional.value(data.profesional),
       table.titulo.value(data.titulo),
       table.fechaEgreso.value(data.fechaEgreso),
-      table.fechaEmision.value(utils.checkFecha(data.fechaEmision))
+      table.fechaEmision.value(utils.checkFecha(data.fechaEmision)),
+      table.principal.value(data.principal)
     )
     .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)
     .toQuery();
@@ -106,20 +106,6 @@ module.exports.add = function(data, client) {
   catch(e) {
     return Promise.reject(e);
   }
-=======
-  let query = table.insert(
-    table.profesional.value(data.profesional),
-    table.titulo.value(data.titulo),
-    table.fechaEgreso.value(data.fechaEgreso),
-    table.fechaEmision.value(utils.checkFecha(data.fechaEmision)),
-    table.principal.value(data.principal)
-  )
-  .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)
-  .toQuery();
-
-  return connector.execQuery(query, client)
-  .then(r => r.rows[0]);
->>>>>>> sprint11
 }
 
 module.exports.edit = function(id, data, client) {
