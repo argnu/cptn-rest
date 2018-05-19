@@ -4,6 +4,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
+const TipoMatricula = require('./tipos/TipoMatricula');
 const TituloIncumbencia = require('./TituloIncumbencia');
 
 const table = sql.define({
@@ -26,8 +27,7 @@ const table = sql.define({
     },
     {
       name: 'tipo_matricula',
-      dataType: 'varchar(10)',
-      notNull: true
+      dataType: 'int'
     },
     {
       name: 'valido',
@@ -53,6 +53,11 @@ const table = sql.define({
         columns: ['institucion'],
         refColumns: ['id'],
         onDelete: 'cascade'
+    },
+    {
+        table: 't_matricula',
+        columns: ['tipo_matricula'],
+        refColumns: ['id']
     }
   ]
 });
@@ -62,14 +67,16 @@ module.exports.table = table;
 const select = [
   table.id,
   table.nombre,
-  table.tipo_matricula,
   table.valido,
   table.institucion  ,
   TipoNivelTitulo.table.id.as('nivel.id'),
-  TipoNivelTitulo.table.valor.as('nivel.valor')
+  TipoNivelTitulo.table.valor.as('nivel.valor'),
+  TipoMatricula.table.id.as('tipo_matricula.id'),
+  TipoMatricula.table.valor.as('tipo_matricula.valor')
 ]
 
-const from = table.join(TipoNivelTitulo.table).on(table.nivel.equals(TipoNivelTitulo.table.id));
+const from = table.join(TipoNivelTitulo.table).on(table.nivel.equals(TipoNivelTitulo.table.id))
+.leftJoin(TipoMatricula.table).on(table.tipo_matricula.equals(TipoMatricula.table.id));
 
 module.exports.getAll = function(params) {
   let query = table.select(select).from(from);
@@ -152,7 +159,7 @@ module.exports.edit = function(id, titulo, client) {
     let query = table.update({
       nombre: titulo.nombre,
       tipo_matricula: titulo.tipo_matricula,
-      nivel: typeof titulo.nivel == 'object' ? titulo.nivel.id : titulo.nivel,
+      nivel: titulo.nivel,
       valido: titulo.valido
     })
     .where(table.id.equals(id))
@@ -170,7 +177,7 @@ module.exports.edit = function(id, titulo, client) {
     .then(r => {
       return Promise.all(titulo.incumbencias.map(i => TituloIncumbencia.add({
         titulo: id,
-        incumbencia: typeof i == 'object' ? i.incumbencia.id : i
+        incumbencia: i
       }, client)));
     })
     .then(r => titulo)

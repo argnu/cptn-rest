@@ -228,13 +228,15 @@ function getDocumento(documento, client) {
 }
 
 function getTipoMatricula(id_profesional) {
-  let tipos_mat = ['TECA', 'TEC-', 'IDO'];
-
   return ProfesionalTitulo.getByProfesional(id_profesional)
-  .then(p_titulos => Promise.resolve(p_titulos.map(t => tipos_mat.indexOf(t.titulo.tipo_matricula))))
-  .then(tipos => tipos_mat[Math.min(...tipos)]);
+  .then(p_titulos => Promise.all(p_titulos.map(t => TipoMatricula.get(t.tipo_matricula))))
+  .then(tipos_mat => {
+    tipos_mat.sort((a,b) => b.jerarquia_titulo - a.jerarquia_titulo);
+    return tipos_mat[0].valor;
+  });
 }
 
+// tipo_provisorio hasta que se determine automáticamente una vez validados los titulos
 function getNumeroMatricula(id_profesional, tipo_provisorio) {
   return getTipoMatricula(id_profesional)
   .then(tipo => {
