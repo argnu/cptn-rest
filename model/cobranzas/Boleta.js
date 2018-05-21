@@ -73,7 +73,15 @@ const table = sql.define({
         {
             name: 'fecha_pago',
             dataType: 'date',
-        },                
+        },
+        {
+            name: 'created_at',
+            dataType: 'timestampz',
+        },
+        {
+            name: 'updated_at',
+            dataType: 'timestampz',
+        }
     ],
 
     foreignKeys: [
@@ -230,7 +238,7 @@ module.exports.add = function (boleta, client) {
     .then(boleta_added => {
         boleta_nueva = boleta_added;
         let proms_items = boleta.items.map((item, index) => {
-            item.item = item.item ? item.item : (index + 1); 
+            item.item = item.item ? item.item : (index + 1);
             item.boleta = boleta_nueva.id;
             return BoletaItem.add(item, client);
         })
