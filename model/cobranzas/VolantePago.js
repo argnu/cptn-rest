@@ -75,7 +75,7 @@ const table = sql.define({
         {
           name: 'vencido',
           dataType: 'boolean',
-          defaultValue: 'true'
+          defaultValue: 'false'
         }
     ],
 
