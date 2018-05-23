@@ -19,3 +19,4 @@ ALTER TABLE matricula_movimiento DROP CONSTRAINT "matricula_movimiento_matricula
 ALTER TABLE matricula_movimiento ADD FOREIGN KEY ("matricula") REFERENCES matricula("id") ON DELETE CASCADE ;
 
 ALTER TABLE "profesional_titulo" ADD COLUMN "principal" boolean;
+ALTER TABLE "volante_pago" ADD COLUMN "vencido" boolean DEFAULT 'false';
