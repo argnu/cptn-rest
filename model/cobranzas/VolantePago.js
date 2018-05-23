@@ -11,9 +11,9 @@ const table = sql.define({
     name: 'volante_pago',
     columns: [
         {
-            name: 'id',
-            dataType: 'serial',
-            primaryKey: true
+          name: 'id',
+          dataType: 'serial',
+          primaryKey: true
         },
         {
           name: 'matricula',
@@ -21,30 +21,30 @@ const table = sql.define({
           notNull: true
         },
         {
-            name: 'fecha',
-            dataType: 'date',
-            notNull: true
+          name: 'fecha',
+          dataType: 'date',
+          notNull: true
         },
         {
-            name: 'fecha_vencimiento',
-            dataType: 'date',
-            notNull: true
+          name: 'fecha_vencimiento',
+          dataType: 'date',
+          notNull: true
         },
         {
           name: 'subtotal',
           dataType: 'float',
         },
         {
-            name: 'interes_total',
-            dataType: 'float',
+          name: 'interes_total',
+          dataType: 'float',
         },
         {
-            name: 'bonificacion_total',
-            dataType: 'float',
+          name: 'bonificacion_total',
+          dataType: 'float',
         },
         {
-            name: 'importe_total',
-            dataType: 'float',
+          name: 'importe_total',
+          dataType: 'float',
         },
         {
           name: 'delegacion',
@@ -71,6 +71,11 @@ const table = sql.define({
           name: 'updated_at',
           dataType: 'timestamptz',
           defaultValue: 'now'
+        },
+        {
+          name: 'vencido',
+          dataType: 'boolean',
+          defaultValue: 'true'
         }
     ],
 
@@ -117,6 +122,74 @@ const select = [
   table.created_by,
   table.updated_by
 ]
+
+function getBoletas(id_volante) {
+  let datos_volante;
+  let table = VolantePagoBoleta.table;
+  let query = table.select(table.star())
+       .where(table.volante.equals(id_volante))
+       .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => {
+            datos_volante = r.rows;
+            return Promise.all(r.rows.map(b => Boleta.get(b.boleta)));
+          })
+          .then(boletas => {
+            boletas.forEach((b, i) => b.interes = datos_volante[i].interes);
+            return boletas;
+          })
+}
+
+module.exports.getBoletas = getBoletas;
+
+module.exports.get = function(id) {
+  let volante;
+  let query = table.select(select)
+                   .where(table.id.equals(id))
+                   .toQuery();
+
+  return connector.execQuery(query)
+         .then(r => {
+            volante = r.rows[0];
+            return getBoletas(id);
+         })
+         .then(boletas => {
+           volante.boletas = boletas;
+           return volante;
+         });
+}
+
+module.exports.getAll = function(params) {
+  let volantes = [];
+  let query = table.select(select).from(table);
+
+  if (params.matricula) query.where(table.matricula.equals(params.matricula));
+  if (params.pagado) query.where(table.pagado.equals(params.pagado == 'true'));
+  if (params.vencido) query.where(table.vencido.equals(params.vencido == 'true'));
+
+  if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
+  if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
+
+  if (params.limit) query.limit(+params.limit);
+  if (params.limit && params.offset) query.offset(+params.offset);
+
+  query.where(table.fecha_vencimiento.gte(moment()));
+
+  return connector.execQuery(query.toQuery())
+  .then(r => {
+      volantes = r.rows;
+      let proms = volantes.map(v => getBoletas(v.id));
+      return Promise.all(proms);
+  })
+  .then(boletas_list => {
+    boletas_list.forEach((boletas, index) => {
+          volantes[index].boletas = boletas;
+      });
+    return volantes;
+  })
+}
+
 
 function addVolante(volante, client) {
   let query = table.insert(
@@ -180,76 +253,10 @@ module.exports.add = function(volante) {
         });
 }
 
+
 module.exports.patch = function(id, volante, client) {
   volante.updated_at = new Date();
-  
+
   let query = table.update(volante).where(table.id.equals(id)).toQuery();
   return connector.execQuery(query, client);
-}
-
-
-function getBoletas(id_volante) {
-  let datos_volante;
-  let table = VolantePagoBoleta.table;
-  let query = table.select(table.star())
-       .where(table.volante.equals(id_volante))
-       .toQuery();
-
-  return connector.execQuery(query)
-         .then(r => {
-            datos_volante = r.rows;
-            return Promise.all(r.rows.map(b => Boleta.get(b.boleta)));
-          })
-          .then(boletas => {
-            boletas.forEach((b, i) => b.interes = datos_volante[i].interes);
-            return boletas;
-          })
-}
-
-module.exports.getBoletas = getBoletas;
-
-module.exports.get = function(id) {
-  let volante;
-  let query = table.select(select)
-                   .where(table.id.equals(id))
-                   .toQuery();
-
-  return connector.execQuery(query)
-         .then(r => {
-            volante = r.rows[0];
-            return getBoletas(id);
-         })
-         .then(boletas => {
-           volante.boletas = boletas;
-           return volante;
-         });
-}
-
-module.exports.getAll = function(params) {
-  let volantes = [];
-  let query = table.select(select).from(table);
-
-  if (params.matricula) query.where(table.matricula.equals(params.matricula));
-  if (params.pagado) query.where(table.pagado.equals(params.pagado == 'true'));
-
-  if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
-  if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
-
-  if (params.limit) query.limit(+params.limit);
-  if (params.limit && params.offset) query.offset(+params.offset);
-
-  query.where(table.fecha_vencimiento.gte(moment()));
-
-  return connector.execQuery(query.toQuery())
-  .then(r => {
-      volantes = r.rows;
-      let proms = volantes.map(v => getBoletas(v.id));
-      return Promise.all(proms);
-  })
-  .then(boletas_list => {
-    boletas_list.forEach((boletas, index) => {
-          volantes[index].boletas = boletas;
-      });
-    return volantes;
-  })
 }
