@@ -73,14 +73,6 @@ const table = sql.define({
         {
             name: 'fecha_pago',
             dataType: 'date',
-        },
-        {
-            name: 'created_at',
-            dataType: 'timestampz',
-        },
-        {
-            name: 'updated_at',
-            dataType: 'timestampz',
         }
     ],
 

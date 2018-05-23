@@ -29,8 +29,6 @@ getMatriculasHabilitidas()
         total: valor_mensual,
         estado: 1,   //1 ES 'Pendiente de Pago'
         fecha_vencimiento: moment().add(15, 'days'),
-        created_at: moment(),
-        updated_at: moment(),
         delegacion: 1, //1 es NEUQUEN
         items: [{
             item: 1,
