@@ -17,6 +17,7 @@ let matriculas_hab;
 getMatriculasHabilitidas()
 .then(matriculas => {
     matriculas_hab = matriculas;
+    //ESTO HABRIA QUE CAMBIARLO EL DÍA QUE HAGAMOS BOLETAS MENSUALES
     return model.ValoresGlobales.getAll({ nombre: 'matricula_importe_mensual' })
 })
 .then(valores => {

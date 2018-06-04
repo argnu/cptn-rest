@@ -30,7 +30,12 @@ const table = sql.define({
         {
             name: 'cuentaADevengar',
             dataType: 'varchar(255)',
-        }
+        },
+        {
+            name: 'activo',
+            dataType: 'boolean',
+            defaultValue: 'true'
+        }        
     ]
 });
 
@@ -57,7 +62,7 @@ module.exports.get = function(id) {
 }
 
 module.exports.getAll = function(params) {
-  let query = table.select(table.star()).from(table);
+  let query = table.select(table.star()).from(table).where(table.activo.equals(true));
   if (params.sort && params.sort.valor) query.order(table.descripcion[params.sort.valor]);
 
   return connector.execQuery(query.toQuery())

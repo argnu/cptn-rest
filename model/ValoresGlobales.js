@@ -14,9 +14,12 @@ const table = sql.define({
             primaryKey: true
         },
         {
-            name: 'fecha',
-            dataType: 'timestampz',
-            primaryKey: true
+            name: 'fecha_inicio',
+            dataType: 'date',
+        },
+        {
+            name: 'fecha_fin',
+            dataType: 'date',
         },
         {
             name: 'variable',
@@ -43,7 +46,8 @@ module.exports.table = table;
 
 const select = [
     table.id,
-    table.fecha.cast('varchar(10)'),
+    table.fecha_inicio.cast('varchar(10)'),
+    table.fecha_fin.cast('varchar(10)'),
     TipoVariableGlobal.table.id.as('variable.id'),
     TipoVariableGlobal.table.nombre.as('variable.nombre'),
     TipoVariableGlobal.table.descripcion.as('variable.descripcion'),
@@ -57,7 +61,7 @@ module.exports.getAll = function (params) {
 
     if (params.nombre) query.where(TipoVariableGlobal.table.nombre.equals(params.nombre));
 
-    query.order(table.fecha.desc);
+    query.order(table.fecha_inicio.desc);
 
     return connector.execQuery(query.toQuery())
     .then(r => r.rows.map(row => dot.object(row)));
@@ -70,12 +74,39 @@ module.exports.get = function (id) {
     .then(r => dot.object(r.rows[0]));
 }
 
-module.exports.add = function (global) {
-    let query = table.insert(
-        table.fecha.value(new Date()),
-        table.variable.value(global.variable),
-        table.valor.value(global.valor)
+module.exports.getValida = function (variable, fecha) {
+    let query = table.select(select)
+    .from(from)
+    .where(
+        table.variable.equals(variable)
+        .and(table.fecha_inicio.lte(fecha))
+        .and(table.fecha_fin.gte(fecha))
     )
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => {
+        if (r.rows.length > 0) return dot.object(r.rows[0]);
+        else return Promise.reject('No hay una variable válida en la fecha especificada');
+    });
+}
+
+module.exports.add = function (data) {
+    let query = table.insert(
+        table.fecha_inicio.value(data.fecha_inicio),
+        table.fecha_fin.value(data.fecha_fin),
+        table.variable.value(data.variable),
+        table.valor.value(data.valor)
+    )
+    .returning(table.id, table.fecha, table.variable, table.valor)
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => r.rows[0]);
+}
+
+module.exports.patch = function (id, data) {
+    let query = table.update(data)
     .returning(table.id, table.fecha, table.variable, table.valor)
     .toQuery();
 

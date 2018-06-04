@@ -29,3 +29,9 @@ module.exports.errorHandler = function(e, req, res) {
     res.status(500).json({ msg: 'Error en el servidor' });
   }
 }
+
+module.exports.seqPromises = function(promises) {
+  return promises.reduce((previous_prom, current_prom) => {
+    return previous_prom.then(current_prom)
+  }, Promise.resolve());  
+}

@@ -10,6 +10,7 @@ const Profesional = require('./profesional/Profesional');
 const ProfesionalTitulo = require('./profesional/ProfesionalTitulo');
 const Empresa = require('./empresa/Empresa');
 const TipoEstadoMatricula = require('./tipos/TipoEstadoMatricula');
+const TipoMatricula = require('./tipos/TipoMatricula');
 const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
 const MatriculaHistorial = require('./MatriculaHistorial');
@@ -199,24 +200,79 @@ function completarConCeros(numero) {
     return ceros + result;
 }
 
-function addBoleta(id, fecha, importe, delegacion, client) {
-  let boleta = {
-    matricula: id,
-    tipo_comprobante: 18,  //18 ES PRI
-    fecha: fecha,  //MISMA FECHA QUE EL PAGO
-    total: importe,
-    estado: 1,   //1 ES 'Pendiente de Pago'
-    fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(15, 'days'),
-    fecha_update: fecha,
-    delegacion: delegacion,
-    items: [{
-      item: 1,
-      descripcion: `Derecho de inscripción profesional`,
-      importe: importe
-    }]
-  }
+function addBoletaInscripcion(id, fecha, delegacion, client) {
+  //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
+  return ValoresGlobales.getValida(1, fecha)
+  .then(importe => {
+    let boleta = {
+      matricula: id,
+      tipo_comprobante: 18,  //18 ES PRI
+      fecha: fecha,
+      total: importe.valor,
+      estado: 1,   //1 ES 'Pendiente de Pago'
+      fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(15, 'days'),
+      fecha_update: fecha,
+      delegacion: delegacion,
+      items: [{
+        item: 1,
+        descripcion: `Derecho de inscripción profesional`,
+        importe: importe
+      }]
+    }
+  
+    return Boleta.add(boleta, client);
+  })
+}
 
-  return Boleta.add(boleta, client);
+
+function addBoletasMensuales(id, delegacion, client) {  
+  //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
+  //y el número de la próxima boleta  
+  return Promise.all([
+    ValoresGlobales.getValida(5, new Date()),
+    Boleta.getNumeroBoleta()
+  ])
+  .then(([importe_anual, numero_boleta]) => {
+    let importe = importe_anual.valor / 12;
+    let anio_actual = new Date().getFullYear();
+    let mes_inicio = new Date().getMonth() + 1;
+    let fecha_inicio = mes_inicio === 12 ? new Date(anio_actual + 1, 0, 1) : new Date(anio_actual, mes_inicio, 1);  
+  
+    let promesas_boletas = [];
+    
+    for(let mes_inicio = fecha_inicio.getMonth(); mes_inicio < 12; mes_inicio++) {
+      let fecha_primero_mes = new Date(anio_actual, mes_inicio, 1);
+      let fecha_vencimiento = new Date(anio_actual, mes_inicio, 10);
+  
+      //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
+      if (fecha_vencimiento.getDay() === 0)
+        fecha_vencimiento = moment(fecha_vencimiento).add(1, 'days');
+      else if (fecha_vencimiento.getDay() === 6)
+        fecha_vencimiento = moment(fecha_vencimiento).add(2, 'days');
+        
+      let boleta = {
+        numero: numero_boleta,
+        matricula: id,
+        tipo_comprobante: 16,  //16 ES PRA
+        fecha: fecha_primero_mes,
+        total: importe,
+        estado: 1,   //1 ES 'Pendiente de Pago'
+        fecha_vencimiento: fecha_vencimiento,
+        fecha_update: new Date(),
+        delegacion: delegacion,
+        items: [{
+          item: 1,
+          descripcion: `Derecho anual profesionales`,
+          importe: importe
+        }]
+      }
+
+      numero_boleta++;    
+      promesas_boletas.push(Boleta.add(boleta, client));
+    }
+  
+    return Promise.all(promesas_boletas);
+  })
 }
 
 function getDocumento(documento, client) {
@@ -229,7 +285,7 @@ function getDocumento(documento, client) {
 
 function getTipoMatricula(id_profesional) {
   return ProfesionalTitulo.getByProfesional(id_profesional)
-  .then(p_titulos => Promise.all(p_titulos.map(t => TipoMatricula.get(t.tipo_matricula))))
+  .then(p_titulos => Promise.all(p_titulos.map(t => TipoMatricula.get(t.titulo.tipo_matricula))))
   .then(tipos_mat => {
     tipos_mat.sort((a,b) => b.jerarquia_titulo - a.jerarquia_titulo);
     return tipos_mat[0].valor;
@@ -256,70 +312,65 @@ function getNumeroMatricula(id_profesional, tipo_provisorio) {
 module.exports.getNumeroMatricula = getNumeroMatricula;
 
 module.exports.aprobar = function(matricula) {
-  let solicitud, matricula_added, valor_inscripcion;
-
+  let solicitud, matricula_added, connection;
 
   return existMatricula(matricula.solicitud)
   .then(exist => {
       if (!exist) {
-        return Promise.all([
-          Solicitud.get(matricula.solicitud),
-          ValoresGlobales.getAll({ nombre: 'matriculacion_importe' })
-        ])
-        .then(rs => {
-          solicitud = rs[0];
-          valor_inscripcion = rs[1][0].valor;
+        return Solicitud.get(matricula.solicitud)
+        .then(solicitud_get => {
+          solicitud = solicitud_get;
           return getNumeroMatricula(solicitud.entidad.id, matricula.tipo);
         })
         .then(numero_mat => {
-          return connector
-          .beginTransaction()
-          .then(connection => {
+          return connector.beginTransaction()
+          .then(con => {
+            connection = con;
             matricula.solicitud = solicitud.id;
             matricula.entidad = solicitud.entidad.id;
             matricula.estado = matricula.generar_boleta ? 12 : 13; // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
             matricula.numeroMatricula = numero_mat;
-
-            return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)
-            .then(r => addMatricula(matricula, connection.client))
-            .then(r => {
-              matricula_added = r;
-              if (matricula.generar_boleta) {
-                return addBoleta(
-                  matricula_added.id,
-                  matricula.documento.fecha,
-                  valor_inscripcion,
-                  matricula.delegacion,
-                  connection.client
-                );
-              }
-              else return Promise.resolve();
-            })
-            .then(r => getDocumento(matricula.documento, connection.client))
-            .then(documento => MatriculaHistorial.add({
+            return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)  // 2 es 'Aprobada'
+          })
+          .then(r => addMatricula(matricula, connection.client))
+          .then(r => {
+            matricula_added = r;
+            if (matricula.generar_boleta) {
+              return addBoletaInscripcion(
+                matricula_added.id,
+                matricula.documento.fecha,
+                matricula.delegacion,
+                connection.client
+              );
+            }
+            else return Promise.resolve();
+          })
+          .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
+          .then(r => getDocumento(matricula.documento, connection.client))
+          .then(documento => MatriculaHistorial.add({
               matricula: matricula_added.id,
               documento: documento.id,
               estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
-              fecha: moment(),
+              fecha: new Date(),
               usuario: matricula.operador
-            }, connection.client))
-            .then(r => {
-              return connector.commit(connection.client)
-                .then(r => {
-                  connection.done();
-                  return matricula_added;
-                })
-            })
-            .catch(e => {
-              console.error(e)
-              connector.rollback(connection.client);
-              connection.done();
-              throw Error(e);
-            });
+            }, connection.client)
+          )
+          .then(r => {
+            return connector.commit(connection.client)
+              .then(r => {
+                connection.done();
+                return matricula_added;
+              })
           })
-        });
+          .catch(e => {
+            console.error(e)
+            connector.rollback(connection.client);
+            connection.done();
+            return Promise.reject(e);
+          });
+        })
       }
-      else throw ({ code: 409, message: "Ya existe una matrícula para dicha solicitud" });
+      else return Promise.reject({ code: 409, message: "Ya existe una matrícula para dicha solicitud" });
   })
 }
 
@@ -337,7 +388,7 @@ module.exports.cambiarEstado = function(nuevo_estado) {
         matricula: nuevo_estado.matricula,
         documento: documento.id,
         estado: nuevo_estado.estado,
-        fecha: moment(),
+        fecha: new Date(),
         usuario: nuevo_estado.operador
       }, connection.client)
     )
@@ -507,7 +558,15 @@ module.exports.getMigracion = function (id, empresa) {
     .toQuery();
 
   return connector.execQuery(query)
-    .then(r => r.rows[0]);
+    .then(r => {
+      if (r.rows.length > 1) {
+        if (r.rows[0].numeroMatricula.length > r.rows[1].numeroMatricula.length)
+          return r.rows[0];
+        else 
+          return r.rows[1];
+      }
+      else return r.rows[0];
+    });
 }
 
 module.exports.patch = function (id, matricula, client) {

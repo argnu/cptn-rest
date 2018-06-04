@@ -198,6 +198,8 @@ function getNumeroBoleta(numero) {
     } else return Promise.resolve(numero);
 }
 
+module.exports.getNumeroBoleta = getNumeroBoleta;
+
 function addDatosBoleta(boleta, client) {
     return getNumeroBoleta(boleta.numero)
         .then(numero_boleta => {
