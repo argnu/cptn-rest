@@ -60,6 +60,7 @@ module.exports.getAll = function (params) {
     let query = table.select(select).from(from);
 
     if (params.nombre) query.where(TipoVariableGlobal.table.nombre.equals(params.nombre));
+    if (params.variable) query.where(TipoVariableGlobal.table.id.equals(params.variable));
 
     query.order(table.fecha_inicio.desc);
 
@@ -98,16 +99,27 @@ module.exports.add = function (data) {
         table.variable.value(data.variable),
         table.valor.value(data.valor)
     )
-    .returning(table.id, table.fecha, table.variable, table.valor)
+    .returning(table.id, table.fecha_inicio, table.fecha_fin, table.variable, table.valor)
     .toQuery();
 
     return connector.execQuery(query)
     .then(r => r.rows[0]);
 }
 
-module.exports.patch = function (id, data) {
+module.exports.edit = function (id, data) {
     let query = table.update(data)
-    .returning(table.id, table.fecha, table.variable, table.valor)
+    .where(table.id.equals(id))
+    .returning(table.id, table.fecha_inicio, table.fecha_fin, table.variable, table.valor)
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => r.rows[0]);
+}
+
+module.exports.delete = function (id, data) {
+    let query = table.delete()
+    .where(table.id.equals(id))
+    .returning(table.id, table.fecha_inicio, table.fecha_fin, table.variable, table.valor)
     .toQuery();
 
     return connector.execQuery(query)
