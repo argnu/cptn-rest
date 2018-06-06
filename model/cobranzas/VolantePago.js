@@ -167,6 +167,8 @@ module.exports.getAll = function(params) {
   if (params.matricula) query.where(table.matricula.equals(params.matricula));
   if (params.pagado) query.where(table.pagado.equals(params.pagado == 'true'));
   if (params.vencido) query.where(table.vencido.equals(params.vencido == 'true'));
+  if (params.fecha_desde) query.where(table.fecha_vencimiento.gte(params.fecha_desde));
+  if (params.fecha_hasta) query.where(table.fecha_vencimiento.lte(params.fecha_hasta));  
 
   if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
   if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
