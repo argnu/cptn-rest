@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 
   filename: function (req, file, cb) {
     let ext = path.extname(file.originalname);
-    let name = file.originalname.replace(ext, '') + '-' + Date.now() + ext;    
+    let name = file.originalname.replace(ext, '') + '-' + Date.now() + ext;
     req.body[file.fieldname] = name;
     cb(null, name)
   }
@@ -92,8 +92,31 @@ router.put('/:id/firma', upload.fields([{ name: 'firma', maxCount: 1 }]), functi
     else res.status(500).json({ msg: 'Error en el servidor' });
 });
 
-router.put('/:id', function(req, res) {
+router.put('/:id',
+  upload.fields([{
+    name: 'foto', maxCount: 1
+  }, {
+    name: 'firma', maxCount: 1
+  }]),
+  function(req, res) {
+    let profesional = JSON.parse(req.body.profesional);
+    profesional.operador = req.user.id;
 
+    let proms = [];
+
+    if (req.body.foto) {
+      proms.push(model.Profesional.patch(req.params.id, { foto: req.body.foto }));
+    }
+
+    if (req.body.firma) {
+      proms.push(model.Profesional.patch(req.params.id, { firma: req.body.firma }));
+    }    
+
+    proms.push(model.Profesional.edit(req.params.id, profesional))
+
+    Promise.all(proms)
+    .then(id => res.status(200).json(profesional))
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.delete('/:id', function(req, res) {
