@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const moment = require('moment');
 const utils = require('../utils');
 const connector = require('../db/connector');
@@ -429,7 +430,8 @@ const select = [
   table.notasPrivadas,
   table.asientoBajaF,
   table.codBajaF,
-  TipoEstadoMatricula.table.valor.as('estado'),
+  TipoEstadoMatricula.table.id.as('estado.id'),
+  TipoEstadoMatricula.table.valor.as('estado.valor'),
   Entidad.table.tipo.as('tipoEntidad')
 ];
 
@@ -501,7 +503,7 @@ module.exports.getAll = function (params) {
 
   return connector.execQuery(query.toQuery())
     .then(r => {
-      matriculas = r.rows;
+      matriculas = r.rows.map(row => dot.object(row));
       let proms = matriculas.map(m => {
         if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad)
         else if (m.tipoEntidad == 'empresa') return Empresa.get(m.entidad);
@@ -535,7 +537,7 @@ module.exports.get = function (id) {
 
   return connector.execQuery(query)
     .then(r => {
-      matricula = r.rows[0];
+      matricula = dot.object(r.rows[0]);
       if (!matricula) throw ({ code: 404, message: "No existe el recurso solicitado" });
       if (matricula.tipoEntidad == 'profesional') return Profesional.get(matricula.entidad)
       else if (matricula.tipoEntidad == 'empresa') return Empresa.get(matricula.entidad);
