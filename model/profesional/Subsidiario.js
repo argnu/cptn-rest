@@ -76,7 +76,6 @@ module.exports.add = function(subsidiario, client) {
   
     return connector.execQuery(query, client)
     .then(r => {
-      console.log('llego subsidiarios')
       subsidiario.id = r.rows[0].id;
       return subsidiario;
     })
