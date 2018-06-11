@@ -20,6 +20,11 @@ const table = sql.define({
             notNull: true
         },
         {
+            name: 'deudor',
+            dataType: 'boolean',
+            notNull: true
+        },
+        {
             name: 'cuentaAcreedora',
             dataType: 'varchar(255)',
         },

@@ -70,6 +70,7 @@ module.exports.ComprobanteItem = require('./cobranzas/ComprobanteItem');
 module.exports.ComprobantePago = require('./cobranzas/ComprobantePago');
 module.exports.ComprobantePagoCheque = require('./cobranzas/ComprobantePagoCheque');
 module.exports.ComprobantePagoTarjeta = require('./cobranzas/ComprobantePagoTarjeta');
+module.exports.ComprobanteExencion = require('./cobranzas/ComprobanteExencion');
 module.exports.VolantePago = require('./cobranzas/VolantePago');
 module.exports.VolantePagoBoleta = require('./cobranzas/VolantePagoBoleta');
 

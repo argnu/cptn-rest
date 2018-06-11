@@ -114,7 +114,7 @@ const table = sql.define({
     },
     {
       name: 'updated_at',
-      dataType: 'timestampz',
+      dataType: 'timestamptz',
     },
     {
       name: 'updated_by',
