@@ -346,7 +346,7 @@ module.exports.aprobar = function(matricula) {
             }
             else return Promise.resolve();
           })
-          .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
+          // .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
           .then(r => getDocumento(matricula.documento, connection.client))
           .then(documento => MatriculaHistorial.add({
               matricula: matricula_added.id,

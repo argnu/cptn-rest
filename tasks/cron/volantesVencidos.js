@@ -1,3 +1,4 @@
+const moment = require('moment');
 const connector = require('../../db/connector');
 const model = require('../../model');
 
@@ -6,7 +7,8 @@ function getVolantesVencidos() {
     let query = table.select(table.id)
                      .where(
                         table.fecha_vencimiento.lt(moment()),
-                        table.pagado.equals(false)
+                        table.pagado.equals(false),
+                        table.vencido.equals(false)
                      ).toQuery();
 
     return connector.execQuery(query).then(r => r.rows);
@@ -28,7 +30,7 @@ getVolantesVencidos()
         //Actualización de Boletas, Estado 1 es 'Pendiente de Pago'
         return Promise.all(volantes_boletas.map(b => model.Boleta.patch(b.id, { estado: 1 }, connection.client)))
     })
-    .then(r => Promise.all(volantes.map(v => model.VolantePago.patch(v.id, { eliminado: true }, connection.client))))
+    .then(r => Promise.all(volantes.map(v => model.VolantePago.patch(v.id, { vencido: true }, connection.client))))
     .then(r => connector.commit(connection.client).then(r => connection.done()))
     .catch(e => {
         connector.rollback(connection.client);
