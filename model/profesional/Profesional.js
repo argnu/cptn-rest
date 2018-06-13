@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const config = require('../../config.private');
 const connector = require('../../db/connector');
 const Contacto = require('../Contacto');
@@ -110,6 +111,14 @@ const table = sql.define({
     {
       name: 'firma',
       dataType: 'varchar(255)',
+    },
+    {
+      name: 'updated_at',
+      dataType: 'timestamptz',
+    },
+    {
+      name: 'updated_by',
+      dataType: 'int',
     }
   ],
 
@@ -122,6 +131,11 @@ const table = sql.define({
     {
       table: 't_estadocivil',
       columns: [ 'estadoCivil' ],
+      refColumns: [ 'id' ]
+    },
+    {
+      table: 'usuario',
+      columns: [ 'updated_by' ],
       refColumns: [ 'id' ]
     }
   ]
@@ -211,8 +225,10 @@ const select = [
   table.nacionalidad,
   table.relacionDependencia,
   table.independiente,
-  TipoSexo.table.valor.as('sexo'),
-  TipoEstadoCivil.table.valor.as('estadoCivil'),
+  TipoSexo.table.id.as('sexo.id'),
+  TipoSexo.table.valor.as('sexo.valor'),
+  TipoEstadoCivil.table.id.as('estadoCivil.id'),
+  TipoEstadoCivil.table.valor.as('estadoCivil.valor'),
   table.observaciones,
   table.empresa,
   table.serviciosPrestados,
@@ -226,8 +242,8 @@ const select = [
 ];
 
 const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
-                         .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
-                         .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
+.leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
+.leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id));
 
 
 
@@ -243,7 +259,7 @@ module.exports.getAll = function(params) {
 
   return connector.execQuery(query.toQuery())
   .then(r => {
-    profesionales = r.rows;
+    profesionales = r.rows.map(row => dot.object(row));
     let proms = []
     for(let profesional of profesionales) {
       proms.push(getDatosProfesional(profesional));
@@ -291,7 +307,7 @@ module.exports.get = function(id) {
   let profesional;
   return connector.execQuery(query)
   .then(r => {
-    profesional = r.rows[0];
+    profesional = dot.object(r.rows[0]);
     if (profesional.foto) {
       profesional.foto = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/foto`;
     }

@@ -59,10 +59,14 @@ else {
                 return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
                 else return;
             }
-
+            
             if (column.dataType == 'timestamptz' && !(column_bd.type == 'timestamp with time zone'))
                 return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
             else if (column_bd.type == 'timestamp with time zone') return;
+
+            if (column.dataType == 'timestamp' && !(column_bd.type == 'timestamp without time zone'))
+                return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
+            else if (column_bd.type == 'timestamp without time zone') return;
 
             if (column.dataType != column_bd.type) {
                 return alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" TYPE ${column.dataType} USING "${column.name}"::${column.dataType}`);
@@ -149,7 +153,7 @@ else {
 
         function checkTable(table) {
             let table_bd = tables_bd.find(t => t.name == table._name);
-            if (!table_bd) creates.push(table.create().toQuery().text);
+            if (!table_bd) creates.push(table.create().ifNotExists().toQuery().text);
             else {
                 checkColumns(table, table_bd);
                 checkForeignKeys(table._name, table.foreignKeys, table_bd.constraints);
@@ -172,7 +176,7 @@ else {
         checkModel(model);
 
         for(let table_bd of tables_bd.filter(t => !t.checked)) {
-            if (table_bd.name != 'migrations') drops.push(`DROP TABLE "${table_bd.name}"`);
+            if (table_bd.name != 'migrations') drops.push(`DROP TABLE IF EXISTS "${table_bd.name}"`);
         }
 
         addQuerys(file, 'SENTENCIAS DE CREACION DE TABLAS', creates)

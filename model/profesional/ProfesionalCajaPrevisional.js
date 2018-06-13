@@ -76,29 +76,14 @@ module.exports.get = function(id) {
   .then(r => dot.object(r.rows[0]));
 }
 
-
-function addCaja(caja, client) {
-    //La caja puede ser un Object{} (si es nueva) o un Number (si existe, el id)
-    if (typeof caja == 'number') {
-        return Promise.resolve(caja);
-    }
-    else if (typeof caja == 'object') {
-        return CajaPrevisional.add({ nombre: caja.nombre }, client)
-        .then(r => r.id);
-    }    
-}
-
 module.exports.add = function(data, client) {    
-    return addCaja(data.caja)
-    .then(id_caja => {
-        let query = table.insert(
-            table.profesional.value(data.profesional),
-            table.caja.value(id_caja)
-        )
-        .returning(table.star())
-        .toQuery();
+    let query = table.insert(
+        table.profesional.value(data.profesional),
+        table.caja.value(data.caja)
+    )
+    .returning(table.star())
+    .toQuery();
 
-        return connector.execQuery(query, client)
-        .then(r => r.rows[0]);
-    })
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0]);
 }

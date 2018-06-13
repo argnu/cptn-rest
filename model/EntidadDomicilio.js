@@ -30,7 +30,8 @@ const table = sql.define({
     {
       table: 'entidad',
       columns: [ 'entidad' ],
-      refColumns: [ 'id' ]
+      refColumns: [ 'id' ],
+      onDelete: 'cascade'
     },
     {
       table: 'domicilio',

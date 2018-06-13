@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const moment = require('moment');
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -134,14 +135,16 @@ const select = [
   table.fechaInicio.cast('varchar(10)'),
   table.fechaConstitucion.cast('varchar(10)'),
   Entidad.table.tipo,
-  TipoEmpresa.table.valor.as('tipoEmpresa'),
-  TipoSociedad.table.valor.as('tipoSociedad'),
-  Entidad.table.cuit,
+  TipoEmpresa.table.id.as('tipoEmpresa.id'),
+  TipoEmpresa.table.valor.as('tipoEmpresa.valor'),
+  TipoSociedad.table.id.as('tipoSociedad.id'),
+  TipoSociedad.table.valor.as('tipoSociedad.valor'),
+  Entidad.table.cuit
 ];
 
 const from = table.join(Entidad.table).on(table.id.equals(Entidad.table.id))
-                         .leftJoin(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
-                         .leftJoin(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
+.leftJoin(TipoEmpresa.table).on(table.tipoEmpresa.equals(TipoEmpresa.table.id))
+.leftJoin(TipoSociedad.table).on(table.tipoSociedad.equals(TipoSociedad.table.id))
 
 module.exports.getAll = function(params) {
   let empresas = [];
@@ -152,7 +155,7 @@ module.exports.getAll = function(params) {
 
   return connector.execQuery(query.toQuery())
   .then(r => {
-    empresas = r.rows;
+    empresas = r.rows.map(row => dot.object(row));
     let proms = []
     for(let empresa of empresas) {
       proms.push(getDatosEmpresa(empresa));
@@ -190,7 +193,7 @@ module.exports.get = function(id) {
 
   return connector.execQuery(query)
   .then(r => {
-    empresa = r.rows[0];
+    empresa = dot.object(r.rows[0]);
     return getDatosEmpresa(empresa);
   })
   .then(([ domicilios, condiciones_afip, contactos, representantes ]) => {

@@ -45,13 +45,18 @@ sql.setDialect('postgres');
       name: 'validoNCredito',
       dataType: 'boolean'
     },
+    {
+      name: 'activo',
+      dataType: 'boolean',
+      defaultValue: 'true'
+    }
   ]
 });
 
 module.exports.table = table;
 
 module.exports.getAll = function(params) {
-  let query = table.select(table.star()).from(table);
+  let query = table.select(table.star()).from(table).where(table.activo.equals(true));
   if (params.sort && params.sort.valor) query.order(table.nombre[params.sort.valor]);
 
   return connector.execQuery(query.toQuery())

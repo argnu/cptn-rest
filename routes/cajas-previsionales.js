@@ -17,7 +17,9 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-
+  model.CajaPrevisional.add(req.body)
+    .then(r => res.json(r))
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.put('/:id', function(req, res) {

@@ -34,6 +34,10 @@ const table = sql.define({
     {
       name: 'fechaEgreso',
       dataType: 'date'
+    },
+    {
+      name: 'principal',
+      dataType: 'boolean'
     } 
   ],
 
@@ -60,6 +64,7 @@ const select = [
   table.profesional,
   table.fechaEmision,
   table.fechaEgreso,
+  table.principal,
   InstitucionTitulo.table.id.as('titulo.id'),
   InstitucionTitulo.table.nombre.as('titulo.nombre'),
   InstitucionTitulo.table.tipo_matricula.as('titulo.tipo_matricula'),
@@ -89,7 +94,8 @@ module.exports.add = function(data, client) {
       table.profesional.value(data.profesional),
       table.titulo.value(data.titulo),
       table.fechaEgreso.value(data.fechaEgreso),
-      table.fechaEmision.value(utils.checkFecha(data.fechaEmision))
+      table.fechaEmision.value(utils.checkFecha(data.fechaEmision)),
+      table.principal.value(data.principal)
     )
     .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)
     .toQuery();
@@ -106,7 +112,8 @@ module.exports.edit = function(id, data, client) {
   let query = table.update({
     titulo: data.titulo.id ? data.titulo.id : data.titulo,
     fechaEgreso: data.fechaEgreso,
-    fechaEmision: utils.checkFecha(data.fechaEmision)
+    fechaEmision: utils.checkFecha(data.fechaEmision),
+    principal: data.principal
   })
   .where(table.id.equals(id))
   .returning(table.id, table.profesional, table.titulo, table.fechaEgreso, table.fechaEmision)

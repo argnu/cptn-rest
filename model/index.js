@@ -37,6 +37,7 @@ module.exports.TipoDocumento = require('./tipos/TipoDocumento');
 module.exports.TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
 module.exports.TipoMovimientoMatricula = require('./tipos/TipoMovimientoMatricula');
 module.exports.TipoVariableGlobal = require('./tipos/TipoVariableGlobal');
+module.exports.TipoMatricula = require('./tipos/TipoMatricula');
 
 module.exports.Persona = require('./Persona');
 module.exports.PersonaFisica = require('./PersonaFisica');
@@ -69,6 +70,7 @@ module.exports.ComprobanteItem = require('./cobranzas/ComprobanteItem');
 module.exports.ComprobantePago = require('./cobranzas/ComprobantePago');
 module.exports.ComprobantePagoCheque = require('./cobranzas/ComprobantePagoCheque');
 module.exports.ComprobantePagoTarjeta = require('./cobranzas/ComprobantePagoTarjeta');
+module.exports.ComprobanteExencion = require('./cobranzas/ComprobanteExencion');
 module.exports.VolantePago = require('./cobranzas/VolantePago');
 module.exports.VolantePagoBoleta = require('./cobranzas/VolantePagoBoleta');
 

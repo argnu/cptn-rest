@@ -12,7 +12,8 @@ sql.setDialect('postgres');
     {
       name: 'nombre',
       dataType: 'varchar(100)',
-      notNull: true
+      notNull: true,
+      unique: true
     }
   ]
 });
@@ -40,24 +41,18 @@ module.exports.get = function(id) {
 
 module.exports.add = function(caja, client) {
   try {
-    let query = table.select(table.star())
-    .where(table.nombre.equals(caja.nombre))
+    let query = table.insert(
+        table.nombre.value(caja.nombre)
+    )
+    .returning(table.star())
     .toQuery();
-  
-    return connector.execQuery(query)
-    .then(r => {
-      if (r.rows.length > 0) return Promise.resolve(r.rows[0]);
-      else {
-        let query = table.insert(
-            table.nombre.value(caja.nombre)
-        )
-        .returning(table.star())
-        .toQuery();
-  
-        return connector.execQuery(query, client)
-        .then(r => r.rows[0]);
-      }
-    }); 
+
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0])
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);
+    });
   }
   catch(e) {
     return Promise.reject(e);

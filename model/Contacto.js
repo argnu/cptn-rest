@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -47,33 +48,32 @@ const table = sql.define({
 
 module.exports.table = table;
 
+const select = [
+  table.id, 
+  table.valor,
+  table.whatsapp,
+  TipoContacto.table.id.as('tipo.id'),
+  TipoContacto.table.valor.as('tipo.valor')
+]
+
+const from = table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id));
+
 module.exports.getAll = function(id_entidad) {
-  let query = table.select(
-    table.id, 
-    table.valor,
-    table.whatsapp,
-    TipoContacto.table.valor.as('tipo')
-  ).from(
-    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
-  ).where(table.entidad.equals(id_entidad))
+  let query = table.select(select).from(from)
+  .where(table.entidad.equals(id_entidad))
   .toQuery();
 
   return connector.execQuery(query)
-         .then(r => r.rows);
+  .then(r => r.rows.map(row => dot.object(row)));
 }
 
 module.exports.get = function(id) {
-  let query = table.select(
-    table.id, 
-    table.valor,
-    table.whatsapp,
-    TipoContacto.table.valor.as('tipo')
-  ).from(
-    table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id))
-  ).where(table.id.equals(id))
+  let query = table.select(select).from(from)
+  .where(table.id.equals(id))
   .toQuery();
+
   return connector.execQuery(query)
-         .then(r => r.rows[0]);
+  .then(r => dot.object(r.rows[0]));
 }
 
 module.exports.add = function (contacto, client) {
