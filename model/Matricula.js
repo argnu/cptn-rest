@@ -277,6 +277,7 @@ function addBoletasMensuales(id, delegacion, client) {
 }
 
 function getDocumento(documento, client) {
+  if (typeof document == 'number') return Promise.resolve({id: documento});
   return Documento.getAll(documento)
   .then(docs => {
     if (docs.length > 0) return Promise.resolve(docs[0]);
@@ -346,7 +347,7 @@ module.exports.aprobar = function(matricula) {
             }
             else return Promise.resolve();
           })
-          // .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
+          .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
           .then(r => getDocumento(matricula.documento, connection.client))
           .then(documento => MatriculaHistorial.add({
               matricula: matricula_added.id,
@@ -378,8 +379,7 @@ module.exports.aprobar = function(matricula) {
 module.exports.cambiarEstado = function(nuevo_estado) {
   let connection;
 
-  return connector
-  .beginTransaction()
+  return connector.beginTransaction()
   .then(conx => {
     connection = conx;
 
@@ -413,6 +413,11 @@ module.exports.cambiarEstado = function(nuevo_estado) {
           return matricula;
         })
     })
+    .catch(e => {
+      connector.rollback(connection.client);
+      connection.done();
+      throw Error(e);
+    });    
   })
 }
 

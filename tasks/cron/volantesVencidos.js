@@ -28,7 +28,13 @@ getVolantesVencidos()
     .then(con => {
         connection = con;
         //Actualización de Boletas, Estado 1 es 'Pendiente de Pago'
-        return Promise.all(volantes_boletas.map(b => model.Boleta.patch(b.id, { estado: 1 }, connection.client)))
+        let proms = [];
+        for(let boletas of volantes_boletas) {
+            for(let boleta of boletas) {
+                proms.push(model.Boleta.patch(boleta.id, { estado: 1 }, connection.client));
+            }
+        }
+        return Promise.all(proms);
     })
     .then(r => Promise.all(volantes.map(v => model.VolantePago.patch(v.id, { vencido: true }, connection.client))))
     .then(r => connector.commit(connection.client).then(r => connection.done()))

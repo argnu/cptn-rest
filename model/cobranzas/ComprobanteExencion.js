@@ -3,7 +3,9 @@ const utils = require('../../utils');
 const connector = require('../../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
+
 const TipoComprobante = require('../tipos/TipoComprobante');
+const Boleta = require('./Boleta');
 
 
 const table = sql.define({
@@ -107,6 +109,7 @@ const from = table.join(TipoComprobante.table).on(table.tipo.equals(TipoComproba
 
 
 module.exports.getAll = function (params) {
+    let exenciones = [];
     let query = table.select(select).from(from);
 
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
@@ -120,16 +123,33 @@ module.exports.getAll = function (params) {
     if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
-    .then(r => r.rows.map(row => dot.object(row)));
+    .then(r => {
+        exenciones = r.rows.map(row => dot.object(row));
+        return Promise.all(exenciones.map(e => Boleta.get(e.boleta)));
+    })
+    .then(boletas => {
+        boletas.forEach((boleta, index) => {
+            exenciones[index].boleta = boleta;
+        });
+        return exenciones;
+    });
 }
 
 module.exports.get = function(id) {
+    let exencion;
     let query = table.select(select).from(from)
     .where(table.id.equals(id))
     .toQuery();
 
     return connector.execQuery(query.toQuery())
-    .then(r => dot.object(r.rows[0]));    
+    .then(r => {
+        exencion = dot.object(r.rows[0]);
+        return Boleta.get(exencion.boleta);
+    })
+    .then(boleta => {
+        exencion.boleta = boleta;
+        return exencion;
+    })
 }
 
 
