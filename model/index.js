@@ -1,19 +1,13 @@
+
 module.exports.Pais = require('./geograficos/Pais');
 module.exports.Provincia = require('./geograficos/Provincia');
 module.exports.Departamento = require('./geograficos/Departamento');
 module.exports.Localidad = require('./geograficos/Localidad');
 module.exports.Domicilio = require('./Domicilio');
-
 module.exports.Delegacion = require('./Delegacion');
+
 module.exports.Usuario = require('./usuarios/Usuario');
 module.exports.UsuarioDelegacion = require('./usuarios/UsuarioDelegacion');
-
-module.exports.Banco = require('./Banco');
-
-module.exports.Institucion = require('./Institucion');
-module.exports.Titulo = require('./Titulo');
-module.exports.InstitucionTitulo = require('./InstitucionTitulo');
-module.exports.TituloIncumbencia = require('./TituloIncumbencia');
 
 module.exports.TipoSexo = require('./tipos/TipoSexo');
 module.exports.TipoCondicionAfip = require('./tipos/TipoCondicionAfip');
@@ -39,9 +33,20 @@ module.exports.TipoMovimientoMatricula = require('./tipos/TipoMovimientoMatricul
 module.exports.TipoVariableGlobal = require('./tipos/TipoVariableGlobal');
 module.exports.TipoMatricula = require('./tipos/TipoMatricula');
 
+module.exports.ValoresGlobales = require('./ValoresGlobales');
+module.exports.Documento = require('./Documento');
+module.exports.Banco = require('./Banco');
+module.exports.Institucion = require('./Institucion');
+module.exports.Titulo = require('./Titulo');
+module.exports.InstitucionTitulo = require('./InstitucionTitulo');
+module.exports.TituloIncumbencia = require('./TituloIncumbencia');
 module.exports.Persona = require('./Persona');
 module.exports.PersonaFisica = require('./PersonaFisica');
 module.exports.PersonaJuridica = require('./PersonaJuridica');
+
+module.exports.Entidad = require('./Entidad');
+module.exports.EntidadDomicilio = require('./EntidadDomicilio');
+module.exports.EntidadCondicionAfip = require('./EntidadCondicionAfip');
 
 module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
@@ -49,9 +54,6 @@ module.exports.MatriculaHistorial = require('./MatriculaHistorial');
 module.exports.MatriculaExterna = require('./MatriculaExterna');
 module.exports.MatriculaMovimiento = require('./MatriculaMovimiento');
 
-module.exports.Entidad = require('./Entidad');
-module.exports.EntidadDomicilio = require('./EntidadDomicilio');
-module.exports.EntidadCondicionAfip = require('./EntidadCondicionAfip');
 module.exports.Empresa = require('./empresa/Empresa');
 module.exports.EmpresaRepresentante = require('./empresa/EmpresaRepresentante');
 module.exports.CajaPrevisional = require('./profesional/CajaPrevisional');
@@ -61,7 +63,14 @@ module.exports.ProfesionalTitulo = require('./profesional/ProfesionalTitulo');
 module.exports.Subsidiario = require('./profesional/Subsidiario');
 module.exports.Contacto = require('./Contacto');
 
-module.exports.tareas = require('./tareas');
+module.exports.Categoria = require('./tareas/Categoria');
+module.exports.Subcategoria = require('./tareas/Subcategoria');
+module.exports.Item = require('./tareas/Item');
+module.exports.ItemPredeterminado = require('./tareas/ItemPredeterminado');
+module.exports.ItemValorPredeterminado = require('./tareas/ItemValorPredeterminado');
+module.exports.Legajo = require('./tareas/Legajo');
+module.exports.LegajoItem = require('./tareas/LegajoItem');
+module.exports.LegajoComitente = require('./tareas/LegajoComitente');
 
 module.exports.Boleta = require('./cobranzas/Boleta');
 module.exports.BoletaItem = require('./cobranzas/BoletaItem');
@@ -73,7 +82,3 @@ module.exports.ComprobantePagoTarjeta = require('./cobranzas/ComprobantePagoTarj
 module.exports.ComprobanteExencion = require('./cobranzas/ComprobanteExencion');
 module.exports.VolantePago = require('./cobranzas/VolantePago');
 module.exports.VolantePagoBoleta = require('./cobranzas/VolantePagoBoleta');
-
-module.exports.ValoresGlobales = require('./ValoresGlobales');
-
-module.exports.Documento = require('./Documento');

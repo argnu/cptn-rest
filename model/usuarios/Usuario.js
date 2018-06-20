@@ -19,7 +19,7 @@ const UsuarioDelegacion = require('./UsuarioDelegacion');
     {
       name: 'username',
       dataType: 'varchar(45)',
-      primaryKey: true
+      unique: true
     },
     {
       name: 'admin',
