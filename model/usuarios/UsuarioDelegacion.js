@@ -27,7 +27,8 @@ const table = sql.define({
             table: 'usuario',
             columns: ['usuario'],
             refColumns: ['id'],
-            onUpdate: 'CASCADE'
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE'
         },
         {
             table: 'delegacion',

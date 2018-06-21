@@ -308,26 +308,28 @@ module.exports.getAll = function (params) {
 }
 
 module.exports.get = function (id) {
-    let legajos;
+    let legajo;
     let query = table.select(select)
         .from(table)
         .where(table.id.equals(id));
 
     return connector.execQuery(query.toQuery())
-        .then(r => {
-            legajo = r.rows[0];
-            return Promise.all([
-                getItems(legajo.id),
-                LegajoComitente.getByLegajo(legajo.id),
-                Domicilio.get(legajo.domicilio)
-            ])
-        })
-        .then(([items, comitentes, domicilio]) => {
-            legajo.items = items;
-            legajo.comitentes = comitentes;
-            legajo.domicilio = domicilio;
-            return legajo;
-        })
+    .then(r => {
+        if (r.rows.length == 0) 
+            return Promise.reject({ code: 404, message: "No existe el recurso" });
+        legajo = r.rows[0];
+        return Promise.all([
+            getItems(legajo.id),
+            LegajoComitente.getByLegajo(legajo.id),
+            Domicilio.get(legajo.domicilio)
+        ])
+    })
+    .then(([items, comitentes, domicilio]) => {
+        legajo.items = items;
+        legajo.comitentes = comitentes;
+        legajo.domicilio = domicilio;
+        return legajo;
+    })
 }
 
 

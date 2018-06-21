@@ -16,8 +16,6 @@ const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
 const MatriculaHistorial = require('./MatriculaHistorial');
 const Documento = require('./Documento');
-const InstitucionTitulo = require('./InstitucionTitulo');
-
 
 const table = sql.define({
   name: 'matricula',
@@ -421,26 +419,6 @@ module.exports.cambiarEstado = function(nuevo_estado) {
   })
 }
 
-
-const select = [
-  table.id,
-  table.legajo,
-  table.numeroMatricula,
-  table.fechaResolucion.cast('varchar(10)'),
-  table.numeroActa,
-  table.entidad,
-  table.solicitud,
-  table.fechaBaja.cast('varchar(10)'),
-  table.observaciones,
-  table.notasPrivadas,
-  table.asientoBajaF,
-  table.codBajaF,
-  TipoEstadoMatricula.table.id.as('estado.id'),
-  TipoEstadoMatricula.table.valor.as('estado.valor'),
-  Entidad.table.tipo.as('tipoEntidad')
-];
-
-
 function getTotal(params) {
   let query;
   if (!params) {
@@ -474,12 +452,30 @@ function getTotal(params) {
 
 module.exports.getAll = function (params) {
   let matriculas = [];
-  let query = table.select(select)
+  let query = table.select([
+    table.id,
+    table.legajo,
+    table.numeroMatricula,
+    table.fechaResolucion.cast('varchar(10)'),
+    table.numeroActa,
+    table.entidad,
+    Solicitud.table.numero.as('numero_solicitud'),
+    table.fechaBaja.cast('varchar(10)'),
+    table.observaciones,
+    table.notasPrivadas,
+    table.asientoBajaF,
+    table.codBajaF,
+    TipoEstadoMatricula.table.id.as('estado.id'),
+    TipoEstadoMatricula.table.valor.as('estado.valor'),
+    Entidad.table.tipo.as('tipoEntidad'),
+    table.idMigracion
+  ])
   .from(
     table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
     .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
     .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
     .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
+    .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
   )
   .where(table.eliminado.equals(false));
 
@@ -529,13 +525,30 @@ module.exports.getAll = function (params) {
 }
 
 module.exports.get = function (id) {
-  let solicitud = {};
-  let query = table.select(...select)
+  let query = table.select([
+    table.id,
+    table.legajo,
+    table.numeroMatricula,
+    table.fechaResolucion.cast('varchar(10)'),
+    table.numeroActa,
+    table.entidad,
+    Solicitud.table.numero.as('numero_solicitud'),
+    table.fechaBaja.cast('varchar(10)'),
+    table.observaciones,
+    table.notasPrivadas,
+    table.asientoBajaF,
+    table.codBajaF,
+    TipoEstadoMatricula.table.id.as('estado.id'),
+    TipoEstadoMatricula.table.valor.as('estado.valor'),
+    Entidad.table.tipo.as('tipoEntidad'),
+    table.idMigracion
+  ])
                     .from(
                       table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
                       .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
                       .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
                       .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
+                      .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
                     )
                     .where(table.id.equals(id))
                     .toQuery();
@@ -555,7 +568,6 @@ module.exports.get = function (id) {
 }
 
 module.exports.getMigracion = function (id, empresa) {
-  let solicitud = {};
   let query = table.select(table.star())
     .from(table.join(Entidad.table).on(table.entidad.equals(Entidad.table.id)))
     .where(
