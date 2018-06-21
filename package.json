@@ -1,6 +1,6 @@
 {
   "name": "cptn-rest",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "description": "RESTFull API para el Colegio de Profesionales Técnicos del Neuquén",
   "main": "index.js",
   "scripts": {
