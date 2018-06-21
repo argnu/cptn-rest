@@ -38,16 +38,22 @@ module.exports.get = function (id) {
 }
 
 module.exports.add = function(persona, client) {
-    let query = table.insert(
-        table.id.value(persona.id)
-    )
-    .returning(table.star())
-    .toQuery();
-
-    return connector.execQuery(query, client)
-    .then(r => r.rows[0])
-    .catch(e => {
-        console.error(e);
-        return Promise.reject(e);
-    })    
+    return getByCuit(persona.dni)
+    .then(personas => {
+        if (personas.length) return Promise.reject({ code: 409, msg: 'Ya existe una persona con dicho el mismo CUIT/CUIL'});
+        else {
+            let query = table.insert(
+                table.id.value(persona.id)
+            )
+            .returning(table.star())
+            .toQuery();
+        
+            return connector.execQuery(query, client)
+            .then(r => r.rows[0])
+            .catch(e => {
+                console.error(e);
+                return Promise.reject(e);
+            })    
+        }
+    });    
 }
