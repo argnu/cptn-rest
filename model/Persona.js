@@ -94,31 +94,25 @@ module.exports.getByCuit = getByCuit;
 
 module.exports.add = function(persona, client) {
     try {
-        return getByCuit(persona.cuit)
-        .then(personas => {
-            if (personas.length) return Promise.reject({ code: 409, msg: 'Ya existe una persona con dicho el mismo CUIT/CUIL'});
-            else {
-                let query = table.insert(
-                    table.tipo.value(persona.tipo),
-                    table.nombre.value(persona.nombre),
-                    table.cuit.value(persona.cuit),
-                    table.telefono.value(persona.telefono)
-                )
-                .returning(table.star())
-                .toQuery();
+        let query = table.insert(
+            table.tipo.value(persona.tipo),
+            table.nombre.value(persona.nombre),
+            table.cuit.value(persona.cuit),
+            table.telefono.value(persona.telefono)
+        )
+        .returning(table.star())
+        .toQuery();
 
-                return connector.execQuery(query, client)
-                .then(r => {
-                    persona.id = r.rows[0].id;
-                    if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
-                    else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
-                })
-                .then(r => persona)
-                .catch(e => {
-                    console.error(e);
-                    return Promise.reject(e);
-                })
-            }
+        return connector.execQuery(query, client)
+        .then(r => {
+            persona.id = r.rows[0].id;
+            if (persona.tipo == 'fisica') return PersonaFisica.add(persona, client)
+            else if (persona.tipo == 'juridica') return PersonaJuridica.add(persona, client);
+        })
+        .then(r => persona)
+        .catch(e => {
+            console.error(e);
+            return Promise.reject(e);
         })
     }
     catch(e) {
