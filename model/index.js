@@ -32,6 +32,7 @@ module.exports.TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
 module.exports.TipoMovimientoMatricula = require('./tipos/TipoMovimientoMatricula');
 module.exports.TipoVariableGlobal = require('./tipos/TipoVariableGlobal');
 module.exports.TipoMatricula = require('./tipos/TipoMatricula');
+module.exports.TipoLegajo = require('./tipos/TipoLegajo');
 
 module.exports.ValoresGlobales = require('./ValoresGlobales');
 module.exports.Documento = require('./Documento');

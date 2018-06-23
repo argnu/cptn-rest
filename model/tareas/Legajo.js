@@ -1,13 +1,17 @@
+const dot = require('dot-object');
 const moment = require('moment');
 const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
+const TipoLegajo = require('../tipos/TipoLegajo')
 const LegajoItem = require('./LegajoItem')
 const LegajoComitente = require('./LegajoComitente')
 const Item = require('./Item')
 const Domicilio = require(`../Domicilio`);
 const Boleta = require(`../cobranzas/Boleta`);
 const Persona = require(`../Persona`);
+const PersonaFisica = require(`../PersonaFisica`);
+const PersonaJuridica = require(`../PersonaJuridica`);
 const utils = require(`../../utils`);
 
 
@@ -168,6 +172,11 @@ const table = sql.define({
             onDelete: 'cascade'
         },
         {
+            table: 't_legajo',
+            columns: ['tipo'],
+            refColumns: ['id']
+        },
+        {
             table: 'delegacion',
             columns: ['delegacion'],
             refColumns: ['id']
@@ -248,7 +257,8 @@ const select = [
     table.id,
     table.solicitud,
     table.numero_legajo,
-    table.tipo,
+    TipoLegajo.table.id.as('tipo.id'),
+    TipoLegajo.table.valor.as('tipo.valor'),
     table.matricula,
     table.fecha_solicitud.cast('varchar(10)'),
     table.domicilio,
@@ -280,19 +290,42 @@ const select = [
     table.updated_by
 ]
 
+const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.id))
+.join(LegajoComitente.table).on(table.id.equals(LegajoComitente.table.legajo))
+.join(Persona.table).on(LegajoComitente.table.persona.equals(Persona.table.id))
+.leftJoin(PersonaFisica.table).on(LegajoComitente.table.persona.equals(PersonaFisica.table.id))
+
 
 module.exports.getAll = function (params) {
     let legajos = [];
-    let query = table.select(select).from(table);
-    query.where(table.tipo.notEquals(0)); // EVITAR LOS ANULADOS
+    let query = table.select(select).distinctOn(table.id).from(from);
+
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
+    if (params.tipo) query.where(table.tipo.equals(params.tipo));
+    
+    if (params.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.numero}%`));
+    if (params.nomenclatura) query.where(table.nomenclatura.ilike(`%${params.nomenclatura}%`));
+    
+    if (params.comitente) {
+        if (params.comitente.nombre) query.where(Persona.table.nombre.ilike(`%${params.comitente.nombre}%`));
+        if (params.comitente.cuit) query.where(Persona.table.cuit.like(`%${params.comitente.cuit}%`));
+        if (params.comitente.apellido) query.where(PersonaFisica.table.apellido.ilike(`%${params.comitente.apellido}%`));
+        if (params.comitente.dni) query.where(PersonaFisica.table.dni.ilike(`%${params.comitente.dni}%`));
+    }
+
+    if (params.sort) {
+        if (params.sort.fecha) query.order(table.fecha_solicitud[params.sort.fecha]);
+        if (params.sort.tipo) query.order(TipoLegajo.table.valor[params.sort.tipo]);
+        if (params.sort.numero) query.order(table.numero[params.sort.numero]);
+        if (params.sort.nomenclatura) query.order(table.nomenclatura[params.sort.nomenclatura]);
+    }
 
     if (params.limit) query.limit(+params.limit);
     if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
         .then(r => {
-            legajos = r.rows;
+            legajos = r.rows.map(row => dot.object(row));
             return Promise.all([
                 Promise.all(r.rows.map(legajo => LegajoComitente.getByLegajo(legajo.id))),
                 Promise.all(r.rows.map(legajo => getItems(legajo.id)))
@@ -317,7 +350,7 @@ module.exports.get = function (id) {
     .then(r => {
         if (r.rows.length == 0) 
             return Promise.reject({ code: 404, message: "No existe el recurso" });
-        legajo = r.rows[0];
+        legajo = dot.object(r.rows[0]);
         return Promise.all([
             getItems(legajo.id),
             LegajoComitente.getByLegajo(legajo.id),

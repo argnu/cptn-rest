@@ -1,3 +1,12 @@
+CREATE TABLE IF NOT EXISTS "t_legajo" ("id" serial PRIMARY KEY, "valor" varchar(255) NOT NULL);
+INSERT INTO "t_legajo" (id, valor) VALUES (1, 'Permiso de Construcción');
+INSERT INTO "t_legajo" (id, valor) VALUES (2, 'Orden de Trabajo');
+INSERT INTO "t_legajo" (id, valor) VALUES (3, 'Legajo Técnico');
+
+
+UPDATE "legajo" SET tipo=NULL WHERE tipo=0;
+ALTER TABLE "legajo" ADD FOREIGN KEY("tipo") REFERENCES t_legajo("id");
+
 ALTER TABLE "t_comprobante" ALTER COLUMN "activo" SET DEFAULT 'true';
 ALTER TABLE "t_formapago" ALTER COLUMN "activo" SET DEFAULT 'true';
 ALTER TABLE "volante_pago" ALTER COLUMN "vencido" SET DEFAULT 'false';
