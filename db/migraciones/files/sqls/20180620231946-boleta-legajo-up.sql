@@ -30,6 +30,8 @@ BEGIN
     	SELECT id INTO id_legajo FROM legajo WHERE numero_legajo=r_boleta.numero_solicitud;
         UPDATE boleta SET legajo=id_legajo WHERE id=r_boleta.id;
     END LOOP;
+    
+    UPDATE boleta SET legajo=numero_solicitud WHERE tipo_comprobante=20;
 END$$;
 
 ALTER TABLE "boleta" DROP COLUMN "numero_solicitud";
