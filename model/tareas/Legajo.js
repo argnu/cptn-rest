@@ -343,8 +343,8 @@ module.exports.getAll = function (params) {
 module.exports.get = function (id) {
     let legajo;
     let query = table.select(select)
-        .from(table)
-        .where(table.id.equals(id));
+    .from(from)
+    .where(table.id.equals(id));
 
     return connector.execQuery(query.toQuery())
     .then(r => {
