@@ -180,9 +180,12 @@ module.exports.get = function (id) {
     return connector.execQuery(query)
         .then(r => {
             boleta = dot.object(r.rows[0]);
-            return getData(boleta);
+            return Promise.all([
+                BoletaItem.getByBoleta(boleta.id),
+                boleta.legajo ? Legajo.get(boleta.legajo) : Promise.resolve(null)
+            ])
         })
-        .then(([items, tipo_comprobante, estado]) => {
+        .then(([items, legajo]) => {
             boleta.items = items;
             boleta.legajo = legajo;
             return boleta;
