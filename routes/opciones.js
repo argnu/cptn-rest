@@ -5,8 +5,6 @@ const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
-  let opciones = {};
-
   Promise.all([
     model.TipoCondicionAfip.getAll(req.query),
     model.TipoContacto.getAll(req.query),
