@@ -13,11 +13,13 @@ const table = sql.define({
             primaryKey: true
         }
     ],
+
     foreignKeys: [
         {
             table: 'persona',
             columns: ['id'],
-            refColumns: ['id']
+            refColumns: ['id'],
+            onDelete: 'CASCADE'
         }
     ]    
 });
