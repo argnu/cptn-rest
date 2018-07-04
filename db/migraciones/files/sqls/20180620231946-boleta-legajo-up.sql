@@ -27,7 +27,7 @@ DECLARE
 BEGIN
     FOR r_boleta IN SELECT * FROM boleta WHERE tipo_comprobante=15
     LOOP
-    	SELECT id INTO id_legajo FROM legajo WHERE numero_legajo=r_boleta.numero_solicitud;
+    	SELECT id INTO id_legajo FROM legajo WHERE solicitud=r_boleta.numero_solicitud;
         UPDATE boleta SET legajo=id_legajo WHERE id=r_boleta.id;
     END LOOP;
     
