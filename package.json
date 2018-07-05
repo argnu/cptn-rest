@@ -24,7 +24,7 @@
   "author": "ARGNU",
   "license": "GPL-3.0",
   "dependencies": {
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^2.0.1",
     "body-parser": "^1.17.2",
     "bunyan": "^1.8.12",
     "db-migrate": "^0.10.5",
