@@ -38,7 +38,7 @@ module.exports.seqPromises = function(promises) {
   }, Promise.resolve());  
 }
 
-module.exports.getTotal = function(table, from, fn_filter) {
+module.exports.getTotalQuery = function(table, from, fn_filter) {
   let query = table
   .select(table.count().distinct().as('total'))
   .from(from)

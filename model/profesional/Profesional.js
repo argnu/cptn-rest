@@ -11,7 +11,7 @@ const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
 const TipoCondicionAfip = require('../tipos/TipoCondicionAfip');
-const utils = require(`../../utils`);
+const utils = require('../../utils');
 
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -307,26 +307,29 @@ module.exports.get = function(id) {
   let profesional;
   return connector.execQuery(query)
   .then(r => {
-    profesional = dot.object(r.rows[0]);
-    if (profesional.foto) {
-      profesional.foto = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/foto`;
+    if (r.rows[0]) {
+      profesional = dot.object(r.rows[0]);
+      if (profesional.foto) {
+        profesional.foto = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/foto`;
+      }
+      if (profesional.firma) {
+        profesional.firma = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/firma`;
+      }
+      return getDatosProfesional(profesional)
+      .then(([
+        domicilios, condiciones_afip, contactos, formaciones, cajas_previsionales, subsidiarios
+      ]) => {
+        profesional.domicilios = domicilios;
+        profesional.condiciones_afip = condiciones_afip;
+        profesional.contactos = contactos;
+        profesional.formaciones = formaciones;
+        profesional.cajas_previsionales = cajas_previsionales;
+        profesional.subsidiarios = subsidiarios;
+        return profesional;
+      });      
     }
-    if (profesional.firma) {
-      profesional.firma = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/firma`;
-    }
-    return getDatosProfesional(profesional);
+    else return Promise.resolve(null);
   })
-  .then(([
-      domicilios, condiciones_afip, contactos, formaciones, cajas_previsionales, subsidiarios
-    ]) => {
-      profesional.domicilios = domicilios;
-      profesional.condiciones_afip = condiciones_afip;
-      profesional.contactos = contactos;
-      profesional.formaciones = formaciones;
-      profesional.cajas_previsionales = cajas_previsionales;
-      profesional.subsidiarios = subsidiarios;
-      return profesional;
-    });
 }
 
 module.exports.getFoto = function(id) {

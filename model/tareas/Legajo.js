@@ -369,7 +369,7 @@ module.exports.getAll = function (params) {
                 legajo.items = items[i];
             });
 
-            return utils.getTotal(table,
+            return utils.getTotalQuery(table,
                 from.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
                 .leftJoin(Domicilio.table).on(table.domicilio.equals(Domicilio.table.id)),
                 (query) => filter(query, params)
@@ -496,10 +496,11 @@ function addLegajo(legajo, client) {
         })
 }
 
-function addBoleta(legajo) {
+function addBoleta(legajo, conexion) {
     if (legajo.tipo != 3) return Promise.resolve();
 
     let boleta = {
+        legajo: legajo.id,
         delegacion: legajo.delegacion,
         matricula: legajo.matricula,
         tipo_comprobante: 20,    //TIPO DE COMPROBANTE LEG
@@ -516,7 +517,7 @@ function addBoleta(legajo) {
         }]
     }
 
-    return Boleta.add(boleta);
+    return Boleta.add(boleta, conexion);
 }
 
 module.exports.add = function (legajo) {
@@ -565,7 +566,7 @@ module.exports.add = function (legajo) {
             legajo.id = legajo_nuevo.id;
             legajo.numero_legajo = legajo_nuevo.numero_legajo;
             legajo_nuevo.items = items;
-            return addBoleta(legajo);
+            return addBoleta(legajo, connection.client);
         })
         .then(r => {
             return connector.commit(connection.client)

@@ -11,3 +11,5 @@ ALTER TABLE persona_juridica ADD FOREIGN KEY ("id") REFERENCES persona("id") ON 
 ALTER TABLE legajo_comitente DROP CONSTRAINT "legajo_comitente_persona_fkey";
 ALTER TABLE legajo_comitente ADD FOREIGN KEY ("persona") REFERENCES persona("id") ON DELETE CASCADE ;
 
+ALTER TABLE contacto DROP CONSTRAINT "contacto_entidad_fkey";
+ALTER TABLE contacto ADD FOREIGN KEY ("entidad") REFERENCES entidad("id") ON DELETE CASCADE ;

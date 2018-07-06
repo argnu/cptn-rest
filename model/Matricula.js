@@ -99,7 +99,7 @@ const table = sql.define({
       name: 'updated_at',
       dataType: 'timestamptz',
       defaultValue: 'now'
-    },     
+    },
     {
       name: 'eliminado',
       dataType: 'boolean',
@@ -218,15 +218,15 @@ function addBoletaInscripcion(id, fecha, delegacion, client) {
         importe: importe
       }]
     }
-  
+
     return Boleta.add(boleta, client);
   })
 }
 
 
-function addBoletasMensuales(id, delegacion, client) {  
+function addBoletasMensuales(id, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
-  //y el número de la próxima boleta  
+  //y el número de la próxima boleta
   return Promise.all([
     ValoresGlobales.getValida(5, new Date()),
     Boleta.getNumeroBoleta()
@@ -235,20 +235,20 @@ function addBoletasMensuales(id, delegacion, client) {
     let importe = importe_anual.valor / 12;
     let anio_actual = new Date().getFullYear();
     let mes_inicio = new Date().getMonth() + 1;
-    let fecha_inicio = mes_inicio === 12 ? new Date(anio_actual + 1, 0, 1) : new Date(anio_actual, mes_inicio, 1);  
-  
+    let fecha_inicio = mes_inicio === 12 ? new Date(anio_actual + 1, 0, 1) : new Date(anio_actual, mes_inicio, 1);
+
     let promesas_boletas = [];
-    
+
     for(let mes_inicio = fecha_inicio.getMonth(); mes_inicio < 12; mes_inicio++) {
       let fecha_primero_mes = new Date(anio_actual, mes_inicio, 1);
       let fecha_vencimiento = new Date(anio_actual, mes_inicio, 10);
-  
+
       //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
       if (fecha_vencimiento.getDay() === 0)
         fecha_vencimiento = moment(fecha_vencimiento).add(1, 'days');
       else if (fecha_vencimiento.getDay() === 6)
         fecha_vencimiento = moment(fecha_vencimiento).add(2, 'days');
-        
+
       let boleta = {
         numero: numero_boleta,
         matricula: id,
@@ -266,10 +266,10 @@ function addBoletasMensuales(id, delegacion, client) {
         }]
       }
 
-      numero_boleta++;    
+      numero_boleta++;
       promesas_boletas.push(Boleta.add(boleta, client));
     }
-  
+
     return Promise.all(promesas_boletas);
   })
 }
@@ -306,7 +306,7 @@ function getNumeroMatricula(id_profesional, tipo_provisorio) {
       let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
       return tipo_provisorio + completarConCeros(numero);
     });
-  });  
+  });
 }
 
 module.exports.getNumeroMatricula = getNumeroMatricula;
@@ -415,40 +415,23 @@ module.exports.cambiarEstado = function(nuevo_estado) {
       connector.rollback(connection.client);
       connection.done();
       throw Error(e);
-    });    
+    });
   })
 }
 
-function getTotal(params) {
-  let query;
-  if (!params) {
-    query = table.select(table.count().as('total')).from(table);
+function filter(query, params) {
+  if (params.entidad && !isNaN(+params.entidad)) query.where(table.entidad.equals(params.entidad));
+  if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+  if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
+
+  if (params.filtros) {
+    if (params.filtros.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.filtros.numeroMatricula}%`));
+    if (params.filtros['profesional.apellido']) query.where(Profesional.table.apellido.ilike(`%${params.filtros['profesional.apellido']}%`));
+    if (params.filtros['profesional.dni']) query.where(Profesional.table.dni.ilike(`%${params.filtros['profesional.dni']}%`));
+    if (params.filtros['empresa.nombre']) query.where(Empresa.table.nombre.ilike(`%${params.filtros['empresa.nombre']}%`));
+    if (params.filtros['entidad.cuit']) query.where(Entidad.table.cuit.ilike(`%${params.filtros['entidad.cuit']}%`));
   }
-  else {
-    query = table.select(
-      table.count(table.id).as('total')
-    ).from(
-      table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
-      .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-      .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-      .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-    );
-
-    if (params.entidad) query.where(table.entidad.equals(params.entidad));
-
-    if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
-    if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
-    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
-    if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
-    if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
-    if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
-    if (params.cuit) query.where(Entidad.table.cuit.ilike(`%${params.cuit}%`));
-  }
-
-  return connector.execQuery(query.toQuery())
-  .then(r => +r.rows[0].total);
 }
-
 
 module.exports.getAll = function (params) {
   let matriculas = [];
@@ -479,15 +462,7 @@ module.exports.getAll = function (params) {
   )
   .where(table.eliminado.equals(false));
 
-  if (params.entidad) query.where(table.entidad.equals(params.entidad));
-
-  if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
-  if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
-  if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
-  if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
-  if (params.dni) query.where(Profesional.table.dni.ilike(`%${params.dni}%`));
-  if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
-  if (params.cuit) query.where(Entidad.table.cuit.ilike(`%${params.cuit}%`));
+  filter(query, params);
 
   if (params.sort) {
     if (params.sort.numeroMatricula) query.order(table.numeroMatricula[params.sort.numeroMatricula]);
@@ -503,25 +478,33 @@ module.exports.getAll = function (params) {
   if (params.limit && params.offset) query.offset(+params.offset);
 
   return connector.execQuery(query.toQuery())
-    .then(r => {
-      matriculas = r.rows.map(row => dot.object(row));
-      let proms = matriculas.map(m => {
-        if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad)
-        else if (m.tipoEntidad == 'empresa') return Empresa.get(m.entidad);
+  .then(r => {
+    matriculas = r.rows.map(row => dot.object(row));
+    let proms = matriculas.map(m => {
+      if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad)
+      else if (m.tipoEntidad == 'empresa') return Empresa.get(m.entidad);
+    });
+
+    return Promise.all(proms)
+    .then(rs => {
+      rs.forEach((r, i) => {
+        matriculas[i].entidad = r;
+        delete(matriculas[i].tipoEntidad);
       });
 
-      return Promise.all(proms)
-        .then(rs => {
-          rs.forEach((r, i) => {
-            matriculas[i].entidad = r;
-            delete(matriculas[i].tipoEntidad);
-          });
-          return Promise.all([
-                  getTotal(params),
-                  getTotal()
-                ]).then(([totalQuery, total]) => ({ total, totalQuery, resultados: matriculas }))
+      return utils.getTotalQuery(
+        table,
+        table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
+        .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+        .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+        .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
+        .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id)),
+        (query) => {
+          filter(query, params);
         })
+      .then(totalQuery => ({ totalQuery, resultados: matriculas }))
     })
+  })
 }
 
 module.exports.get = function (id) {
@@ -581,7 +564,7 @@ module.exports.getMigracion = function (id, empresa) {
       if (r.rows.length > 1) {
         if (r.rows[0].numeroMatricula.length > r.rows[1].numeroMatricula.length)
           return r.rows[0];
-        else 
+        else
           return r.rows[1];
       }
       else return r.rows[0];

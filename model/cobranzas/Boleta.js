@@ -227,7 +227,8 @@ function addDatosBoleta(boleta, client) {
                     table.numero_comprobante.value(boleta.numero_comprobante),
                     table.numero_condonacion.value(boleta.numero_condonacion),
                     table.fecha_update.value(boleta.fecha_update ? boleta.fecha_update : moment()),
-                    table.delegacion.value(boleta.delegacion)
+                    table.delegacion.value(boleta.delegacion),
+                    table.legajo.value(boleta.legajo)
                 )
                 .returning(table.id, table.numero)
                 .toQuery()
