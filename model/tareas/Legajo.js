@@ -265,23 +265,17 @@ const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.
 
 function filter(query, params) {
     if (params.tipo) query.where(table.tipo.equals(params.tipo));
-    if (params.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.numero}%`));
-    if (params.nomenclatura) query.where(table.nomenclatura.ilike(`%${params.nomenclatura}%`));
 
-    if (params.matricula) {
-        if (params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
-        if (params.matricula.numero) query.where(Matricula.table.numeroMatricula.ilike(`%${params.matricula.numero}%`));
-    }
-
-    if (params.comitente) {
-        if (params.comitente.nombre) query.where(Persona.table.nombre.ilike(`%${params.comitente.nombre}%`));
-        if (params.comitente.cuit) query.where(Persona.table.cuit.like(`%${params.comitente.cuit}%`));
-        if (params.comitente.apellido) query.where(PersonaFisica.table.apellido.ilike(`%${params.comitente.apellido}%`));
-        if (params.comitente.dni) query.where(PersonaFisica.table.dni.ilike(`%${params.comitente.dni}%`));
-    }
-
-    if (params.domicilio) {
-        if (params.domicilio.direccion) query.where(Domicilio.table.direccion.ilike(`%${params.domicilio.direccion}%`));
+    if (params.filtros) {
+        if (params.filtros.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.filtros.numero}%`));
+        if (params.filtros.nomenclatura) query.where(table.nomenclatura.ilike(`%${params.filtros.nomenclatura}%`));
+        if (params.filtros['matricula.id']) query.where(table.matricula.equals(params.filtros['matricula.id']));
+        if (params.filtros['matricula.numero']) query.where(Matricula.table.numeroMatricula.ilike(`%${params.filtros['matricula.numero']}%`));
+        if (params.filtros['comitente.nombre']) query.where(Persona.table.nombre.ilike(`%${params.filtros['comitente.nombre']}%`));
+        if (params.filtros['comitente.cuit']) query.where(Persona.table.cuit.like(`%${params.filtros['comitente.cuit']}%`));
+        if (params.filtros['comitente.apellido']) query.where(PersonaFisica.table.apellido.ilike(`%${params.filtros['comitente.apellido']}%`));
+        if (params.filtros['comitente.dni']) query.where(PersonaFisica.table.dni.ilike(`%${params.filtros['comitente.dni']}%`));
+        if (params.filtros['domicilio.direccion']) query.where(Domicilio.table.direccion.ilike(`%${params.filtros['domicilio.direccion']}%`));
     }
 
     return query;
@@ -329,10 +323,10 @@ module.exports.getAll = function (params) {
         table.created_by,
         table.updated_by
     ).distinctOn(
-        table.id, 
+        table.id,
         TipoLegajo.table.valor,
         table.fecha_solicitud,
-        table.nomenclatura, 
+        table.nomenclatura,
         table.numero_legajo,
         Matricula.table.numeroMatricula,
         Domicilio.table.direccion

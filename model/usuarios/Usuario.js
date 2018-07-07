@@ -1,3 +1,4 @@
+const utils = require('../../utils');
 const config = require(`../../config.private`);
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -58,22 +59,13 @@ const UsuarioDelegacion = require('./UsuarioDelegacion');
 
 module.exports.table = table;
 
-function getTotal(params) {
-  let query;
-  if (!params) query = table.select(table.count().as('total'));
-  else {
-    query = table.select(table.count(table.id).as('total'));
-
-    if (params.filter) {
-      if (params.filter.nombre) query.where(table.nombre.ilike(`%${params.filter.nombre}%`));
-      if (params.filter.username) query.where(table.username.ilike(`%${params.filter.username}%`));
-      if (params.filter.apellido) query.where(table.apellido.ilike(`%${params.filter.apellido}%`));
-      if (params.filter.email) query.where(table.email.ilike(`%${params.filter.email}%`));
-    }
+function filter(query, params) {
+  if (params.filtros) {
+    if (params.filtros.nombre) query.where(table.nombre.ilike(`%${params.filtros.nombre}%`));
+    if (params.filtros.username) query.where(table.username.ilike(`%${params.filtros.username}%`));
+    if (params.filtros.apellido) query.where(table.apellido.ilike(`%${params.filtros.apellido}%`));
+    if (params.filtros.email) query.where(table.email.ilike(`%${params.filtros.email}%`));
   }
-
-  return connector.execQuery(query.toQuery())
-  .then(r => +r.rows[0].total);
 }
 
 module.exports.getAll = function(params) {
@@ -87,13 +79,7 @@ module.exports.getAll = function(params) {
     table.activo
   ).from(table);
 
-
-  if (params.filter) {
-    if (params.filter.nombre) query.where(table.nombre.ilike(`%${params.filter.nombre}%`));
-    if (params.filter.username) query.where(table.username.ilike(`%${params.filter.username}%`));
-    if (params.filter.apellido) query.where(table.apellido.ilike(`%${params.filter.apellido}%`));
-    if (params.filter.email) query.where(table.email.ilike(`%${params.filter.email}%`));
-  }
+  filter(query, params);
 
   if (params.sort) {
     if (params.sort.nombre) query.order(table.nombre[params.sort.nombre]);
@@ -108,9 +94,12 @@ module.exports.getAll = function(params) {
   return connector.execQuery(query.toQuery())
   .then(r => {
     usuarios = r.rows
-    return Promise.all([ getTotal(), getTotal(params) ]);
+    return utils.getTotalQuery(
+      table, table,
+      (query) => filter(query, params)
+    )
   })
-  .then(([total, totalQuery]) => ({ resultados: usuarios, total, totalQuery }))
+  .then(totalQuery => ({ resultados: usuarios, totalQuery }))
 }
 
 module.exports.get = function(id) {

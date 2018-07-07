@@ -167,7 +167,7 @@ const from = table.join(TipoEstadoSolicitud.table).on(table.estado.equals(TipoEs
 .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
 
 function filter(query, params) {
-  if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+  if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
   if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
   if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
 

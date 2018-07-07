@@ -421,7 +421,7 @@ module.exports.cambiarEstado = function(nuevo_estado) {
 
 function filter(query, params) {
   if (params.entidad && !isNaN(+params.entidad)) query.where(table.entidad.equals(params.entidad));
-  if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
+  if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
 
   if (params.filtros) {
