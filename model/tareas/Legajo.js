@@ -265,11 +265,11 @@ const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.
 
 function filter(query, params) {
     if (params.tipo) query.where(table.tipo.equals(params.tipo));
+    if (params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
 
     if (params.filtros) {
         if (params.filtros.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.filtros.numero}%`));
         if (params.filtros.nomenclatura) query.where(table.nomenclatura.ilike(`%${params.filtros.nomenclatura}%`));
-        if (params.filtros['matricula.id']) query.where(table.matricula.equals(params.filtros['matricula.id']));
         if (params.filtros['matricula.numero']) query.where(Matricula.table.numeroMatricula.ilike(`%${params.filtros['matricula.numero']}%`));
         if (params.filtros['comitente.nombre']) query.where(Persona.table.nombre.ilike(`%${params.filtros['comitente.nombre']}%`));
         if (params.filtros['comitente.cuit']) query.where(Persona.table.cuit.like(`%${params.filtros['comitente.cuit']}%`));

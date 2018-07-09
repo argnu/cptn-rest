@@ -66,7 +66,7 @@ router.delete('/:id', function(req, res) {
 
 /* LEGAJOS */
 router.get('/:id/legajos', function(req, res) {
-  if (!req.query) req.query = { matricula: req.params.id };
+  if (!req.query) req.query = { matricula: { id: req.params.id } };
   else req.query.matricula = { id: req.params.id };
 
   model.Legajo.getAll(req.query)
