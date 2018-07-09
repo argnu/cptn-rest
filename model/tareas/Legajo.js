@@ -265,7 +265,7 @@ const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.
 
 function filter(query, params) {
     if (params.tipo) query.where(table.tipo.equals(params.tipo));
-    if (params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
+    if (params.matricula && params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
 
     if (params.filtros) {
         if (params.filtros.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.filtros.numero}%`));

@@ -37,3 +37,6 @@ END$$;
 ALTER TABLE "boleta" DROP COLUMN "numero_solicitud";
 
 UPDATE "boleta" SET tipo_comprobante=20 WHERE tipo_comprobante=15 AND fecha>='2018-01-01';
+
+UPDATE boleta_item AS bi SET descripcion=overlay(bi.descripcion placing 'Aportes profesional N° Legajo' from 1 for 51) 
+FROM boleta AS b WHERE b.id=bi.boleta AND b.tipo_comprobante=20;
