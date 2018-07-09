@@ -49,7 +49,7 @@ router.use('/tareas', require('./tareas'));
 router.use('/cajas-previsionales', require('./cajas-previsionales'));
 
 router.use('/personas', require('./personas'));
-router.use('/valores_globales', require('./valores_globales'));
+router.use('/valores-globales', require('./valores_globales'));
 router.use('/comprobantes-exenciones', require('./comprobantes_exenciones'));
 
 module.exports = router;
