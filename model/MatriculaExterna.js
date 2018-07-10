@@ -1,3 +1,4 @@
+const utils = require('../utils');
 const connector = require('../db/connector');
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -50,27 +51,13 @@ const table = sql.define({
 
 module.exports.table = table;
 
-function getTotal(params) {
-    let query;
-    if (!params) {
-        query = table.select(table.count().as('total')).from(table);
+function filter(query, params) {
+    if (params.filtros) {
+        if (params.filtros.numero) query.where(table.numeroMatricula.ilike(`%${params.filtros.numero}%`));
+        if (params.filtros['profesional.apellido']) query.where(PersonaFisica.table.apellido.ilike(`%${params.filtros['profesional.apellido']}%`));
+        if (params.filtros['profesional.dni']) query.where(PersonaFisica.table.dni.ilike(`%${params.filtros['profesional.dni']}%`));
+        if (params.filtros['entidad.cuit']) query.where(Persona.table.cuit.ilike(`%${params.filtros['entidad.cuit']}%`));        
     }
-    else {
-        query = table.select(table.count(table.id).as('total'))
-                     .from(
-                        table.join(Persona.table).on(table.persona.equals(Persona.table.id))
-                        .join(PersonaFisica.table).on(table.persona.equals(PersonaFisica.table.id))
-                        .leftJoin(Localidad.table).on(table.localidad.equals(Localidad.table.id))
-                     )  
-
-        if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
-        if (params.apellido) query.where(PersonaFisica.table.apellido.ilike(`%${params.apellido}%`));
-        if (params.dni) query.where(PersonaFisica.table.dni.ilike(`%${params.dni}%`));
-        if (params.cuit) query.where(Persona.table.cuit.ilike(`%${params.cuit}%`));
-    }
-
-    return connector.execQuery(query.toQuery())
-        .then(r => +r.rows[0].total);
 }
 
 module.exports.getAll = function(params) {
@@ -91,14 +78,17 @@ module.exports.getAll = function(params) {
         .leftJoin(Localidad.table).on(table.localidad.equals(Localidad.table.id))
     );
     
-    if (params.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.numeroMatricula}%`));
-    if (params.apellido) query.where(PersonaFisica.table.apellido.ilike(`%${params.apellido}%`));
-    if (params.dni) query.where(PersonaFisica.table.dni.ilike(`%${params.dni}%`));
-    if (params.cuit) query.where(Persona.table.cuit.ilike(`%${params.cuit}%`));
+    filter(query, params);
      
     return Promise.all([
         connector.execQuery(query.toQuery()),
-        getTotal(params),
+        utils.getTotalQuery(
+            table,
+            table.join(Persona.table).on(table.persona.equals(Persona.table.id))
+            .join(PersonaFisica.table).on(table.persona.equals(PersonaFisica.table.id))
+            .leftJoin(Localidad.table).on(table.localidad.equals(Localidad.table.id)),
+            (query) => filter(query, params)
+        ),
     ]).then(([r, totalQuery]) => ({ totalQuery, resultados: r.rows  })) 
 }
 

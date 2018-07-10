@@ -26,7 +26,8 @@ const Documento = require('./Documento');
     },
     {
       name: 'documento',
-      dataType: 'int'
+      dataType: 'int',
+      notNull: true
     },
     {
       name: 'fecha',

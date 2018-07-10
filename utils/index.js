@@ -1,3 +1,5 @@
+const connector = require(`../db/connector`);
+
 module.exports.clone = function(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
@@ -34,4 +36,15 @@ module.exports.seqPromises = function(promises) {
   return promises.reduce((previous_prom, current_prom) => {
     return previous_prom.then(current_prom)
   }, Promise.resolve());  
+}
+
+module.exports.getTotalQuery = function(table, from, fn_filter) {
+  let query = table
+  .select(table.count().distinct().as('total'))
+  .from(from)
+
+  if (fn_filter) fn_filter(query);
+
+  return connector.execQuery(query.toQuery())
+  .then(r => +r.rows[0].total);
 }

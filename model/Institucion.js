@@ -1,4 +1,5 @@
 const connector = require('../db/connector');
+const utils = require('../utils');
 const sql = require('sql');
 sql.setDialect('postgres');
 
@@ -102,23 +103,12 @@ module.exports.add = function(institucion, client) {
 
 module.exports.table = table;
 
-
-function getTotal(params) {
-  let query;
-  if (!params) query = table.select(table.count().as('total'));
-  else {
-    query = table.select(table.count(table.id).as('total'));
-
-    if (params.filter) {
-      if (params.filter.nombre) query.where(table.nombre.ilike(`%${params.filter.nombre}%`));
-      if (params.filter.cue) query.where(table.cue.ilike(`%${params.filter.cue}%`));
-    }
+function filter(query, params) {
+  if (params.filtros) {
+    if (params.filtros.nombre) query.where(table.nombre.ilike(`%${params.filtros.nombre}%`));
+    if (params.filtros.cue) query.where(table.cue.ilike(`%${params.filtros.cue}%`));
   }
-
-  return connector.execQuery(query.toQuery())
-  .then(r => +r.rows[0].total);
 }
-
 
 module.exports.getAll = function(params) {
   let instituciones = [];
@@ -128,10 +118,7 @@ module.exports.getAll = function(params) {
     table.id, table.nombre, table.cue, table.valida
   );
 
-  if (params.filter) {
-    if (params.filter.nombre) query.where(table.nombre.ilike(`%${params.filter.nombre}%`));
-    if (params.filter.cue) query.where(table.cue.ilike(`%${params.filter.cue}%`));
-  }
+  filter(query, params);
 
   if (params.sort) {
     if (params.sort.nombre) query.order(table.nombre[params.sort.nombre]);
@@ -156,9 +143,14 @@ module.exports.getAll = function(params) {
     instituciones.forEach((institucion, index) => {
       institucion.titulos = titulos[index];
     })
-    return Promise.all([ getTotal(), getTotal(params) ]);
+
+    return utils.getTotalQuery(
+      table,
+      table,
+      (query) => filter(query, params)
+    );
   })
-  .then(([total, totalQuery]) => ({ resultados: instituciones, total, totalQuery }))
+  .then(totalQuery => ({ resultados: instituciones, totalQuery }))
 }
 
 module.exports.get = function(id) {

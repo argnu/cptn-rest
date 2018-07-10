@@ -5,8 +5,6 @@ const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
 router.get('/', function(req, res) {
-  let opciones = {};
-
   Promise.all([
     model.TipoCondicionAfip.getAll(req.query),
     model.TipoContacto.getAll(req.query),
@@ -26,7 +24,8 @@ router.get('/', function(req, res) {
     model.TipoDocumento.getAll(req.query),
     model.TipoNivelTitulo.getAll(req.query),
     model.TipoMatricula.getAll(req.query),
-    model.TipoVariableGlobal.getAll(req.query)
+    model.TipoVariableGlobal.getAll(req.query),
+    model.TipoLegajo.getAll(req.query)
   ])
   .then(([
     condicionafip, contacto, empresa, estadocivil,
@@ -34,14 +33,14 @@ router.get('/', function(req, res) {
     incumbencia, estadoSolicitud, estadoMatricula,
     estadoBoleta, comprobante, formaPago, pago,
     vinculo, documento, niveles_titulos, matricula,
-    variableGlobal
+    variableGlobal, legajo
   ]) => res.json({
         condicionafip, contacto, empresa, estadocivil,
         formacion, sexo, sociedad,
         incumbencia, estadoSolicitud, estadoMatricula,
         estadoBoleta, comprobante, formaPago, pago,
         vinculo, documento, niveles_titulos, matricula,
-        variableGlobal
+        variableGlobal, legajo
       })
   )
   .catch(e => utils.errorHandler(e, req, res));

@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const moment = require('moment');
 const connector = require('../../db/connector');
 const sql = require('sql');
@@ -7,6 +8,7 @@ const utils = require(`../../utils`);
 const BoletaItem = require('./BoletaItem');
 const TipoComprobante = require('../tipos/TipoComprobante');
 const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
+const Legajo = require('../tareas/Legajo');
 
 const table = sql.define({
     name: 'boleta',
@@ -51,7 +53,7 @@ const table = sql.define({
             dataType: 'int',
         },
         {
-            name: 'numero_solicitud',
+            name: 'legajo',
             dataType: 'int',
         },
         {
@@ -84,6 +86,12 @@ const table = sql.define({
             onDelete: 'cascade'
         },
         {
+            table: 'legajo',
+            columns: ['legajo'],
+            refColumns: ['id'],
+            onDelete: 'cascade'
+        },
+        {
             table: 'delegacion',
             columns: ['delegacion'],
             refColumns: ['id']
@@ -107,30 +115,28 @@ const select = [
     table.id,
     table.numero,
     table.matricula,
-    table.tipo_comprobante,
+    table.legajo,
+    TipoComprobante.table.id.as('tipo_comprobante.id'),
+    TipoComprobante.table.descripcion.as('tipo_comprobante.descripcion'),
+    TipoComprobante.table.abreviatura.as('tipo_comprobante.abreviatura'),
     table.fecha.cast('varchar(10)'),
     table.total,
-    table.estado,
+    TipoEstadoBoleta.table.id.as('estado.id'),
+    TipoEstadoBoleta.table.valor.as('estado.valor'),
     table.fecha_vencimiento.cast('varchar(10)'),
     table.numero_comprobante,
-    table.numero_solicitud,
     table.numero_condonacion,
     table.fecha_update.cast('varchar(10)'),
     table.delegacion,
 ]
 
-function getData(b) {
-    return Promise.all([
-        BoletaItem.getByBoleta(b.id),
-        TipoComprobante.get(b.tipo_comprobante),
-        TipoEstadoBoleta.get(b.estado)
-    ])
-}
+const from = table.join(TipoComprobante.table).on(table.tipo_comprobante.equals(TipoComprobante.table.id))
+.join(TipoEstadoBoleta.table).on(table.estado.equals(TipoEstadoBoleta.table.id))
 
 module.exports.getAll = function (params) {
     let boletas = [];
 
-    let query = table.select(select)
+    let query = table.select(select).from(from);
 
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
     if (params.estado) query.where(table.estado.equals(params.estado));
@@ -144,23 +150,28 @@ module.exports.getAll = function (params) {
     if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
-        .then(r => {
-            boletas = r.rows;
-            let proms = boletas.map(b => getData(b));
-            return Promise.all(proms);
-        })
-        .then(data_list => {
-            data_list.forEach((data, index) => {
-                boletas[index].items = data[0];
-                boletas[index].tipo_comprobante = data[1];
-                boletas[index].estado = data[2];
-            });
-            return boletas;
-        })
+    .then(r => {
+        boletas = r.rows.map(row => dot.object(row));
+        let proms = boletas.map(b => { 
+            return Promise.all([
+                BoletaItem.getByBoleta(b.id),
+                b.legajo ? Legajo.get(b.legajo) : Promise.resolve(null)
+            ])
+        });
+        return Promise.all(proms);
+    })
+    .then(data_list => {
+        data_list.forEach((data, index) => {
+            boletas[index].items = data[0];
+            boletas[index].legajo = data[1];
+        });
+        return boletas;
+    })
 }
 
 module.exports.get = function (id) {
     let query = table.select(select)
+        .from(from)
         .where(table.id.equals(id))
         .toQuery();
 
@@ -168,13 +179,15 @@ module.exports.get = function (id) {
 
     return connector.execQuery(query)
         .then(r => {
-            boleta = r.rows[0];
-            return getData(boleta);
+            boleta = dot.object(r.rows[0]);
+            return Promise.all([
+                BoletaItem.getByBoleta(boleta.id),
+                boleta.legajo ? Legajo.get(boleta.legajo) : Promise.resolve(null)
+            ])
         })
-        .then(([items, tipo_comprobante, estado]) => {
+        .then(([items, legajo]) => {
             boleta.items = items;
-            boleta.tipo_comprobante = tipo_comprobante;
-            boleta.estado = estado;
+            boleta.legajo = legajo;
             return boleta;
         });
 }
@@ -212,10 +225,10 @@ function addDatosBoleta(boleta, client) {
                     table.estado.value(boleta.estado),
                     table.fecha_vencimiento.value(boleta.fecha_vencimiento),
                     table.numero_comprobante.value(boleta.numero_comprobante),
-                    table.numero_solicitud.value(boleta.numero_solicitud),
                     table.numero_condonacion.value(boleta.numero_condonacion),
                     table.fecha_update.value(boleta.fecha_update ? boleta.fecha_update : moment()),
-                    table.delegacion.value(boleta.delegacion)
+                    table.delegacion.value(boleta.delegacion),
+                    table.legajo.value(boleta.legajo)
                 )
                 .returning(table.id, table.numero)
                 .toQuery()

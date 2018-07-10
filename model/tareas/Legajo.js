@@ -1,14 +1,18 @@
+const dot = require('dot-object');
 const moment = require('moment');
 const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
+const TipoLegajo = require('../tipos/TipoLegajo')
 const LegajoItem = require('./LegajoItem')
 const LegajoComitente = require('./LegajoComitente')
 const Item = require('./Item')
 const Domicilio = require(`../Domicilio`);
 const Boleta = require(`../cobranzas/Boleta`);
 const Persona = require(`../Persona`);
-const utils = require(`../../utils`);
+const PersonaFisica = require(`../PersonaFisica`);
+const Matricula = require('../Matricula');
+const utils = require('../../utils');
 
 
 const table = sql.define({
@@ -47,6 +51,10 @@ const table = sql.define({
         {
             name: 'nomenclatura',
             dataType: 'varchar(255)',
+        },
+        {
+            name: 'expediente_municipal',
+            dataType: 'varchar(45)',
         },
         {
             name: 'estado',
@@ -157,7 +165,7 @@ const table = sql.define({
           name: 'updated_at',
           dataType: 'timestamptz',
           defaultValue: 'now'
-        }        
+        }
     ],
 
     foreignKeys: [
@@ -166,6 +174,11 @@ const table = sql.define({
             columns: ['matricula'],
             refColumns: ['id'],
             onDelete: 'cascade'
+        },
+        {
+            table: 't_legajo',
+            columns: ['tipo'],
+            refColumns: ['id']
         },
         {
             table: 'delegacion',
@@ -244,55 +257,101 @@ function getItemData(id_item) {
 }
 
 
-const select = [
-    table.id,
-    table.solicitud,
-    table.numero_legajo,
-    table.tipo,
-    table.matricula,
-    table.fecha_solicitud.cast('varchar(10)'),
-    table.domicilio,
-    table.nomenclatura,
-    table.estado,
-    table.subcategoria,
-    table.incumbencia,
-    table.honorarios_presupuestados,
-    table.forma_pago,
-    table.plazo_cumplimiento.cast('varchar(10)'),
-    table.honorarios_reales,
-    table.porcentaje_cumplimiento,
-    table.finalizacion_tarea.cast('varchar(10)'),
-    table.tarea_publica,
-    table.dependencia,
-    table.aporte_bruto,
-    table.aporte_neto,
-    table.aporte_neto_bonificacion,
-    table.cantidad_planos,
-    table.observaciones,
-    table.observaciones_internas,
-    table.informacion_adicional,
-    table.evaluador,
-    table.delegacion,
-    table.numero_acta,
-    table.operador_carga,
-    table.operador_aprobacion,
-    table.created_by,
-    table.updated_by
-]
+
+const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.id))
+.join(LegajoComitente.table).on(table.id.equals(LegajoComitente.table.legajo))
+.join(Persona.table).on(LegajoComitente.table.persona.equals(Persona.table.id))
+.leftJoin(PersonaFisica.table).on(LegajoComitente.table.persona.equals(PersonaFisica.table.id))
+
+function filter(query, params) {
+    if (params.tipo) query.where(table.tipo.equals(params.tipo));
+    if (params.matricula && params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
+
+    if (params.filtros) {
+        if (params.filtros.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.filtros.numero}%`));
+        if (params.filtros.nomenclatura) query.where(table.nomenclatura.ilike(`%${params.filtros.nomenclatura}%`));
+        if (params.filtros['matricula.numero']) query.where(Matricula.table.numeroMatricula.ilike(`%${params.filtros['matricula.numero']}%`));
+        if (params.filtros['comitente.nombre']) query.where(Persona.table.nombre.ilike(`%${params.filtros['comitente.nombre']}%`));
+        if (params.filtros['comitente.cuit']) query.where(Persona.table.cuit.like(`%${params.filtros['comitente.cuit']}%`));
+        if (params.filtros['comitente.apellido']) query.where(PersonaFisica.table.apellido.ilike(`%${params.filtros['comitente.apellido']}%`));
+        if (params.filtros['comitente.dni']) query.where(PersonaFisica.table.dni.ilike(`%${params.filtros['comitente.dni']}%`));
+        if (params.filtros['domicilio.direccion']) query.where(Domicilio.table.direccion.ilike(`%${params.filtros['domicilio.direccion']}%`));
+    }
+
+    return query;
+}
 
 
 module.exports.getAll = function (params) {
     let legajos = [];
-    let query = table.select(select).from(table);
-    query.where(table.tipo.notEquals(0)); // EVITAR LOS ANULADOS
-    if (params.matricula) query.where(table.matricula.equals(params.matricula));
+    let query = table.select(
+        table.id,
+        table.solicitud,
+        table.numero_legajo,
+        TipoLegajo.table.id.as('tipo.id'),
+        TipoLegajo.table.valor.as('tipo.valor'),
+        Matricula.table.id.as('matricula.id'),
+        Matricula.table.numeroMatricula.as('matricula.numeroMatricula'),
+        table.fecha_solicitud.cast('varchar(10)'),
+        Domicilio.table.id.as('domicilio.id'),
+        Domicilio.table.direccion.as('domicilio.direccion'),
+        table.nomenclatura,
+        table.expediente_municipal,
+        table.estado,
+        table.subcategoria,
+        table.incumbencia,
+        table.honorarios_presupuestados,
+        table.forma_pago,
+        table.plazo_cumplimiento.cast('varchar(10)'),
+        table.honorarios_reales,
+        table.porcentaje_cumplimiento,
+        table.finalizacion_tarea.cast('varchar(10)'),
+        table.tarea_publica,
+        table.dependencia,
+        table.aporte_bruto,
+        table.aporte_neto,
+        table.aporte_neto_bonificacion,
+        table.cantidad_planos,
+        table.observaciones,
+        table.observaciones_internas,
+        table.informacion_adicional,
+        table.evaluador,
+        table.delegacion,
+        table.numero_acta,
+        table.operador_carga,
+        table.operador_aprobacion,
+        table.created_by,
+        table.updated_by
+    ).distinctOn(
+        table.id,
+        TipoLegajo.table.valor,
+        table.fecha_solicitud,
+        table.nomenclatura,
+        table.numero_legajo,
+        Matricula.table.numeroMatricula,
+        Domicilio.table.direccion
+    )
+    .from(
+        from.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
+        .leftJoin(Domicilio.table).on(table.domicilio.equals(Domicilio.table.id))
+    )
+    filter(query, params);
+
+    if (params.sort) {
+        if (params.sort.fecha_solicitud) query.order(table.fecha_solicitud[params.sort.fecha_solicitud]);
+        if (params.sort.tipo) query.order(TipoLegajo.table.valor[params.sort.tipo]);
+        if (params.sort.numero) query.order(table.numero_legajo[params.sort.numero]);
+        if (params.sort.nomenclatura) query.order(table.nomenclatura[params.sort.nomenclatura]);
+        if (params.sort.numero_matricula) query.order(Matricula.table.numeroMatricula[params.sort.numero_matricula]);
+        if (params.sort.direccion) query.order(Domicilio.table.direccion[params.sort.direccion]);
+    }
 
     if (params.limit) query.limit(+params.limit);
     if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
         .then(r => {
-            legajos = r.rows;
+            legajos = r.rows.map(row => dot.object(row));
             return Promise.all([
                 Promise.all(r.rows.map(legajo => LegajoComitente.getByLegajo(legajo.id))),
                 Promise.all(r.rows.map(legajo => getItems(legajo.id)))
@@ -303,31 +362,79 @@ module.exports.getAll = function (params) {
                 legajo.comitentes = comitentes[i];
                 legajo.items = items[i];
             });
-            return legajos;
+
+            return utils.getTotalQuery(table,
+                from.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
+                .leftJoin(Domicilio.table).on(table.domicilio.equals(Domicilio.table.id)),
+                (query) => filter(query, params)
+            );
         })
+        .then(totalQuery => ({ totalQuery, resultados: legajos }));
 }
 
 module.exports.get = function (id) {
-    let legajos;
-    let query = table.select(select)
-        .from(table)
-        .where(table.id.equals(id));
+    let legajo;
+    let query = table.select(
+        table.id,
+        table.solicitud,
+        table.numero_legajo,
+        TipoLegajo.table.id.as('tipo.id'),
+        TipoLegajo.table.valor.as('tipo.valor'),
+        Matricula.table.id.as('matricula.id'),
+        Matricula.table.numeroMatricula.as('matricula.numeroMatricula'),
+        table.fecha_solicitud.cast('varchar(10)'),
+        table.domicilio,
+        table.nomenclatura,
+        table.expediente_municipal,
+        table.estado,
+        table.subcategoria,
+        table.incumbencia,
+        table.honorarios_presupuestados,
+        table.forma_pago,
+        table.plazo_cumplimiento.cast('varchar(10)'),
+        table.honorarios_reales,
+        table.porcentaje_cumplimiento,
+        table.finalizacion_tarea.cast('varchar(10)'),
+        table.tarea_publica,
+        table.dependencia,
+        table.aporte_bruto,
+        table.aporte_neto,
+        table.aporte_neto_bonificacion,
+        table.cantidad_planos,
+        table.observaciones,
+        table.observaciones_internas,
+        table.informacion_adicional,
+        table.evaluador,
+        table.delegacion,
+        table.numero_acta,
+        table.operador_carga,
+        table.operador_aprobacion,
+        table.created_by,
+        table.updated_by
+    )
+    .from(
+        from.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
+        .leftJoin(Domicilio.table).on(table.domicilio.equals(Domicilio.table.id))
+    )
+    .where(table.id.equals(id));
 
     return connector.execQuery(query.toQuery())
-        .then(r => {
-            legajo = r.rows[0];
-            return Promise.all([
-                getItems(legajo.id),
-                LegajoComitente.getByLegajo(legajo.id),
-                Domicilio.get(legajo.domicilio)
-            ])
-        })
-        .then(([items, comitentes, domicilio]) => {
-            legajo.items = items;
-            legajo.comitentes = comitentes;
-            legajo.domicilio = domicilio;
-            return legajo;
-        })
+    .then(r => {
+        if (r.rows.length == 0)
+            return Promise.reject({ code: 404, message: "No existe el recurso" });
+        legajo = dot.object(r.rows[0]);
+        return Promise.all([
+            getItems(legajo.id),
+            LegajoComitente.getByLegajo(legajo.id),
+            Domicilio.get(legajo.domicilio)
+        ])
+    })
+    .then(([items, comitentes, domicilio]) => {
+        legajo.items = items;
+        legajo.comitentes = comitentes;
+        legajo.domicilio = domicilio;
+        return legajo;
+    })
 }
 
 
@@ -364,6 +471,7 @@ function addLegajo(legajo, client) {
                     table.honorarios_reales.value(utils.getFloat(legajo.honorarios_reales)),
                     table.informacion_adicional.value(legajo.informacion_adicional),
                     table.nomenclatura.value(legajo.nomenclatura),
+                    table.expediente_municipal.value(legajo.expediente_municipal),
                     table.numero_legajo.value(numero_legajo),
                     table.solicitud.value(numero_legajo),
                     table.observaciones.value(legajo.observaciones),
@@ -382,10 +490,11 @@ function addLegajo(legajo, client) {
         })
 }
 
-function addBoleta(legajo) {
+function addBoleta(legajo, conexion) {
     if (legajo.tipo != 3) return Promise.resolve();
 
     let boleta = {
+        legajo: legajo.id,
         delegacion: legajo.delegacion,
         matricula: legajo.matricula,
         tipo_comprobante: 20,    //TIPO DE COMPROBANTE LEG
@@ -402,7 +511,7 @@ function addBoleta(legajo) {
         }]
     }
 
-    return Boleta.add(boleta);
+    return Boleta.add(boleta, conexion);
 }
 
 module.exports.add = function (legajo) {
@@ -451,7 +560,7 @@ module.exports.add = function (legajo) {
             legajo.id = legajo_nuevo.id;
             legajo.numero_legajo = legajo_nuevo.numero_legajo;
             legajo_nuevo.items = items;
-            return addBoleta(legajo);
+            return addBoleta(legajo, connection.client);
         })
         .then(r => {
             return connector.commit(connection.client)

@@ -194,7 +194,7 @@ else {
 function init(file_name) {
     function setFile(file_name) {
         if (!file_name) return Promise.resolve();
-        else return openFile(path.join(__dirname, 'files/sqls', file_name));
+        else return openFile(file_name);
 
     }
 

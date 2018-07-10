@@ -66,7 +66,10 @@ router.delete('/:id', function(req, res) {
 
 /* LEGAJOS */
 router.get('/:id/legajos', function(req, res) {
-  model.tareas.Legajo.getAll({ matricula: req.params.id })
+  if (!req.query) req.query = { matricula: { id: req.params.id } };
+  else req.query.matricula = { id: req.params.id };
+
+  model.Legajo.getAll(req.query)
     .then(matricula => res.json(matricula))
     .catch(e => utils.errorHandler(e, req, res));
 });
@@ -74,7 +77,7 @@ router.get('/:id/legajos', function(req, res) {
 router.put('/:id/legajos', function(req, res) {
   req.body.operador = req.user.id;
   req.body.matricula = req.params.id;
-  model.tareas.Legajo.add(req.body)
+  model.Legajo.add(req.body)
     .then(legajo => res.status(201).json(legajo))
     .catch(e => utils.errorHandler(e, req, res));
 });

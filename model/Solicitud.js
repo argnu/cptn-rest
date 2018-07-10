@@ -166,45 +166,25 @@ const from = table.join(TipoEstadoSolicitud.table).on(table.estado.equals(TipoEs
 .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
 .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
 
+function filter(query, params) {
+  if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
+  if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
+  if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
 
-function getTotal(params) {
-  let query;
-
-  if (!params) {
-    query = table.select(table.count().as('total')).from(table);
+  if (params.filtros) {
+    if (params.filtros.numero && !isNaN(+params.filtros.numero)) query.where(table.numero.cast('text').ilike(`%${params.filtros.numero}%`));
+    if (params.filtros['entidad.cuit']) query.where(Entidad.table.cuit.like(`%${params.filtros['entidad.cuit']}%`));
+    if (params.filtros['empresa.nombre']) query.where(Empresa.table.nombre.ilike(`%${params.filtros['empresa.nombre']}%`));
+    if (params.filtros['profesional.dni']) query.where(Profesional.table.dni.like(`%${params.filtros['profesional.dni']}%`));
+    if (params.filtros['profesional.apellido']) query.where(Profesional.table.apellido.ilike(`%${params.filtros['profesional.apellido']}%`));
   }
-  else {
-    query = table.select(table.count(table.id).as('total'))
-    .from(from);
-
-    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
-    if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
-    if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
-
-    if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
-    if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
-    if (params.dni) query.where(Profesional.table.dni.like(`%${params.dni}%`));
-    if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
-  }
-
-  return connector.execQuery(query.toQuery())
-  .then(r => +r.rows[0].total);
-
 }
 
 module.exports.getAll = function(params) {
-    let solicitudes = [];
+    let resultados = [];
     let query = table.select(select).from(from);
 
-    /* ----------------- FILTERS  ---------------- */
-    if (params.tipoEntidad) query.where(Entidad.table.tipo.equals(params.tipoEntidad));
-    if (params.estado) query.where(TipoEstadoSolicitud.table.valor.equals(params.estado));
-    if (params.numero && !isNaN(+params.numero)) query.where(table.numero.equals(+params.numero));
-
-    if (params.cuit) query.where(Entidad.table.cuit.like(`%${params.cuit}%`));
-    if (params.nombreEmpresa) query.where(Empresa.table.nombre.ilike(`%${params.nombreEmpresa}%`));
-    if (params.dni) query.where(Profesional.table.dni.like(`%${params.dni}%`));
-    if (params.apellido) query.where(Profesional.table.apellido.ilike(`%${params.apellido}%`));
+    filter(query, params);
 
     /* ---------------- SORTING ------------------ */
     if (params.sort) {
@@ -218,7 +198,6 @@ module.exports.getAll = function(params) {
       else if (params.sort.cuit) query.order(Entidad.table.cuit[params.sort.cuit]);
     }
 
-
     /* ---------------- LIMIT AND OFFSET ------------------ */
     if (params.limit) query.limit(+params.limit);
     if (params.limit && params.offset) query.offset(+params.offset);
@@ -226,21 +205,25 @@ module.exports.getAll = function(params) {
 
     return connector.execQuery(query.toQuery())
     .then(r => {
-      solicitudes = r.rows;
-      let proms = solicitudes.map(s => {
+      resultados = r.rows;
+      let proms = resultados.map(s => {
         if (s.tipoEntidad == 'profesional') return Profesional.get(s.entidad)
         else if (s.tipoEntidad == 'empresa') return Empresa.get(s.entidad);
       });
 
       return Promise.all(proms)
-             .then(rs => {
-               rs.forEach((r, i) => {
-                 solicitudes[i].entidad = r;
-                 delete(solicitudes[i].tipoEntidad);
-               });
-               return getTotal(params)
-             })
-             .then(total => ({resultados: solicitudes, totalQuery: total}))
+      .then(rs => {
+        rs.forEach((r, i) => {
+        resultados[i].entidad = r;
+          delete(resultados[i].tipoEntidad);
+        });
+
+        return utils.getTotalQuery(
+        table, from, (query) => {
+          filter(query, params);
+        })
+        .then(totalQuery => ({resultados, totalQuery}))
+      });
     });
 }
 
