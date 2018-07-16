@@ -90,30 +90,30 @@ router.post('/', function (req, res) {
 //   maxCount: 1
 // }]),
 
+function guardarFoto(id, foto, filename) {
+  return new Promise(function(resolve, reject) {
+    const foto_save = foto.replace(/^data:(.*);base64,/, "");
+    let filename_save = path.join(__dirname, '../files/fotos/', filename);
+
+    fs.writeFile(filename_save, foto_save, 'base64', function (e) {
+      if (e) reject(e);
+
+      model.Profesional.patch(id, { foto: filename })
+      .then(id => resolve(id))
+      .catch(e => reject(e))
+    })
+  })
+}
+
 router.put('/:id/foto', function (req, res) {
-
   if (req.body.foto && req.body.filename) {
-
-    const foto = req.body.foto.replace(/^data:(.*);base64,/, "");
     let ext = path.extname(req.body.filename);
     let name = req.body.filename.replace(ext, '') + '-' + Date.now() + ext;
-
-    const filename = path.join(__dirname, '../files/fotos/', name);
-
-    fs.writeFile(filename, foto, 'base64', function (err) {
-      if (err) {
-        return next(err)
-      }
-
-      model.Profesional.patch(req.params.id, {
-          foto: filename
-        })
-        .then(id => res.status(200).json({
-          id
-        }))
-        .catch(e => utils.errorHandler(e, req, res));
-    })
-
+    guardarFoto(req.params.id, req.body.foto, name)
+    .then(id => res.status(200).json({
+      id
+    }))
+    .catch(e => utils.errorHandler(e, req, res));
   } else res.status(500).json({
     msg: 'Error en el servidor'
   });
@@ -151,10 +151,8 @@ router.put('/:id',
 
     let proms = [];
 
-    if (req.body.foto) {
-      proms.push(model.Profesional.patch(req.params.id, {
-        foto: req.body.foto
-      }));
+    if (req.body.foto && req.body.foto_filename) {
+      proms.push(guardarFoto(req.params.id, req.body.foto, req.body.foto_filename));
     }
 
     if (req.body.firma) {
