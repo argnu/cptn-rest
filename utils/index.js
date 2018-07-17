@@ -48,3 +48,10 @@ module.exports.getTotalQuery = function(table, from, fn_filter) {
   return connector.execQuery(query.toQuery())
   .then(r => +r.rows[0].total);
 }
+
+module.exports.getNombreMes = function(num) {
+  let meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  
+  return meses[num-1];
+}
