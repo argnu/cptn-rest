@@ -293,19 +293,16 @@ function getTipoMatricula(id_profesional) {
 }
 
 // tipo_provisorio hasta que se determine automáticamente una vez validados los titulos
-function getNumeroMatricula(id_profesional, tipo_provisorio) {
-  return getTipoMatricula(id_profesional)
-  .then(tipo => {
-    let query = `
-      select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
-      from matricula
-      where "numeroMatricula" LIKE '${tipo_provisorio}%' AND length(regexp_replace("numeroMatricula", '\\D','','g'))=5`
+function getNumeroMatricula(tipo) {
+  let query = `
+    select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
+    from matricula
+    where "numeroMatricula" LIKE '${tipo}%' AND length(regexp_replace("numeroMatricula", '\\D','','g'))=5`
 
-    return connector.execRawQuery(query)
-    .then(r => {
-      let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
-      return tipo_provisorio + completarConCeros(numero);
-    });
+  return connector.execRawQuery(query)
+  .then(r => {
+    let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
+    return tipo + completarConCeros(numero);
   });
 }
 
@@ -320,7 +317,8 @@ module.exports.aprobar = function(matricula) {
         return Solicitud.get(matricula.solicitud)
         .then(solicitud_get => {
           solicitud = solicitud_get;
-          return getNumeroMatricula(solicitud.entidad.id, matricula.tipo);
+          let tipo_matricula = solicitud.tipoEntidad == 'empresa' ? 'EMP' : matricula.tipo;
+          return getNumeroMatricula(tipo_matricula);
         })
         .then(numero_mat => {
           return connector.beginTransaction()
