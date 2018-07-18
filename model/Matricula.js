@@ -261,7 +261,7 @@ function addBoletasMensuales(id, delegacion, client) {
         delegacion: delegacion,
         items: [{
           item: 1,
-          descripcion: `Derecho anual profesionales ${utils.getNombreMes(mes_inicio)} ${anio_actual}`,
+          descripcion: `Derecho anual profesionales ${utils.getNombreMes(mes_inicio+1)} ${anio_actual}`,
           importe: importe
         }]
       }
