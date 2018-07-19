@@ -380,6 +380,9 @@ module.exports.edit = function(id, profesional, client) {
       publicarEmail: profesional.publicarEmail
     };
 
+    if (profesional.foto) obj_update.foto = profesional.foto;
+    if (profesional.firma) obj_update.firma = profesional.firma;
+
     let query = table.update(obj_update)
     .where(table.id.equals(id))
     .toQuery();

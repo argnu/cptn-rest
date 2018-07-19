@@ -49,8 +49,8 @@ router.get('/:id/subsidiarios', function (req, res) {
 
 router.get('/:id/foto', function (req, res) {
   model.Profesional.getFoto(req.params.id)
-    .then(r => {
-      let file_path = path.join(__dirname, '..', 'files/fotos', r);
+    .then(foto => {
+      let file_path = path.join(__dirname, '..', 'files/fotos', foto);
       if (fs.existsSync(file_path)) res.sendFile(file_path);
       else return Promise.reject({
         code: 404,
@@ -85,36 +85,14 @@ router.post('/', function (req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
-// upload.fields([{
-//   name: 'foto',
-//   maxCount: 1
-// }]),
-
-function guardarFoto(id, foto, filename) {
-  return new Promise(function(resolve, reject) {
-    const foto_save = foto.replace(/^data:(.*);base64,/, "");
-    let filename_save = path.join(__dirname, '../files/fotos/', filename);
-
-    fs.writeFile(filename_save, foto_save, 'base64', function (e) {
-      if (e) reject(e);
-
-      model.Profesional.patch(id, { foto: filename })
-      .then(id => resolve(id))
-      .catch(e => reject(e))
-    })
-  })
-}
-
 router.put('/:id/foto', function (req, res) {
-  if (req.body.foto && req.body.filename) {
-    let ext = path.extname(req.body.filename);
-    let name = req.body.filename.replace(ext, '') + '-' + Date.now() + ext;
-    guardarFoto(req.params.id, req.body.foto, name)
-    .then(id => res.status(200).json({
-      id
-    }))
+  if (req.body.foto) {
+    return utils.guardarFoto(req.body.foto)
+    .then(foto => model.Profesional.patch(req.params.id, { foto }))
+    .then(() => res.status(200).json({ id: req.params.id }))
     .catch(e => utils.errorHandler(e, req, res));
-  } else res.status(500).json({
+  } 
+  else res.status(500).json({
     msg: 'Error en el servidor'
   });
 
@@ -139,33 +117,22 @@ router.put('/:id/firma', upload.fields([{
 
 router.put('/:id',
   upload.fields([{
-    name: 'foto',
-    maxCount: 1
-  }, {
     name: 'firma',
     maxCount: 1
   }]),
   function (req, res) {
-    let profesional = JSON.parse(req.body.profesional);
-    profesional.operador = req.user.id;
+    utils.guardarFoto(req.body.foto)
+    .then(foto => {
+      let profesional = JSON.parse(req.body.profesional);
+      profesional.operador = req.user.id;
 
-    let proms = [];
-
-    if (req.body.foto && req.body.foto_filename) {
-      proms.push(guardarFoto(req.params.id, req.body.foto, req.body.foto_filename));
-    }
-
-    if (req.body.firma) {
-      proms.push(model.Profesional.patch(req.params.id, {
-        firma: req.body.firma
-      }));
-    }
-
-    proms.push(model.Profesional.edit(req.params.id, profesional))
-
-    Promise.all(proms)
+      if (foto) profesional.foto = foto;  
+      if (req.body.firma) profesional.firma = req.body.firma;
+  
+      model.Profesional.edit(req.params.id, profesional)
       .then(id => res.status(200).json(profesional))
       .catch(e => utils.errorHandler(e, req, res));
+    })
   });
 
 router.delete('/:id', function (req, res) {

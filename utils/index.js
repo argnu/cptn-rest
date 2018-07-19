@@ -1,4 +1,6 @@
 const connector = require(`../db/connector`);
+const path = require('path');
+const fs = require('fs');
 
 module.exports.clone = function(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -54,4 +56,16 @@ module.exports.getNombreMes = function(num) {
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   
   return meses[num-1];
+}
+
+module.exports.guardarFoto = function(base64) {
+  if (!base64) return Promise.resolve(null);
+  return new Promise(function(resolve, reject) {
+    let foto_nombre = `fotoprofesional-${Date.now()}.png`;
+    let foto_path = path.join(__dirname, '../files/fotos/', foto_nombre);
+    fs.writeFile(foto_path, base64.replace(/^data:(.*);base64,/, ""), 'base64', function (e) {
+      if (e) reject(e);
+      resolve(foto_nombre);
+    })
+  })
 }
