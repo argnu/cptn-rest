@@ -224,12 +224,12 @@ function addBoletaInscripcion(id, fecha, delegacion, client) {
 }
 
 
-function addBoletasMensuales(id, delegacion, numero_boleta_mas, client) {
+function addBoletasMensuales(id, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
     ValoresGlobales.getValida(5, new Date()),
-    Boleta.getNumeroBoleta()
+    Boleta.getNumeroBoleta(null, client)
   ])
   .then(([importe_anual, numero_boleta]) => {
     let importe = importe_anual.valor / 12;
@@ -238,8 +238,6 @@ function addBoletasMensuales(id, delegacion, numero_boleta_mas, client) {
     let fecha_inicio = mes_inicio === 12 ? new Date(anio_actual + 1, 0, 1) : new Date(anio_actual, mes_inicio, 1);
 
     let promesas_boletas = [];
-
-    if (numero_boleta_mas) numero_boleta++;
 
     for(let mes_inicio = fecha_inicio.getMonth(); mes_inicio < 12; mes_inicio++) {
       let fecha_primero_mes = new Date(anio_actual, mes_inicio, 1);
@@ -345,7 +343,7 @@ module.exports.aprobar = function(matricula) {
             }
             else return Promise.resolve(false);
           })
-          .then(boleta_inscripcion => addBoletasMensuales(matricula_added.id, matricula.delegacion, boleta_inscripcion, connection.client))
+          .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
           .then(r => getDocumento(matricula.documento, connection.client))
           .then(documento => MatriculaHistorial.add({
               matricula: matricula_added.id,
