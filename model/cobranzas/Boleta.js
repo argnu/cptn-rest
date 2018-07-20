@@ -202,11 +202,11 @@ module.exports.getByNumero = function(numero) {
 }
 
 
-function getNumeroBoleta(numero) {
+function getNumeroBoleta(numero, client) {
     if (!numero) {
         let query = table.select(table.numero.max().as('numero'))
             .toQuery();
-        return connector.execQuery(query)
+        return connector.execQuery(query, client)
             .then(r => r.rows[0].numero + 1);
     } else return Promise.resolve(numero);
 }
