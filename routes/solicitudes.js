@@ -23,6 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
+
 router.get('/', function(req, res) {
   model.Solicitud.getAll(req.query)
     .then(r => res.json(r))
@@ -37,46 +38,49 @@ router.get('/:id', function(req, res) {
 
 router.post('/',          
   upload.fields([{
-    name: 'foto', maxCount: 1
-  }, {
     name: 'firma', maxCount: 1
-  }]), 
-  function(req, res) {
-    let solicitud;
+  }]),
 
-    if (req.body.solicitud) {
-      solicitud = JSON.parse(req.body.solicitud);
-      solicitud.entidad.foto = req.body.foto ? req.body.foto : null;
-      solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
-    }
-    else solicitud = req.body;
+  function(req, res) {    
+    utils.guardarFoto(req.body.foto)
+    .then(foto => {
+      let solicitud;
 
-    solicitud.operador = req.user.id;
-    
-    model.Solicitud.add(solicitud)
-      .then(solicitud => res.status(201).json(solicitud))
-      .catch(e => utils.errorHandler(e, req, res));
+      if (req.body.solicitud) {
+        solicitud = JSON.parse(req.body.solicitud);
+        solicitud.entidad.foto = foto;
+        solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
+      }
+      else solicitud = req.body;
+  
+      solicitud.operador = req.user.id;      
+      return model.Solicitud.add(solicitud);
+    })
+    .then(solicitud => res.status(201).json(solicitud))
+    .catch(e => utils.errorHandler(e, req, res));   
 });
 
 router.put('/:id',          
   upload.fields([{
-    name: 'foto', maxCount: 1
-  }, {
     name: 'firma', maxCount: 1
   }]), 
-  function(req, res) {
-    let solicitud;
-    if (req.body.solicitud) {
-      solicitud = JSON.parse(req.body.solicitud);
-      solicitud.entidad.foto = req.body.foto ? req.body.foto : null;
-      solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
-    }
-    else solicitud = req.body;    
 
-    solicitud.operador = req.user.id;
-    model.Solicitud.edit(req.params.id, solicitud)
-      .then(id => res.status(200).json({ id }))
-      .catch(e => utils.errorHandler(e, req, res));
+  function(req, res) {
+    utils.guardarFoto(req.body.foto)
+    .then(foto => {
+      let solicitud;
+      if (req.body.solicitud) {
+        solicitud = JSON.parse(req.body.solicitud);
+        solicitud.entidad.foto = foto;
+        solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
+      }
+      else solicitud = req.body;    
+  
+      solicitud.operador = req.user.id;
+      model.Solicitud.edit(req.params.id, solicitud)
+    })
+    .then(id => res.status(200).json({ id }))
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.patch('/:id', function(req, res) {
