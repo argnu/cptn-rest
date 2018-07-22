@@ -2,8 +2,8 @@ const utils = require('../utils');
 const path = require('path');
 const router = require('express').Router();
 const model = require('../model');
-const bodyParser = require('body-parser');
-router.use(bodyParser.json());
+
+
 
 router.get('/', function (req, res) {
     model.Persona.getAll(req.query)

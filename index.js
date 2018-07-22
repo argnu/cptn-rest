@@ -3,6 +3,7 @@ const pg = require('pg');
 const jwt = require('jsonwebtoken');
 const config = require('./config.private');
 const routes = require('./routes');
+const bodyParser = require('body-parser');
 
 const app = express();
 app.listen(config.entry.port, config.entry.host);
@@ -13,6 +14,8 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE, HEAD, OPTIONS");
   next();
 });
+
+app.use(bodyParser.json({ limit: '15mb' }));
 
 app.use(function(req, res, next) {
   const noUser = () => {

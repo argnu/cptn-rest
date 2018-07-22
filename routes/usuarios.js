@@ -1,8 +1,8 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
-const bodyParser = require('body-parser');
-router.use(bodyParser.json());
+
+
 
 router.get('/', function(req, res) {
   model.Usuario.get(req.user.id)

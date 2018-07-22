@@ -4,11 +4,6 @@ const path = require('path');
 const multer = require('multer');
 const router = require('express').Router();
 const model = require('../model');
-const bodyParser = require('body-parser');
-// create application/json parser
-router.use(bodyParser.json({
-  limit: '10mb'
-}));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -25,7 +20,8 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({
-  storage: storage
+  storage: storage,
+  limits: { fieldSize: 15 * 1024 * 1024 }
 })
 
 router.get('/', function (req, res) {
