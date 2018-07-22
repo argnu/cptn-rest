@@ -15,7 +15,7 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(bodyParser.json({ limit: '15mb' }));
+app.use(bodyParser.json({ limit: '50mb' }));
 
 app.use(function(req, res, next) {
   const noUser = () => {

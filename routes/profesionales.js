@@ -1,28 +1,8 @@
 const utils = require('../utils');
 const fs = require('fs');
 const path = require('path');
-const multer = require('multer');
 const router = require('express').Router();
 const model = require('../model');
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    let dest = (file.fieldname == 'firma') ? 'firmas' : 'fotos';
-    cb(null, path.join(__dirname, '..', 'files', dest))
-  },
-
-  filename: function (req, file, cb) {
-    let ext = path.extname(file.originalname);
-    let name = file.originalname.replace(ext, '') + '-' + Date.now() + ext;
-    req.body[file.fieldname] = name;
-    cb(null, name)
-  }
-})
-
-const upload = multer({
-  storage: storage,
-  limits: { fieldSize: 15 * 1024 * 1024 }
-})
 
 router.get('/', function (req, res) {
   model.Profesional.getAll(req.query)
@@ -83,7 +63,7 @@ router.post('/', function (req, res) {
 
 router.put('/:id/foto', function (req, res) {
   if (req.body.foto) {
-    return utils.guardarFoto(req.body.foto)
+    return utils.guardarArchivo('foto', req.body.foto)
     .then(foto => model.Profesional.patch(req.params.id, { foto }))
     .then(() => res.status(200).json({ id: req.params.id }))
     .catch(e => utils.errorHandler(e, req, res));
@@ -91,45 +71,39 @@ router.put('/:id/foto', function (req, res) {
   else res.status(500).json({
     msg: 'Error en el servidor'
   });
-
 });
 
-router.put('/:id/firma', upload.fields([{
-  name: 'firma',
-  maxCount: 1
-}]), function (req, res) {
+router.put('/:id/firma', function (req, res) {
   if (req.body.firma) {
-    model.Profesional.patch(req.params.id, {
-        firma: req.body.firma
-      })
-      .then(id => res.status(200).json({
-        id
-      }))
-      .catch(e => utils.errorHandler(e, req, res));
-  } else res.status(500).json({
+    return utils.guardarArchivo('firma', req.body.firma)
+    .then(firma => model.Profesional.patch(req.params.id, { firma }))
+    .then(() => res.status(200).json({ id: req.params.id }))
+    .catch(e => utils.errorHandler(e, req, res));
+  } 
+  else res.status(500).json({
     msg: 'Error en el servidor'
   });
 });
 
-router.put('/:id',
-  upload.fields([{
-    name: 'firma',
-    maxCount: 1
-  }]),
-  function (req, res) {
-    utils.guardarFoto(req.body.foto)
-    .then(foto => {
-      let profesional = JSON.parse(req.body.profesional);
-      profesional.operador = req.user.id;
-
-      if (foto) profesional.foto = foto;  
-      if (req.body.firma) profesional.firma = req.body.firma;
+router.put('/:id', function (req, res) {
+  let profesional;
   
-      model.Profesional.edit(req.params.id, profesional)
-      .then(id => res.status(200).json(profesional))
-      .catch(e => utils.errorHandler(e, req, res));
-    })
-  });
+  Promise.all([
+    utils.guardarArchivo('foto', req.body.foto),
+    utils.guardarArchivo('firma', req.body.firma)
+  ])    
+  .then(([foto, firma]) => {
+    profesional = req.body;
+    profesional.operador = req.user.id;
+
+    if (foto) profesional.foto = foto;  
+    if (firma) profesional.firma = firma;
+
+    return model.Profesional.edit(req.params.id, profesional)
+  })
+  .then(id => res.status(200).json(profesional))
+  .catch(e => utils.errorHandler(e, req, res));
+});
 
 router.delete('/:id', function (req, res) {
 

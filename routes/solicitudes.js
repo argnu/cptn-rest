@@ -1,31 +1,7 @@
 const path = require('path');
-const multer  = require('multer');
 const router = require('express').Router();
-
 const model = require('../model');
 const utils = require('../utils');
-
-
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    let dest = (file.fieldname == 'firma') ? 'firmas' : 'fotos';
-    cb(null, path.join(__dirname, '..', 'files', dest))
-  },
-
-  filename: function (req, file, cb) {
-    let ext = path.extname(file.originalname);
-    let name = file.originalname.replace(ext, '') + '-' + Date.now() + ext;    
-    req.body[file.fieldname] = name;
-    cb(null, name)
-  }
-})
-
-const upload = multer({ 
-  storage: storage,
-  limits: { fieldSize: 15 * 1024 * 1024 }
-})
-
 
 router.get('/', function(req, res) {
   model.Solicitud.getAll(req.query)
@@ -39,51 +15,41 @@ router.get('/:id', function(req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
-router.post('/',          
-  upload.fields([{
-    name: 'firma', maxCount: 1
-  }]),
+router.post('/', function(req, res) {
+  Promise.all([
+    utils.guardarArchivo('foto', req.body.entidad.foto),
+    utils.guardarArchivo('firma', req.body.entidad.firma)
+  ])
+  .then(([foto, firma]) => {
+    let solicitud = req.body;
+    solicitud.operador = req.user.id;
 
-  function(req, res) {    
-    utils.guardarFoto(req.body.foto)
-    .then(foto => {
-      let solicitud;
+    if (foto) solicitud.entidad.foto = foto;
+    if (firma) solicitud.entidad.firma = firma;
 
-      if (req.body.solicitud) {
-        solicitud = JSON.parse(req.body.solicitud);
-        solicitud.entidad.foto = foto;
-        solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
-      }
-      else solicitud = req.body;
-  
-      solicitud.operador = req.user.id;      
-      return model.Solicitud.add(solicitud);
-    })
-    .then(solicitud => res.status(201).json(solicitud))
-    .catch(e => utils.errorHandler(e, req, res));   
+    return model.Solicitud.add(solicitud);
+  })
+  .then(solicitud => res.status(201).json(solicitud))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
-router.put('/:id',          
-  upload.fields([{
-    name: 'firma', maxCount: 1
-  }]), 
+router.put('/:id', function(req, res) {
+  let solicitud;
+  Promise.all([
+    utils.guardarArchivo('foto', req.body.entidad.foto),
+    utils.guardarArchivo('firma', req.body.entidad.firma)
+  ])
+  .then(([foto, firma]) => {  
+    solicitud = req.body;
+    solicitud.operador = req.user.id;
 
-  function(req, res) {
-    utils.guardarFoto(req.body.foto)
-    .then(foto => {
-      let solicitud;
-      if (req.body.solicitud) {
-        solicitud = JSON.parse(req.body.solicitud);
-        solicitud.entidad.foto = foto;
-        solicitud.entidad.firma = req.body.firma ? req.body.firma : null;
-      }
-      else solicitud = req.body;    
-  
-      solicitud.operador = req.user.id;
-      model.Solicitud.edit(req.params.id, solicitud)
-    })
-    .then(id => res.status(200).json({ id }))
-    .catch(e => utils.errorHandler(e, req, res));
+    if (foto) solicitud.entidad.foto = foto;
+    if (firma) solicitud.entidad.firma = firma;    
+      
+    return model.Solicitud.edit(req.params.id, solicitud)
+  })
+  .then(id => res.status(200).json(solicitud))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.patch('/:id', function(req, res) {
