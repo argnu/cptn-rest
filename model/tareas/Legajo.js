@@ -4,6 +4,7 @@ const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const TipoLegajo = require('../tipos/TipoLegajo')
+const TipoEstadoLegajo = require('../tipos/TipoEstadoLegajo')
 const LegajoItem = require('./LegajoItem')
 const LegajoComitente = require('./LegajoComitente')
 const Item = require('./Item')
@@ -259,6 +260,7 @@ function getItemData(id_item) {
 
 
 const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.id))
+.join(TipoEstadoLegajo.table).on(table.estado.equals(TipoEstadoLegajo.table.id))
 .join(LegajoComitente.table).on(table.id.equals(LegajoComitente.table.legajo))
 .join(Persona.table).on(LegajoComitente.table.persona.equals(Persona.table.id))
 .leftJoin(PersonaFisica.table).on(LegajoComitente.table.persona.equals(PersonaFisica.table.id))
@@ -266,6 +268,7 @@ const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.
 function filter(query, params) {
     if (params.tipo) query.where(table.tipo.equals(params.tipo));
     if (params.matricula && params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
+    if (params.estado) query.where(table.estado.equals(params.estado));
 
     if (params.filtros) {
         if (params.filtros.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.filtros.numero}%`));
@@ -290,6 +293,8 @@ module.exports.getAll = function (params) {
         table.numero_legajo,
         TipoLegajo.table.id.as('tipo.id'),
         TipoLegajo.table.valor.as('tipo.valor'),
+        TipoEstadoLegajo.table.id.as('estado.id'),
+        TipoEstadoLegajo.table.valor.as('estado.valor'),
         Matricula.table.id.as('matricula.id'),
         Matricula.table.numeroMatricula.as('matricula.numeroMatricula'),
         table.fecha_solicitud.cast('varchar(10)'),
@@ -297,7 +302,6 @@ module.exports.getAll = function (params) {
         Domicilio.table.direccion.as('domicilio.direccion'),
         table.nomenclatura,
         table.expediente_municipal,
-        table.estado,
         table.subcategoria,
         table.incumbencia,
         table.honorarios_presupuestados,
@@ -335,6 +339,7 @@ module.exports.getAll = function (params) {
         from.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
         .leftJoin(Domicilio.table).on(table.domicilio.equals(Domicilio.table.id))
     )
+
     filter(query, params);
 
     if (params.sort) {

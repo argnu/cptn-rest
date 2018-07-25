@@ -25,7 +25,8 @@ router.get('/', function(req, res) {
     model.TipoNivelTitulo.getAll(req.query),
     model.TipoMatricula.getAll(req.query),
     model.TipoVariableGlobal.getAll(req.query),
-    model.TipoLegajo.getAll(req.query)
+    model.TipoLegajo.getAll(req.query),
+    model.TipoEstadoLegajo.getAll(req.query)
   ])
   .then(([
     condicionafip, contacto, empresa, estadocivil,
@@ -33,14 +34,14 @@ router.get('/', function(req, res) {
     incumbencia, estadoSolicitud, estadoMatricula,
     estadoBoleta, comprobante, formaPago, pago,
     vinculo, documento, niveles_titulos, matricula,
-    variableGlobal, legajo
+    variableGlobal, legajo, estadoLegajo
   ]) => res.json({
         condicionafip, contacto, empresa, estadocivil,
         formacion, sexo, sociedad,
         incumbencia, estadoSolicitud, estadoMatricula,
         estadoBoleta, comprobante, formaPago, pago,
         vinculo, documento, niveles_titulos, matricula,
-        variableGlobal, legajo
+        variableGlobal, legajo, estadoLegajo
       })
   )
   .catch(e => utils.errorHandler(e, req, res));
