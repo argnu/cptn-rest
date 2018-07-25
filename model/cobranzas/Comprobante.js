@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -8,6 +9,9 @@ const ComprobanteItem = require('./ComprobanteItem');
 const ComprobantePago = require('./ComprobantePago');
 const Boleta = require('./Boleta');
 const VolantePago = require('./VolantePago');
+const Matricula = require('../Matricula');
+const Profesional = require('../profesional/Profesional');
+const Empresa = require('../empresa/Empresa');
 
 const table = sql.define({
     name: 'comprobante',
@@ -129,7 +133,11 @@ const select = [
     table.id,
     table.tipo_comprobante,
     table.numero,
-    table.matricula,
+    Matricula.table.id.as('matricula.id'),
+    Matricula.table.numeroMatricula.as('matricula.numero'),
+    Profesional.table.nombre.as('matricula.profesional.nombre'),
+    Profesional.table.apellido.as('matricula.profesional.apellido'),
+    Empresa.table.nombre.as('matricula.empresa.nombre'),
     table.fecha.cast('varchar(10)'),
     table.fecha_vencimiento.cast('varchar(10)'),
     table.subtotal,
@@ -145,6 +153,10 @@ const select = [
     table.created_by,
     table.updated_by
 ]
+
+const from = table.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
+.leftJoin(Profesional.table).on(Matricula.table.entidad.equals(Profesional.table.id))
+.leftJoin(Empresa.table).on(Matricula.table.entidad.equals(Empresa.table.id))
 
 module.exports.table = table;
 
@@ -165,15 +177,27 @@ function getData(b) {
     ])
 }
 
+function filter(query, params) {
+    if (params.matricula) query.where(table.matricula.equals(params.matricula));
+    if (params.delegacion) query.where(table.delegacion.equals(params.delegacion));
+
+    if (params.fecha) {
+        if (params.fecha.desde) query.where(table.fecha.gte(params.fecha.desde));
+        if (params.fecha.hasta) query.where(table.fecha.lte(params.fecha.hasta));
+    }
+
+    if (params.fecha_vencimiento) {
+        if (params.fecha_vencimiento.desde) query.where(table.fecha_vencimiento.gte(params.fecha_vencimiento.desde));
+        if (params.fecha_vencimiento.hasta) query.where(table.fecha_vencimiento.lte(params.fecha_vencimiento.hasta));
+    }
+}
+
 module.exports.getAll = function (params) {
     let comprobantes = [];
 
-    let query = table.select(select)
-        .from(table);
+    let query = table.select(select).from(from);
 
-    if (params.matricula) query.where(table.matricula.equals(params.matricula));
-    if (params.fecha_desde) query.where(table.fecha_vencimiento.gte(params.fecha_desde));
-    if (params.fecha_hasta) query.where(table.fecha_vencimiento.lte(params.fecha_hasta));
+    filter(query, params);
 
     if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
     if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
@@ -182,18 +206,32 @@ module.exports.getAll = function (params) {
     if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
-        .then(r => {
-            comprobantes = r.rows;
-            let proms = comprobantes.map(b => getData(b));
-            return Promise.all(proms);
+    .then(r => { 
+        comprobantes = r.rows.map(row => dot.object(row));
+        comprobantes.forEach(c => {
+            if (!c.matricula.empresa.nombre) c.matricula.entidad = c.matricula.profesional;
+            else c.matricula.entidad = c.matricula.empresa;
+            delete(c.matricula.profesional);
+            delete(c.matricula.empresa);
         })
-        .then(data_list => {
-            data_list.forEach((data, index) => {
-                comprobantes[index].items = data[0];
-                comprobantes[index].pagos = data[1];
-            });
-            return comprobantes;
-        })
+        return comprobantes;
+    })
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })
+    // .then(r => {
+    //     comprobantes = r.rows;
+    //     let proms = comprobantes.map(b => getData(b));
+    //     return Promise.all(proms);
+    // })
+    // .then(data_list => {
+    //     data_list.forEach((data, index) => {
+    //         comprobantes[index].items = data[0];
+    //         comprobantes[index].pagos = data[1];
+    //     });
+    //     return comprobantes;
+    // })
 }
 
 
