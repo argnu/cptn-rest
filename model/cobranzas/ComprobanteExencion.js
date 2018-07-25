@@ -55,7 +55,7 @@ const table = sql.define({
         {
             name: 'created_at',
             dataType: 'timestamptz',
-            defaultValue: 'now'
+            defaultValue: 'current_date'
         }
     ],
 
