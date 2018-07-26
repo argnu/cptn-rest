@@ -63,7 +63,6 @@ module.exports.guardarArchivo = function(tipo, base64) {
   return new Promise(function(resolve, reject) {
     let nombre = `${tipo}profesional-${Date.now()}.png`;
     let filepath = path.join(__dirname, `../files/${tipo}s/`, nombre);
-    console.log(nombre, base64)
     fs.writeFile(filepath, base64.replace(/^data:(.*);base64,/, ""), 'base64', function (e) {
       if (e) reject(e);
       resolve(nombre);
