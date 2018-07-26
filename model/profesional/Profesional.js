@@ -463,7 +463,7 @@ module.exports.edit = function(id, profesional, client) {
 }
 
 module.exports.patch = function (id, profesional, client) {
-  profesiona.updated_at = new Date();
+  profesional.updated_at = new Date();
   let query = table.update(profesional)
     .where(table.id.equals(id))
     .returning(table.star())
