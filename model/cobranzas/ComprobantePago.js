@@ -1,9 +1,11 @@
+const dot = require('dot-object');
 const utils = require(`../../utils`);
 const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 
 const ComprobantePagoCheque = require('./ComprobantePagoCheque');
+const TipoFormaPago = require('../tipos/TipoFormaPago');
 
 const table = sql.define({
     name: 'comprobante_pago',
@@ -71,18 +73,21 @@ const select = [
     table.item,
     table.fecha_pago.cast('varchar(10)'),
     table.importe,
-    table.forma_pago,
+    TipoFormaPago.table.id.as('forma_pago.id'),
+    TipoFormaPago.table.nombre.as('forma_pago.nombre'),
     table.compensado
 ]
 
+const from = table.join(TipoFormaPago.table).on(table.forma_pago.equals(TipoFormaPago.table.id));
+
 module.exports.getByComprobante = function (id) {
     let query = table.select(select)
-        .from(table)
+        .from(from)
         .where(table.comprobante.equals(id))
         .toQuery();
 
     return connector.execQuery(query)
-        .then(r => r.rows);
+    .then(r => r.rows.map(row => dot.object(row)));
 }
 
 module.exports.add = function(comprobante_pago, client) {

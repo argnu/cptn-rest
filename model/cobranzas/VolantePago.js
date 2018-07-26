@@ -119,6 +119,7 @@ const select = [
   table.importe_total,
   table.delegacion,
   table.pagado,
+  table.vencido,
   table.created_by,
   table.updated_by
 ]
@@ -131,14 +132,14 @@ function getBoletas(id_volante) {
        .toQuery();
 
   return connector.execQuery(query)
-         .then(r => {
-            datos_volante = r.rows;
-            return Promise.all(r.rows.map(b => Boleta.get(b.boleta)));
-          })
-          .then(boletas => {
-            boletas.forEach((b, i) => b.interes = datos_volante[i].interes);
-            return boletas;
-          })
+  .then(r => {
+    datos_volante = r.rows;
+    return Promise.all(r.rows.map(b => Boleta.get(b.boleta)));
+  })
+  .then(boletas => {
+    boletas.forEach((b, i) => b.interes = datos_volante[i].interes);
+    return boletas;
+  })
 }
 
 module.exports.getBoletas = getBoletas;
@@ -150,25 +151,26 @@ module.exports.get = function(id) {
                    .toQuery();
 
   return connector.execQuery(query)
-         .then(r => {
-            volante = r.rows[0];
-            return getBoletas(id);
-         })
-         .then(boletas => {
-           volante.boletas = boletas;
-           return volante;
-         });
+  .then(r => {
+    volante = r.rows[0];
+    return getBoletas(id);
+  })
+  .then(boletas => {
+    volante.boletas = boletas;
+    return volante;
+  });
 }
 
 module.exports.getAll = function(params) {
-  let volantes = [];
   let query = table.select(select).from(table);
 
   if (params.matricula) query.where(table.matricula.equals(params.matricula));
   if (params.pagado) query.where(table.pagado.equals(params.pagado == 'true'));
   if (params.vencido) query.where(table.vencido.equals(params.vencido == 'true'));
-  if (params.fecha_desde) query.where(table.fecha_vencimiento.gte(params.fecha_desde));
-  if (params.fecha_hasta) query.where(table.fecha_vencimiento.lte(params.fecha_hasta));  
+  if (params.fecha_vencimiento) {
+    if (params.fecha_vencimiento.desde) query.where(table.fecha_vencimiento.gte(params.fecha_vencimiento.desde));
+    if (params.fecha_vencimiento.hasta) query.where(table.fecha_vencimiento.lte(params.fecha_vencimiento.hasta));  
+  }
 
   if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
   if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
@@ -176,20 +178,8 @@ module.exports.getAll = function(params) {
   if (params.limit) query.limit(+params.limit);
   if (params.limit && params.offset) query.offset(+params.offset);
 
-  query.where(table.fecha_vencimiento.gte(moment()));
-
   return connector.execQuery(query.toQuery())
-  .then(r => {
-      volantes = r.rows;
-      let proms = volantes.map(v => getBoletas(v.id));
-      return Promise.all(proms);
-  })
-  .then(boletas_list => {
-    boletas_list.forEach((boletas, index) => {
-          volantes[index].boletas = boletas;
-      });
-    return volantes;
-  })
+  .then(r => r.rows);
 }
 
 
