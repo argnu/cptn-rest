@@ -170,13 +170,6 @@ module.exports.getByNumero = function (numero) {
         .then(r => r.rows[0]);
 }
 
-function getData(b) {
-    return Promise.all([
-        model.ComprobanteItem.getByComprobante(b.id),
-        model.ComprobantePago.getByComprobante(b.id),
-    ])
-}
-
 function filter(query, params) {
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
     if (params.delegacion) query.where(table.delegacion.equals(params.delegacion));
@@ -200,13 +193,15 @@ module.exports.getAll = function (params) {
     filter(query, params);
 
     if (params.sort && params.sort.fecha) query.order(table.fecha[params.sort.fecha]);
+    if (params.sort && params.sort.numero) query.order(table.numero[params.sort.numero]);
+    if (params.sort && params.sort['matricula.numero']) query.order(Matricula.table.numeroMatricula[params.sort['matricula.numero']]);
     if (params.sort && params.sort.fecha_vencimiento) query.order(table.fecha_vencimiento[params.sort.fecha_vencimiento]);
 
     if (params.limit) query.limit(+params.limit);
     if (params.limit && params.offset) query.offset(+params.offset);
 
     return connector.execQuery(query.toQuery())
-    .then(r => { 
+    .then(r => {
         comprobantes = r.rows.map(row => dot.object(row));
         comprobantes.forEach(c => {
             if (!c.matricula.empresa.nombre) c.matricula.entidad = c.matricula.profesional;
@@ -214,24 +209,42 @@ module.exports.getAll = function (params) {
             delete(c.matricula.profesional);
             delete(c.matricula.empresa);
         })
-        return comprobantes;
+
+        return comprobantes
     })
     .catch(e => {
         console.error(e);
         return Promise.reject(e);
     })
-    // .then(r => {
-    //     comprobantes = r.rows;
-    //     let proms = comprobantes.map(b => getData(b));
-    //     return Promise.all(proms);
-    // })
-    // .then(data_list => {
-    //     data_list.forEach((data, index) => {
-    //         comprobantes[index].items = data[0];
-    //         comprobantes[index].pagos = data[1];
-    //     });
-    //     return comprobantes;
-    // })
+}
+
+module.exports.get = function (id) {
+    let comprobante = [];
+
+    let query = table.select(select).from(from).where(table.id.equals(id)).toQuery();
+
+    return connector.execQuery(query)
+    .then(r => {
+        comprobante = dot.object(r.rows[0]);
+        if (!comprobante.matricula.empresa.nombre) comprobante.matricula.entidad = comprobante.matricula.profesional;
+        else comprobante.matricula.entidad = comprobante.matricula.empresa;
+        delete(comprobante.matricula.profesional);
+        delete(comprobante.matricula.empresa);
+
+        return Promise.all([
+            model.ComprobanteItem.getByComprobante(comprobante.id),
+            model.ComprobantePago.getByComprobante(comprobante.id)
+        ])
+    })
+    .then(([items, pagos]) => {
+        comprobante.items = items;
+        comprobante.pagos = pagos;
+        return comprobante;
+    })
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })
 }
 
 
