@@ -210,8 +210,9 @@ module.exports.getAll = function (params) {
             delete(c.matricula.empresa);
         })
 
-        return comprobantes
+        return utils.getTotalQuery(table, from, (query) => filter(query, params));
     })
+    .then(total => ({ totalQuery: total, resultados: comprobantes }))
     .catch(e => {
         console.error(e);
         return Promise.reject(e);
