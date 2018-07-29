@@ -61,7 +61,8 @@ module.exports.getNombreMes = function(num) {
 module.exports.guardarArchivo = function(tipo, base64) {
   if (!base64) return Promise.resolve(null);
   return new Promise(function(resolve, reject) {
-    let nombre = `${tipo}profesional-${Date.now()}.png`;
+    let extension = base64.match(/data:image\/(.*);base64/)[1];
+    let nombre = `${tipo}profesional-${Date.now()}.${extension}`;
     let filepath = path.join(__dirname, `../files/${tipo}s/`, nombre);
     fs.writeFile(filepath, base64.replace(/^data:(.*);base64,/, ""), 'base64', function (e) {
       if (e) reject(e);
