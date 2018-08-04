@@ -234,19 +234,19 @@ function addBoletasMensuales(id, delegacion, client) {
   .then(([importe_anual, numero_boleta]) => {
     let importe = importe_anual.valor / 12;
     let anio_actual = new Date().getFullYear();
-    let mes_inicio = new Date().getMonth() + 1;
-    let fecha_inicio = mes_inicio === 12 ? new Date(anio_actual + 1, 0, 1) : new Date(anio_actual, mes_inicio, 1);
 
     let promesas_boletas = [];
+    let primera_boleta = true;
 
-    for(let mes_inicio = fecha_inicio.getMonth(); mes_inicio < 12; mes_inicio++) {
-      let fecha_primero_mes = new Date(anio_actual, mes_inicio, 1);
-      let fecha_vencimiento = new Date(anio_actual, mes_inicio, 10);
+    for(let mes_inicio = new Date().getMonth(); mes_inicio < 12; mes_inicio++) {
+      let fecha_primero_mes = primera_boleta ? new Date() : new Date(anio_actual, mes_inicio, 1);
+      let fecha_vencimiento = moment(fecha_primero_mes).add(10, 'days');
+      primera_boleta = false;
 
       //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
-      if (fecha_vencimiento.getDay() === 0)
+      if (fecha_vencimiento.day() === 0)
         fecha_vencimiento = moment(fecha_vencimiento).add(1, 'days');
-      else if (fecha_vencimiento.getDay() === 6)
+      else if (fecha_vencimiento.day() === 6)
         fecha_vencimiento = moment(fecha_vencimiento).add(2, 'days');
 
       let boleta = {
