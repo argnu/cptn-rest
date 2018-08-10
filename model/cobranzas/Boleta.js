@@ -75,7 +75,25 @@ const table = sql.define({
         {
             name: 'fecha_pago',
             dataType: 'date',
-        }
+        },
+        {
+            name: 'created_by',
+            dataType: 'int',
+        },
+        {
+            name: 'updated_by',
+            dataType: 'int',
+        },
+        {
+            name: 'created_at',
+            dataType: 'timestamptz',
+            defaultValue: 'current_date'
+        },
+        {
+            name: 'updated_at',
+            dataType: 'timestamptz',
+            defaultValue: 'current_date'
+        }        
     ],
 
     foreignKeys: [
@@ -105,7 +123,19 @@ const table = sql.define({
             table: 't_comprobante',
             columns: ['tipo_comprobante'],
             refColumns: ['id']
-        }
+        },
+        {
+            table: 'usuario',
+            columns: ['created_by'],
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
+        },
+        {
+            table: 'usuario',
+            columns: ['updated_by'],
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
+        }        
     ]
 });
 
@@ -228,7 +258,9 @@ function addDatosBoleta(boleta, client) {
                     table.numero_condonacion.value(boleta.numero_condonacion),
                     table.fecha_update.value(boleta.fecha_update ? boleta.fecha_update : moment()),
                     table.delegacion.value(boleta.delegacion),
-                    table.legajo.value(boleta.legajo)
+                    table.legajo.value(boleta.legajo),
+                    table.created_by.value(boleta.created_by),
+                    table.updated_by.value(boleta.created_by)
                 )
                 .returning(table.id, table.numero)
                 .toQuery()
@@ -259,7 +291,8 @@ module.exports.add = function (boleta, client) {
 
 
 module.exports.patch = function(id, boleta, client) {
-  boleta.fecha_update = moment();
+  boleta.fecha_update = new Date();
+  boleta.updated_at = new Date();
   let query = table.update(boleta).where(table.id.equals(id)).toQuery();
 
   return connector.execQuery(query, client);

@@ -262,8 +262,8 @@ function addComprobante(comprobante, client) {
     return getNumeroComprobante(comprobante.numero)
         .then(numero_comprobante => {
             let query = table.insert(
-                    table.created_by.value(comprobante.operador),
-                    table.updated_by.value(comprobante.operador),
+                    table.created_by.value(comprobante.created_by),
+                    table.updated_by.value(comprobante.created_by),
                     table.numero.value(numero_comprobante),
                     table.matricula.value(comprobante.matricula),
                     table.fecha.value(comprobante.fecha),
@@ -341,7 +341,7 @@ module.exports.add = function (comprobante) {
                                 })
                             });
 
-                            proms_volante_pagado.push(VolantePago.patch(volante.id, { pagado: true, updated_by: comprobante.operador }, connection.client));
+                            proms_volante_pagado.push(VolantePago.patch(volante.id, { pagado: true, updated_by: comprobante.created_by }, connection.client));
                         }
                         else {
                             proms_boleta_estado.push(Boleta.patch(boleta.id, { estado: 2 }, connection.client));
@@ -373,4 +373,49 @@ module.exports.add = function (comprobante) {
                     throw Error(e);
                 });
         });
+}
+
+
+module.exports.patch = function(id, comprobante, client) {
+    comprobante.updated_at = new Date();
+    let query = table.update(comprobante).where(table.id.equals(id)).toQuery();
+    return connector.execQuery(query, client);
+}
+
+
+module.exports.anular = function(id, comprobante) {
+    let conexion;
+
+    return connector
+    .beginTransaction()
+    .then(con => {
+        conexion = con;
+        comprobante.updated_at = new Date();
+        comprobante.anulado = 1;
+
+        let query = table.update(comprobante)
+        .where(table.id.equals(id))
+        .toQuery();
+
+        return connector.execQuery(query, conexion.client)
+        .then(r => model.ComprobanteItem.getByComprobante(id))
+        .then(items => {
+            return Promise.all(items.map(i => Boleta.patch(i.boleta, {
+                estado: 1,
+                updated_by: comprobante.updated_by
+            }, conexion.client)))
+        })
+        .then(r => {
+            return connector.commit(conexion.client)
+                .then(r => {
+                    conexion.done();
+                    return comprobante;
+                });
+        })
+        .catch(e => {
+            connector.rollback(conexion.client);
+            conexion.done();
+            return Promise.reject(e);
+        });        
+    })
 }

@@ -344,6 +344,7 @@ module.exports.getAll = function (params) {
 
     if (params.sort) {
         if (params.sort.fecha_solicitud) query.order(table.fecha_solicitud[params.sort.fecha_solicitud]);
+        if (params.sort.estado) query.order(TipoEstadoLegajo.table.valor[params.sort.estado]);
         if (params.sort.tipo) query.order(TipoLegajo.table.valor[params.sort.tipo]);
         if (params.sort.numero) query.order(table.numero_legajo[params.sort.numero]);
         if (params.sort.nomenclatura) query.order(table.nomenclatura[params.sort.nomenclatura]);

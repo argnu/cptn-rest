@@ -125,9 +125,7 @@ else {
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
                 else if (column.defaultValue == undefined && column_bd.default != null)
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP DEFAULT`);
-                else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value
-                    && column.defaultValue != 'now'
-                ) {
+                else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value) {
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
                 }
             }
