@@ -55,3 +55,19 @@ module.exports.add = function(item, client) {
     return connector.execQuery(query, client).then(r => r.rows[0]);
   })
 }
+
+module.exports.edit = function(id, item, client) {
+  return getIdItem(item.item)
+  .then(id_item => {
+      let query = table.update({
+        item: id_item,
+        valor: item.valor
+    })
+    .where(table.id.equals(id))
+    .returning(table.id, table.legajo, table.item, table.valor)
+    .toQuery();
+
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0]);    
+  });
+}

@@ -42,39 +42,6 @@ module.exports.get = function(id) {
     let query = table.select(
       table.id, 
       table.direccion,
-      Localidad.table.nombre.as('localidad'),
-      Departamento.table.nombre.as('departamento'),
-      Provincia.table.nombre.as('provincia'),
-      Pais.table.nombre.as('pais')
-    )
-    .from(
-      table.join(Localidad.table).on(table.localidad.equals(Localidad.table.id))
-      .join(Departamento.table).on(Localidad.table.departamento.equals(Departamento.table.id))
-      .join(Provincia.table).on(Departamento.table.provincia.equals(Provincia.table.id))
-      .join(Pais.table).on(Provincia.table.pais.equals(Pais.table.id))
-    )
-    .where(table.id.equals(id))
-    .toQuery();
-
-    return connector.execQuery(query)
-    .then(r => r.rows[0])
-    .catch(e => {
-      console.error(e);
-      return Promise.reject(e);      
-    })
-  }
-  catch(e) {
-    console.error(e);
-    return Promise.reject(e);
-  }
-}
-
-//HABRIA Q REEMPLEZAR EL GET POR ESTE, FALTARIA CAMBIARLO EN ENTIDADDOMICILIO Y EN LEGAJO PERO PUEDE AFECTAR A LA WEB APP
-module.exports.getFull = function(id) {
-  try {
-    let query = table.select(
-      table.id, 
-      table.direccion,
       Localidad.table.id.as('localidad.id'),
       Localidad.table.nombre.as('localidad.nombre'),
       Departamento.table.id.as('departamento.id'),
@@ -132,7 +99,7 @@ module.exports.edit = function(id, domicilio, client) {
   try {
     let query = table.update({
       direccion: domicilio.direccion,
-      localidad: typeof domicilio.localidad == 'object' ? domicilio.localidad.id : domicilio.localidad
+      localidad: domicilio.localidad
     })
     .where(table.id.equals(id))
     .returning(table.id)
