@@ -331,17 +331,20 @@ module.exports.add = function (comprobante) {
 
                     comprobante.boletas.forEach(boleta => {
                         if (boleta.tipo == 'volante') {
-                            let volante = boleta;
-                            volante.boletas.forEach(b => {
-                                proms_boleta_estado.push(Boleta.patch(b.id, { estado: 2 }, connection.client));
-                                addComprobanteItem(b, num_item, connection.client)
-                                .forEach(p => {
-                                    proms_items.push(p);
-                                    num_item++;
-                                })
-                            });
+                            // boleta.forEach(b => {
+                            //     proms_boleta_estado.push(Boleta.patch(b.id, { estado: 2 }, connection.client));
+                            //     addComprobanteItem(b, num_item, connection.client)
+                            //     .forEach(p => {
+                            //         proms_items.push(p);
+                            //         num_item++;
+                            //     })
+                            // });
+                            proms_boleta_estado = [
+                                VolantePago.getBoletas(boleta.id)
+                                .then(boletas => Promise.all(boletas.map(b => Boleta.patch(b.id, { estado: 2 }, connection.client))))
+                            ];
 
-                            proms_volante_pagado.push(VolantePago.patch(volante.id, { pagado: true, updated_by: comprobante.operador }, connection.client));
+                            proms_volante_pagado.push(VolantePago.patch(boleta.id, { pagado: true, updated_by: comprobante.operador }, connection.client));
                         }
                         else {
                             proms_boleta_estado.push(Boleta.patch(boleta.id, { estado: 2 }, connection.client));
@@ -370,7 +373,7 @@ module.exports.add = function (comprobante) {
                 .catch(e => {
                     connector.rollback(connection.client);
                     connection.done();
-                    throw Error(e);
+                    return Promise.reject(e);
                 });
         });
 }
