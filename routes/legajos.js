@@ -17,14 +17,17 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-  req.body.operador = req.user.id;
+  req.body.created_by = req.user.id;
   model.Legajo.add(req.body)
   .then(legajo => res.json(legajo))
   .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.put('/:id', function(req, res) {
-
+  req.body.updated_by = req.user.id;
+  model.Legajo.edit(req.params.id, req.body)
+  .then(legajo => res.json(legajo))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.delete('/:id', function(req, res) {

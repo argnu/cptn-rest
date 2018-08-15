@@ -16,18 +16,15 @@ sql.setDialect('postgres');
     },
     {
       name: 'cuenta',
-      dataType: 'varchar(20)',
-      notNull: true
+      dataType: 'varchar(20)'
     },
     {
       name: 'moneda',
-      dataType: 'int',
-      notNull: true
+      dataType: 'int'
     },
     {
       name: 'pago',
-      dataType: 'int',
-      notNull: true
+      dataType: 'int'
     },
     {
       name: 'senia',
@@ -46,7 +43,7 @@ sql.setDialect('postgres');
       dataType: 'boolean'
     },
     {
-      name: 'activo',
+      name: 'activo', 
       dataType: 'boolean',
       defaultValue: 'true'
     }

@@ -4,6 +4,7 @@ const connector = require(`../../db/connector`);
 const sql = require('sql');
 sql.setDialect('postgres');
 const TipoLegajo = require('../tipos/TipoLegajo')
+const TipoEstadoLegajo = require('../tipos/TipoEstadoLegajo')
 const LegajoItem = require('./LegajoItem')
 const LegajoComitente = require('./LegajoComitente')
 const Item = require('./Item')
@@ -159,12 +160,12 @@ const table = sql.define({
         {
           name: 'created_at',
           dataType: 'timestamptz',
-          defaultValue: 'now'
+          defaultValue: 'current_date'
         },
         {
           name: 'updated_at',
           dataType: 'timestamptz',
-          defaultValue: 'now'
+          defaultValue: 'current_date'
         }
     ],
 
@@ -259,6 +260,7 @@ function getItemData(id_item) {
 
 
 const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.id))
+.join(TipoEstadoLegajo.table).on(table.estado.equals(TipoEstadoLegajo.table.id))
 .join(LegajoComitente.table).on(table.id.equals(LegajoComitente.table.legajo))
 .join(Persona.table).on(LegajoComitente.table.persona.equals(Persona.table.id))
 .leftJoin(PersonaFisica.table).on(LegajoComitente.table.persona.equals(PersonaFisica.table.id))
@@ -266,6 +268,7 @@ const from = table.join(TipoLegajo.table).on(table.tipo.equals(TipoLegajo.table.
 function filter(query, params) {
     if (params.tipo) query.where(table.tipo.equals(params.tipo));
     if (params.matricula && params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
+    if (params.estado) query.where(table.estado.equals(params.estado));
 
     if (params.filtros) {
         if (params.filtros.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.filtros.numero}%`));
@@ -290,6 +293,8 @@ module.exports.getAll = function (params) {
         table.numero_legajo,
         TipoLegajo.table.id.as('tipo.id'),
         TipoLegajo.table.valor.as('tipo.valor'),
+        TipoEstadoLegajo.table.id.as('estado.id'),
+        TipoEstadoLegajo.table.valor.as('estado.valor'),
         Matricula.table.id.as('matricula.id'),
         Matricula.table.numeroMatricula.as('matricula.numeroMatricula'),
         table.fecha_solicitud.cast('varchar(10)'),
@@ -297,7 +302,6 @@ module.exports.getAll = function (params) {
         Domicilio.table.direccion.as('domicilio.direccion'),
         table.nomenclatura,
         table.expediente_municipal,
-        table.estado,
         table.subcategoria,
         table.incumbencia,
         table.honorarios_presupuestados,
@@ -335,6 +339,7 @@ module.exports.getAll = function (params) {
         from.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
         .leftJoin(Domicilio.table).on(table.domicilio.equals(Domicilio.table.id))
     )
+
     filter(query, params);
 
     if (params.sort) {
@@ -453,8 +458,8 @@ function addLegajo(legajo, client) {
     return getNumeroLegajo(legajo.numero_legajo)
         .then(numero_legajo => {
             let query = table.insert(
-                    table.created_by.value(legajo.operador),
-                    table.updated_by.value(legajo.operador),
+                    table.created_by.value(legajo.created_by),
+                    table.updated_by.value(legajo.created_by),
                     table.matricula.value(legajo.matricula),
                     table.aporte_bruto.value(utils.getFloat(legajo.aporte_bruto)),
                     table.aporte_neto.value(utils.getFloat(legajo.aporte_neto)),
@@ -576,6 +581,92 @@ module.exports.add = function (legajo) {
             throw Error(e);
         });
 }
+
+
+
+module.exports.edit = function(id, legajo) {
+    let conexion;
+    let comitentes_nuevos = legajo.comitentes.filter(c => !c.id);
+    let comitentes_existentes = legajo.comitentes.filter(c => !!c.id);
+    let items_nuevos = legajo.items.filter(i => !i.id);
+    let items_existentes = legajo.items.filter(i => !!i.id);
+
+    return connector.beginTransaction()
+    .then(con => {
+        conexion = con;
+        if (legajo.domicilio.localidad && legajo.domicilio.direccion.length) {
+            return Domicilio.edit(legajo.domicilio.id, legajo.domicilio, conexion.client)
+        }
+        else return Promise.resolve(null)
+    })
+    .then(() => {
+        return connector.execQuery(
+            LegajoComitente.table.delete().where(
+                LegajoComitente.table.legajo.equals(id)
+              .and(LegajoComitente.table.id.notIn(comitentes_existentes.map(c => c.id)))
+            ).toQuery(), conexion.client);
+    })
+    .then(() => Promise.all(comitentes_existentes.map(c => Persona.edit(c.persona.id, c.persona, conexion.client))))
+    .then(() => {
+        let proms = comitentes_nuevos.map(c => Persona.add(c.persona, conexion.client));
+        return Promise.all(proms);
+    })
+    .then(personas => {
+        let proms_comitentes = comitentes_nuevos.map((comitente, index) => {
+            comitente.legajo = id;
+            comitente.persona = personas[index].id;
+            return LegajoComitente.add(comitente, conexion.client);
+        })
+        return Promise.all(proms_comitentes);
+    })
+    .then(() => {
+        return connector.execQuery(
+            LegajoItem.table.delete().where(
+                LegajoItem.table.legajo.equals(id)
+              .and(LegajoItem.table.id.notIn(items_existentes.map(i => i.id)))
+            ).toQuery(), conexion.client);
+    })
+    .then(() => {
+        let proms_items = items_nuevos.map(item => {
+            item.legajo = id;
+            return LegajoItem.add(item, conexion.client);
+        })
+        return Promise.all(proms_items);
+    })
+    .then(() => Promise.all(items_existentes.map(item => LegajoItem.edit(item.id, item, conexion.client))))
+    .then(() => connector.execQuery(Boleta.table.delete().where(Boleta.table.legajo.equals(id)).toQuery(), conexion.client))
+    .then(() => { 
+        legajo.matricula = legajo.matricula.id;
+        addBoleta(legajo, conexion.client)
+    })
+    .then(() => {
+        legajo.updated_at = new Date();
+        delete(legajo.items);
+        delete(legajo.domicilio);
+        delete(legajo.comitentes);
+        delete(legajo.matricula);
+
+        let query = table.update(legajo)
+        .where(table.id.equals(id))
+        .toQuery();
+
+        return connector.execQuery(query, conexion.client);
+    })    
+    .then(r => {
+        return connector.commit(conexion.client)
+            .then(r => {
+                conexion.done();
+                return legajo;
+            });
+    })
+    .catch(e => {
+        console.log(e);
+        connector.rollback(conexion.client);
+        conexion.done();
+        return Promise.reject(e);
+    });
+}
+
 
 module.exports.patch = function (id, legajo, client) {
     legajo.updated_at = new Date();

@@ -55,7 +55,7 @@ const table = sql.define({
         {
             name: 'created_at',
             dataType: 'timestamptz',
-            defaultValue: 'now'
+            defaultValue: 'current_date'
         }
     ],
 
@@ -138,8 +138,7 @@ module.exports.getAll = function (params) {
 module.exports.get = function(id) {
     let exencion;
     let query = table.select(select).from(from)
-    .where(table.id.equals(id))
-    .toQuery();
+    .where(table.id.equals(id));
 
     return connector.execQuery(query.toQuery())
     .then(r => {

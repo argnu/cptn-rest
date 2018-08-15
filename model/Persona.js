@@ -120,3 +120,35 @@ module.exports.add = function(persona, client) {
         return Promise.reject(e);
     }
 }
+
+
+module.exports.edit = function(id, persona, client) {
+    delete(persona.id);
+
+    try {
+        let query = table.update({
+            tipo: persona.tipo,
+            nombre: persona.nombre,
+            cuit: persona.cuit,
+            telefono: persona.telefono
+        })
+        .where(table.id.equals(id))
+        .returning(table.star())
+        .toQuery();
+
+        return connector.execQuery(query, client)
+        .then(r => {
+            if (persona.tipo == 'fisica') return PersonaFisica.edit(id, persona, client)
+            else if (persona.tipo == 'juridica') return PersonaJuridica.edit(id, persona, client);
+        })
+        .then(r => persona)
+        .catch(e => {
+            console.error(e);
+            return Promise.reject(e);
+        })
+    }
+    catch(e) {
+        console.error(e);
+        return Promise.reject(e);
+    }
+}

@@ -377,7 +377,8 @@ module.exports.edit = function(id, profesional, client) {
       publicarAcervo: profesional.publicarAcervo,
       publicarCelular: profesional.publicarCelular,
       publicarDireccion: profesional.publicarDireccion,
-      publicarEmail: profesional.publicarEmail
+      publicarEmail: profesional.publicarEmail,
+      updated_at: new Date()
     };
 
     if (profesional.foto) obj_update.foto = profesional.foto;
@@ -462,6 +463,7 @@ module.exports.edit = function(id, profesional, client) {
 }
 
 module.exports.patch = function (id, profesional, client) {
+  profesional.updated_at = new Date();
   let query = table.update(profesional)
     .where(table.id.equals(id))
     .returning(table.star())

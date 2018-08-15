@@ -84,3 +84,20 @@ module.exports.add = function (persona, client) {
         return Promise.reject(e);
     })
 }
+
+module.exports.edit = function (id, persona, client) {
+    let query = table.update({
+        apellido: persona.apellido,
+        dni: persona.dni
+    })
+    .where(table.id.equals(id))
+    .returning(table.star())
+    .toQuery();
+
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0])
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })
+}

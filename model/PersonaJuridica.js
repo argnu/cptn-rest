@@ -53,3 +53,19 @@ module.exports.add = function(persona, client) {
         return Promise.reject(e);
     })    
 }
+
+
+module.exports.edit = function (id, persona, client) {
+    return Promise.resolve(persona);
+    
+    // let query = table.update(persona)
+    // .where(table.id.equals(id))
+    // .toQuery();
+
+    // return connector.execQuery(query, client)
+    // .then(r => r.rows[0])
+    // .catch(e => {
+    //     console.error(e);
+    //     return Promise.reject(e);
+    // })
+}

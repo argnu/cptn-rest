@@ -131,7 +131,7 @@ module.exports.getAll = function(params) {
   return connector.execQuery(query.toQuery())
   .then(r => {
     instituciones = r.rows;
-    return Promise.all(instituciones.map(i => Domicilio.getFull(i.domicilio)))
+    return Promise.all(instituciones.map(i => Domicilio.get(i.domicilio)))
   })
   .then(domicilios => {
     instituciones.forEach((institucion, index) => {
@@ -166,7 +166,7 @@ module.exports.get = function(id) {
   return connector.execQuery(query)
   .then(r => {
     institucion = r.rows[0];
-    return Domicilio.getFull(institucion.domicilio);
+    return Domicilio.get(institucion.domicilio);
   })
   .then(domicilio => {
     institucion.domicilio = domicilio;
