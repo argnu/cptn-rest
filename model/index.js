@@ -38,7 +38,6 @@ module.exports.ValoresGlobales = require('./ValoresGlobales');
 module.exports.Documento = require('./Documento');
 module.exports.Banco = require('./Banco');
 module.exports.Institucion = require('./Institucion');
-module.exports.Titulo = require('./Titulo');
 module.exports.InstitucionTitulo = require('./InstitucionTitulo');
 module.exports.TituloIncumbencia = require('./TituloIncumbencia');
 module.exports.Persona = require('./Persona');
