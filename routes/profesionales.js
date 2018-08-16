@@ -94,7 +94,7 @@ router.put('/:id', function (req, res) {
   ])    
   .then(([foto, firma]) => {
     profesional = req.body;
-    profesional.operador = req.user.id;
+    profesional.updated_by = req.user.id;
 
     if (foto) profesional.foto = foto;  
     if (firma) profesional.firma = firma;

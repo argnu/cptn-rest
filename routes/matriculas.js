@@ -29,7 +29,7 @@ router.get('/:id/historial', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-  req.body.operador = req.user.id;
+  req.body.created_by = req.user.id;
   model.Matricula.aprobar(req.body)
     .then(matricula => res.status(201).json(matricula))
     .catch(e => utils.errorHandler(e, req, res));
@@ -42,14 +42,14 @@ router.post('/total', function(req, res) {
 });
 
 router.post('/cambiar-estado', function(req, res) {
-  req.body.operador = req.user.id;
+  req.body.updated_by = req.user.id;
   model.Matricula.cambiarEstado(req.body)
     .then(total => res.status(200).json(total))
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.patch('/:id', function(req, res) {
-  req.body.operador = req.user.id;
+  req.body.updated_by = req.user.id;
   model.Matricula.patch(req.params.id, req.body)
     .then(r => res.status(200).json(r))
     .catch(e => utils.errorHandler(e, req, res));
@@ -75,7 +75,7 @@ router.get('/:id/legajos', function(req, res) {
 });
 
 router.put('/:id/legajos', function(req, res) {
-  req.body.operador = req.user.id;
+  req.body.created_by = req.user.id;
   req.body.matricula = req.params.id;
   model.Legajo.add(req.body)
     .then(legajo => res.status(201).json(legajo))

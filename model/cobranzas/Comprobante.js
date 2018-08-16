@@ -288,7 +288,7 @@ module.exports.add = function (comprobante) {
     let comprobante_nuevo;
     let num_item = 0;
 
-    function addComprobanteItem(boleta, num_item, client) {
+    function addComprobanteItem(boleta, client) {
         let proms = [];
         num_item++;
         let comprobante_item = {
@@ -322,16 +322,16 @@ module.exports.add = function (comprobante) {
             return Promise.all(
                 proms_patch, 
                 proms_items,
-                VolantePago.patch(boleta.id, { pagado: true, updated_by: comprobante.updated_by }, client)
+                VolantePago.patch(boleta.id, { pagado: true, updated_by: comprobante.created_by }, client)
             );
         });
     }
 
     function pagarBoleta(boleta, client) {
-        if (boleta.tipo == 'volante') return pagarVolante(boleta);
+        if (boleta.tipo == 'volante') return pagarVolante(boleta, client);
         else {
             return Boleta.patch(boleta.id, { estado: 2 }, client)
-            .then(() => Promise.all(addComprobanteItem(boleta, num_item, client)));
+            .then(() => Promise.all(addComprobanteItem(boleta, client)));
         }
     }
 

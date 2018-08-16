@@ -185,8 +185,8 @@ module.exports.getAll = function(params) {
 
 function addVolante(volante, client) {
   let query = table.insert(
-    table.created_by.value(volante.operador),
-    table.updated_by.value(volante.operador),
+    table.created_by.value(volante.created_by),
+    table.updated_by.value(volante.created_by),
     table.matricula.value(volante.matricula),
     table.fecha.value(volante.fecha),
     table.fecha_vencimiento.value(utils.checkNull(volante.fecha_vencimiento)),

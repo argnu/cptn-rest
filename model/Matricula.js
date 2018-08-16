@@ -165,8 +165,8 @@ module.exports.addMatriculaMigracion = addMatriculaMigracion;
 
 function addMatricula(matricula, client) {
   let query = table.insert(
-    table.created_by.value(matricula.operador),
-    table.updated_by.value(matricula.operador),
+    table.created_by.value(matricula.created_by),
+    table.updated_by.value(matricula.created_by),
     table.entidad.value(matricula.entidad),
     table.solicitud.value(matricula.solicitud),
     table.numeroMatricula.value(matricula.numeroMatricula),
@@ -350,7 +350,7 @@ module.exports.aprobar = function(matricula) {
               documento: documento.id,
               estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
               fecha: new Date(),
-              usuario: matricula.operador
+              usuario: matricula.created_by
             }, connection.client)
           )
           .then(r => {
@@ -386,13 +386,13 @@ module.exports.cambiarEstado = function(nuevo_estado) {
         documento: documento.id,
         estado: nuevo_estado.estado,
         fecha: new Date(),
-        usuario: nuevo_estado.operador
+        usuario: nuevo_estado.updated_by
       }, connection.client)
     )
     .then(historial => {
       let query = table.update({
         estado: nuevo_estado.estado,
-        updated_by: nuevo_estado.operador,
+        updated_by: nuevo_estado.updated_by,
         updated_at: new Date()
       })
       .where(table.id.equals(nuevo_estado.matricula))

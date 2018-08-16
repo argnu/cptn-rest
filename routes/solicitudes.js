@@ -22,7 +22,7 @@ router.post('/', function(req, res) {
   ])
   .then(([foto, firma]) => {
     let solicitud = req.body;
-    solicitud.operador = req.user.id;
+    solicitud.created_by = req.user.id;
 
     if (foto) solicitud.entidad.foto = foto;
     if (firma) solicitud.entidad.firma = firma;
@@ -41,7 +41,7 @@ router.put('/:id', function(req, res) {
   ])
   .then(([foto, firma]) => {  
     solicitud = req.body;
-    solicitud.operador = req.user.id;
+    solicitud.updated_by = req.user.id;
 
     if (foto) solicitud.entidad.foto = foto;
     if (firma) solicitud.entidad.firma = firma;    
@@ -53,7 +53,7 @@ router.put('/:id', function(req, res) {
 });
 
 router.patch('/:id', function(req, res) {
-  req.body.operador = req.user.id;
+  req.body.updated_by = req.user.id;
   model.Solicitud.patch(req.params.id, req.body)
     .then(r => res.status(200).json(r))
     .catch(e => utils.errorHandler(e, req, res));
