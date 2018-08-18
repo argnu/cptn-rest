@@ -22,6 +22,16 @@ router.post('/', function(req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
+router.post('/:id/anular', function(req, res) {
+  let volante = {
+    updated_by: req.user.id
+  }
+  
+  model.VolantePago.anular(req.params.id, volante)
+    .then(r => res.status(200).json(r))
+    .catch(e => utils.errorHandler(e, req, res));
+});
+
 
 router.put('/:id', function(req, res) {
 

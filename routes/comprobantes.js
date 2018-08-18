@@ -30,7 +30,7 @@ router.post('/:id/anular', function(req, res) {
   }
   
   model.Comprobante.anular(req.params.id, comprobante)
-    .then(r => res.status(201).json(r))
+    .then(r => res.status(200).json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 

@@ -4,6 +4,7 @@ const sql = require('sql');
 sql.setDialect('postgres');
 
 const utils = require(`../../utils`);
+const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
 const VolantePagoBoleta = require('./VolantePagoBoleta');
 const Boleta = require('./Boleta');
 
@@ -31,6 +32,11 @@ const table = sql.define({
           notNull: true
         },
         {
+          name: 'estado',
+          dataType: 'int',
+          notNull: true
+        },        
+        {
           name: 'subtotal',
           dataType: 'float',
         },
@@ -49,10 +55,6 @@ const table = sql.define({
         {
           name: 'delegacion',
           dataType: 'int'
-        },
-        {
-          name: 'pagado',
-          dataType: 'boolean'
         },
         {
           name: 'created_by',
@@ -92,6 +94,11 @@ const table = sql.define({
         refColumns: ['id']
       },
       {
+        table: 't_estadoboleta',
+        columns: ['estado'],
+        refColumns: ['id']
+      },      
+      {
         table: 'usuario',
         columns: ['created_by'],
         refColumns: ['id'],
@@ -118,11 +125,14 @@ const select = [
   table.bonificacion_total,
   table.importe_total,
   table.delegacion,
-  table.pagado,
+  TipoEstadoBoleta.table.id.as('estado.id'),
+  TipoEstadoBoleta.table.valor.as('estado.valor'),
   table.vencido,
   table.created_by,
   table.updated_by
 ]
+
+const from = table.join(TipoEstadoBoleta.table).on(table.estado.equals(TipoEstadoBoleta.table.id));
 
 function getBoletas(id_volante) {
   let datos_volante;
@@ -162,10 +172,10 @@ module.exports.get = function(id) {
 }
 
 module.exports.getAll = function(params) {
-  let query = table.select(select).from(table);
+  let query = table.select(select).from(from);
 
   if (params.matricula) query.where(table.matricula.equals(params.matricula));
-  if (params.pagado) query.where(table.pagado.equals(params.pagado == 'true'));
+  if (params.estado) query.where(table.estado.equals(params.estado));
   if (params.vencido) query.where(table.vencido.equals(params.vencido == 'true'));
   if (params.fecha_vencimiento) {
     if (params.fecha_vencimiento.desde) query.where(table.fecha_vencimiento.gte(params.fecha_vencimiento.desde));
@@ -195,7 +205,7 @@ function addVolante(volante, client) {
     table.bonificacion_total.value(volante.bonificacion_total),
     table.importe_total.value(volante.importe_total),
     table.delegacion.value(volante.delegacion),
-    table.pagado.value(false)
+    table.estado.value(1) //PENDIENTE DE PAGO
   )
   .returning(table.id, table.fecha, table.fecha_vencimiento,
     table.subtotal, table.interes_total, table.bonificacion_total,
@@ -251,4 +261,41 @@ module.exports.patch = function(id, volante, client) {
 
   let query = table.update(volante).where(table.id.equals(id)).toQuery();
   return connector.execQuery(query, client);
+}
+
+module.exports.anular = function(id, volante) {
+  let conexion;
+
+  return connector
+  .beginTransaction()
+  .then(con => {
+      conexion = con;
+      volante.updated_at = new Date();
+      volante.estado = 11; //VOLANTE ANULADO
+
+      let query = table.update(volante)
+      .where(table.id.equals(id))
+      .toQuery();
+
+      return connector.execQuery(query, conexion.client)
+      .then(r => getBoletas(id))
+      .then(boletas => {
+          return Promise.all(boletas.map(b => Boleta.patch(b.id, {
+              estado: 1,  //PENDIENTE DE PAGO
+              updated_by: volante.updated_by
+          }, conexion.client)))
+      })
+      .then(r => {
+          return connector.commit(conexion.client)
+              .then(r => {
+                  conexion.done();
+                  return volante;
+              });
+      })
+      .catch(e => {
+          connector.rollback(conexion.client);
+          conexion.done();
+          return Promise.reject(e);
+      });        
+  })
 }
