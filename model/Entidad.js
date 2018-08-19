@@ -147,6 +147,6 @@ module.exports.edit = function(id, entidad, client) {
   catch (e) {
     console.log(e);
     console.log('Error en Entidad.edit');
-    throw Error(e);
+    return Promise.reject(e);
   }
 }

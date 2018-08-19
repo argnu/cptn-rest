@@ -13,6 +13,7 @@ const Boleta = require(`../cobranzas/Boleta`);
 const Persona = require(`../Persona`);
 const PersonaFisica = require(`../PersonaFisica`);
 const Matricula = require('../Matricula');
+const ValoresGlobales = require('../ValoresGlobales');
 const utils = require('../../utils');
 
 
@@ -499,25 +500,28 @@ function addLegajo(legajo, client) {
 function addBoleta(legajo, conexion) {
     if (legajo.tipo != 3) return Promise.resolve();
 
-    let boleta = {
-        legajo: legajo.id,
-        delegacion: legajo.delegacion,
-        matricula: legajo.matricula,
-        tipo_comprobante: 20,    //TIPO DE COMPROBANTE LEG
-        fecha: legajo.fecha_solicitud,
-        total: legajo.aporte_neto,
-        estado: 1,
-        fecha_vencimiento: moment(legajo.fecha_solicitud, 'DD/MM/YYYY').add(15, 'days'),
-        numero_solicitud: legajo.id,
-        fecha_update: moment(),
-        items: [{
-            item: 1,
-            descripcion: `Aportes profesional N° Legajo: ${legajo.numero_legajo}`,
-            importe: legajo.aporte_neto
-        }]
-    }
-
-    return Boleta.add(boleta, conexion);
+    return ValoresGlobales.getValida(6, new Date())
+    .then(dias_vencimiento => {
+        let boleta = {
+            legajo: legajo.id,
+            delegacion: legajo.delegacion,
+            matricula: legajo.matricula,
+            tipo_comprobante: 20,    //TIPO DE COMPROBANTE LEG
+            fecha: legajo.fecha_solicitud,
+            total: legajo.aporte_neto,
+            estado: 1,
+            fecha_vencimiento: moment(legajo.fecha_solicitud, 'DD/MM/YYYY').add(dias_vencimiento.valor, 'days'),
+            numero_solicitud: legajo.id,
+            fecha_update: moment(),
+            items: [{
+                item: 1,
+                descripcion: `Aportes profesional N° Legajo: ${legajo.numero_legajo}`,
+                importe: legajo.aporte_neto
+            }]
+        }
+    
+        return Boleta.add(boleta, conexion);
+    })
 }
 
 module.exports.add = function (legajo) {
@@ -579,7 +583,7 @@ module.exports.add = function (legajo) {
             console.log(e);
             connector.rollback(connection.client);
             connection.done();
-            throw Error(e);
+            return Promise.reject(e);
         });
 }
 

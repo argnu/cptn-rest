@@ -7,6 +7,7 @@ const utils = require(`../../utils`);
 const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
 const VolantePagoBoleta = require('./VolantePagoBoleta');
 const Boleta = require('./Boleta');
+const ValoresGlobales = require('../ValoresGlobales');
 
 const table = sql.define({
     name: 'volante_pago',
@@ -199,7 +200,7 @@ function addVolante(volante, client) {
     table.updated_by.value(volante.created_by),
     table.matricula.value(volante.matricula),
     table.fecha.value(volante.fecha),
-    table.fecha_vencimiento.value(utils.checkNull(volante.fecha_vencimiento)),
+    table.fecha_vencimiento.value(volante.fecha_vencimiento),
     table.subtotal.value(volante.subtotal),
     table.interes_total.value(volante.interes_total),
     table.bonificacion_total.value(volante.bonificacion_total),
@@ -219,11 +220,17 @@ function addVolante(volante, client) {
 
 module.exports.add = function(volante) {
   let volante_nuevo;
+  let conexion;
 
   return connector
       .beginTransaction()
-      .then(connection => {
-            return addVolante(volante, connection.client)
+      .then(con => {
+            conexion = con;
+            return ValoresGlobales.getValida(6, new Date());
+      })
+      .then(dias_vencimiento => {
+            volante.fecha_vencimiento = moment(volante.fecha).add(dias_vencimiento.valor, 'days');
+            return addVolante(volante, conexion.client)
               .then(volante_added => {
                 volante_nuevo = volante_added;
                 let proms_items = volante.boletas
@@ -231,26 +238,26 @@ module.exports.add = function(volante) {
                                     volante: volante_nuevo.id,
                                     boleta: b.id,
                                     interes: b.interes
-                                  }, connection.client));
+                                  }, conexion.client));
 
                 return Promise.all(proms_items);
               })
               .then(r => {
                 //10 es 'volante generado'
-                let proms_boletas = volante.boletas.map(b => Boleta.patch(b.id, { estado: 10 }, connection.client));
+                let proms_boletas = volante.boletas.map(b => Boleta.patch(b.id, { estado: 10 }, conexion.client));
                 return Promise.all(proms_boletas);
               })
               .then(r => {
-                return connector.commit(connection.client)
+                return connector.commit(conexion.client)
                 .then(r => {
-                  connection.done();
+                  conexion.done();
                   return volante_nuevo;
                 });
               })
               .catch(e => {
-                connector.rollback(connection.client);
-                connection.done();
-                throw Error(e);
+                connector.rollback(conexion.client);
+                conexion.done();
+                return Promise.reject(e);
               });
         });
 }

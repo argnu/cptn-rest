@@ -1,4 +1,6 @@
 INSERT INTO t_estadoboleta VALUES (11, 'Anulada');
+INSERT INTO t_variable_global VALUES (6, 'vencimiento_dias', 'Cantidad de Días para Vencimiento de Boletas');
+INSERT INTO valores_globales (valor, variable, fecha_inicio, fecha_fin) VALUES (120, 6, '2018-01-01', '2018-12-31');
 
 ALTER TABLE "t_comprobante" ALTER COLUMN "activo" SET DEFAULT true;
 ALTER TABLE "t_formapago" ALTER COLUMN "activo" SET DEFAULT true;

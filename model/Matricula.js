@@ -201,15 +201,21 @@ function completarConCeros(numero) {
 
 function addBoletaInscripcion(id, fecha, delegacion, client) {
   //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
-  return ValoresGlobales.getValida(1, fecha)
-  .then(importe => {
+  return Promise.all([
+    ValoresGlobales.getValida(1, fecha),
+    ValoresGlobales.getValida(6, fecha)
+  ])
+  .then(valores => {
+    let importe = valores[0].valor;
+    let dias_vencimiento = valores[1].valor;
+
     let boleta = {
       matricula: id,
       tipo_comprobante: 18,  //18 ES PRI
       fecha: fecha,
-      total: importe.valor,
+      total: importe,
       estado: 1,   //1 ES 'Pendiente de Pago'
-      fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(15, 'days'),
+      fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(dias_vencimiento, 'days'),
       fecha_update: fecha,
       delegacion: delegacion,
       items: [{
@@ -229,9 +235,10 @@ function addBoletasMensuales(id, delegacion, client) {
   //y el número de la próxima boleta
   return Promise.all([
     ValoresGlobales.getValida(5, new Date()),
+    ValoresGlobales.getValida(6, new Date()),
     Boleta.getNumeroBoleta(null, client)
   ])
-  .then(([importe_anual, numero_boleta]) => {
+  .then(([importe_anual, dias_vencimiento, numero_boleta]) => {
     let importe = importe_anual.valor / 12;
     let anio_actual = new Date().getFullYear();
 
@@ -240,7 +247,7 @@ function addBoletasMensuales(id, delegacion, client) {
 
     for(let mes_inicio = new Date().getMonth(); mes_inicio < 12; mes_inicio++) {
       let fecha_primero_mes = primera_boleta ? new Date() : new Date(anio_actual, mes_inicio, 1);
-      let fecha_vencimiento = moment(fecha_primero_mes).add(10, 'days');
+      let fecha_vencimiento = moment(fecha_primero_mes).add(dias_vencimiento.valor, 'days');
       primera_boleta = false;
 
       //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
@@ -412,7 +419,7 @@ module.exports.cambiarEstado = function(nuevo_estado) {
     .catch(e => {
       connector.rollback(connection.client);
       connection.done();
-      throw Error(e);
+      return Promise.reject(e);
     });
   })
 }
