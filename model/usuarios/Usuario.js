@@ -3,7 +3,7 @@ const config = require(`../../config.private`);
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const connector = require(`../../db/connector`);
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const Delegacion = require(`../Delegacion`);

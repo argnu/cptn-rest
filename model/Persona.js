@@ -1,5 +1,5 @@
 const connector = require('../db/connector');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 const PersonaFisica = require(`./PersonaFisica`);
 const PersonaJuridica = require(`./PersonaJuridica`);

@@ -1,7 +1,7 @@
 const dot = require('dot-object');
 const connector = require('../../db/connector');
 const utils = require('../../utils');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const InstitucionTitulo = require('../InstitucionTitulo');

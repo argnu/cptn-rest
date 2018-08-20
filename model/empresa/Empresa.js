@@ -1,6 +1,6 @@
 const dot = require('dot-object');
 const moment = require('moment');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const utils = require(`../../utils`);

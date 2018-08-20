@@ -1,6 +1,6 @@
 const moment = require('moment');
 const connector = require(`../../db/connector`);
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const utils = require(`../../utils`);
