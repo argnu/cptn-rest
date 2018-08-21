@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const moment = require('moment');
 const connector = require(`../../db/connector`);
 const sql = require('node-sql-2');
@@ -164,7 +165,7 @@ module.exports.get = function(id) {
 
   return connector.execQuery(query)
   .then(r => {
-    volante = r.rows[0];
+    volante = dot.object(r.rows[0]);
     return getBoletas(id);
   })
   .then(boletas => {
@@ -191,7 +192,7 @@ module.exports.getAll = function(params) {
   if (params.limit && params.offset) query.offset(+params.offset);
 
   return connector.execQuery(query.toQuery())
-  .then(r => r.rows)
+  .then(r => r.rows.map(row => dot.object(row)))
   .catch(e => {
     console.error(e);
     return Promise.reject(e);
