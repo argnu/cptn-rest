@@ -375,7 +375,7 @@ module.exports.aprobar = function(matricula) {
           });
         })
       }
-      else return Promise.reject({ code: 409, message: "Ya existe una matrícula para dicha solicitud" });
+      else return Promise.reject({ http_code: 409, message: "Ya existe una matrícula para dicha solicitud" });
   })
 }
 
@@ -544,7 +544,7 @@ module.exports.get = function (id) {
   return connector.execQuery(query)
     .then(r => {
       matricula = dot.object(r.rows[0]);
-      if (!matricula) throw ({ code: 404, message: "No existe el recurso solicitado" });
+      if (!matricula) throw ({ http_code: 404, message: "No existe el recurso solicitado" });
       if (matricula.tipoEntidad == 'profesional') return Profesional.get(matricula.entidad)
       else if (matricula.tipoEntidad == 'empresa') return Empresa.get(matricula.entidad);
     })

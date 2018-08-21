@@ -132,7 +132,11 @@ module.exports.getAll = function (params) {
             exenciones[index].boleta = boleta;
         });
         return exenciones;
-    });
+    })
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })    
 }
 
 module.exports.get = function(id) {

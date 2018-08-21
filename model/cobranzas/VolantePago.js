@@ -158,8 +158,9 @@ module.exports.getBoletas = getBoletas;
 module.exports.get = function(id) {
   let volante;
   let query = table.select(select)
-                   .where(table.id.equals(id))
-                   .toQuery();
+  .from(from)
+  .where(table.id.equals(id))
+  .toQuery();
 
   return connector.execQuery(query)
   .then(r => {
@@ -190,7 +191,11 @@ module.exports.getAll = function(params) {
   if (params.limit && params.offset) query.offset(+params.offset);
 
   return connector.execQuery(query.toQuery())
-  .then(r => r.rows);
+  .then(r => r.rows)
+  .catch(e => {
+    console.error(e);
+    return Promise.reject(e);
+  })  
 }
 
 

@@ -198,6 +198,10 @@ module.exports.getAll = function (params) {
         });
         return boletas;
     })
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })
 }
 
 module.exports.get = function (id) {

@@ -4,12 +4,9 @@
   "description": "RESTFull API para el Colegio de Profesionales Técnicos del Neuquén",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "node_modules/nodemon/bin/nodemon.js index.js",
     "create": "node ./tasks/database/create.js",
     "clean": "node ./tasks/database/clean.js",
-    "populate": "node ./tasks/database/populate.js",
-    "addinvitado": "node ./tasks/database/addinvitado.js",
     "migrate": "node node_modules/db-migrate/bin/db-migrate --config db/migraciones/database.json",
     "dbchange": "node ./db/migraciones/dbchange.js"
   },

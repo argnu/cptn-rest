@@ -428,7 +428,7 @@ module.exports.get = function (id) {
     return connector.execQuery(query.toQuery())
     .then(r => {
         if (r.rows.length == 0)
-            return Promise.reject({ code: 404, message: "No existe el recurso" });
+            return Promise.reject({ http_code: 404, message: "No existe el recurso" });
         legajo = dot.object(r.rows[0]);
         return Promise.all([
             getItems(legajo.id),
