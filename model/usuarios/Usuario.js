@@ -243,11 +243,11 @@ module.exports.auth = function(usuario) {
         if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password) && usuario_bd.activo) {
           usuario_bd.token = jwt.sign({ id: usuario_bd.id }, config.secret);
           delete(usuario_bd.hash_password);
-          return { http_code: 200, user: usuario_bd };
+          return usuario_bd;
         }
-        else return { http_code: 403, message: 'Datos de usuario inválidos' };
+        else return false;
       }
-      else return { http_code: 403, message: 'Datos de usuario inválidos' };
+      else return false;
   })
   .catch(e => {
       console.error(e);

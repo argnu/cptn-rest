@@ -57,8 +57,8 @@ router.post('/:id/delegaciones', function(req, res) {
 router.post('/auth', function(req, res) {
   model.Usuario.auth(req.body)
   .then(r => {
-    if (r.code == 403) res.status(r.code).json({ message: r.message });
-    else res.json(r.user);
+    if (r) res.json(r);
+    else return Promise.reject({ http_code: 403, msg: 'Datos de usuario inválidos' });
   })
   .catch(e => utils.errorHandler(e, req, res));
 });
