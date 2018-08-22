@@ -59,12 +59,16 @@ const select = [
 
 const from = table.join(TipoContacto.table).on(table.tipo.equals(TipoContacto.table.id));
 
-module.exports.getAll = function(id_entidad) {
+module.exports.getAll = function(id_entidad, filter) {
   let query = table.select(select).from(from)
   .where(table.entidad.equals(id_entidad))
-  .toQuery();
 
-  return connector.execQuery(query)
+  if (filter) {
+    if (filter.celular) query.where(table.tipo.notEqual(2));
+    if (filter.email) query.where(table.tipo.notEqual(3));
+  }
+
+  return connector.execQuery(query.toQuery())
   .then(r => r.rows.map(row => dot.object(row)));
 }
 

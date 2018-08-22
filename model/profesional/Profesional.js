@@ -12,6 +12,7 @@ const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
 const TipoCondicionAfip = require('../tipos/TipoCondicionAfip');
 const utils = require('../../utils');
+const ABILITIES = require('../../auth/roles')
 
 const sql = require('sql');
 sql.setDialect('postgres');
@@ -287,18 +288,25 @@ module.exports.getAll = function(params) {
 }
 
 
-function getDatosProfesional(profesional) {
-  return Promise.all([
-      EntidadDomicilio.getByEntidad(profesional.id),
-      EntidadCondicionAfip.getByEntidad(profesional.id),
-      Contacto.getAll(profesional.id),
-      ProfesionalTitulo.getByProfesional(profesional.id),
-      ProfesionalCajaPrevisional.getByProfesional(profesional.id),
-      Subsidiario.getAll(profesional.id)
-    ]);
+function getDatosProfesional(profesional, rol) {
+  let proms = [];
+
+  if (rol != 'ANONIMO' || profesional.publicarDireccion) 
+    proms.push(EntidadDomicilio.getByEntidad(profesional.id));
+
+  proms.push(EntidadCondicionAfip.getByEntidad(profesional.id));
+  proms.push(Contacto.getAll(profesional.id, {
+    celular: !profesional.publicarCelular,
+    email: !profesional.publicarEmail
+  }));
+  proms.push(ProfesionalTitulo.getByProfesional(profesional.id));
+  proms.push(ProfesionalCajaPrevisional.getByProfesional(profesional.id));
+  proms.push(Subsidiario.getAll(profesional.id));
+  
+  return Promise.all(proms);
 }
 
-module.exports.get = function(id) {
+module.exports.get = function(id, rol) {
   let query = table.select(select)
   .from(from)
   .where(table.id.equals(id))
@@ -315,7 +323,7 @@ module.exports.get = function(id) {
       if (profesional.firma) {
         profesional.firma = `http://${config.entry.host}:${config.entry.port}/api/profesionales/${profesional.id}/firma`;
       }
-      return getDatosProfesional(profesional)
+      return getDatosProfesional(profesional, rol)
       .then(([
         domicilios, condiciones_afip, contactos, formaciones, cajas_previsionales, subsidiarios
       ]) => {

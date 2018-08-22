@@ -1,8 +1,14 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
 
 
+
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'Institucion')) next();
+  else res.status(403).json({msg: 'No tiene permisos para efectuar esta operación' })
+});
 
 router.get('/', function(req, res) {
   model.Institucion.getAll(req.query)

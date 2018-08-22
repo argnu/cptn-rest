@@ -24,6 +24,7 @@
   "author": "ARGNU",
   "license": "GPL-3.0",
   "dependencies": {
+    "@casl/ability": "^2.4.2",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.17.2",
     "bunyan": "^1.8.12",

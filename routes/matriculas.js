@@ -1,11 +1,17 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
 
 
+
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'Matricula')) next();
+  else res.status(403).json({msg: 'No tiene permisos para efectuar esta operación' })
+});
 
 router.get('/', function(req, res) {
-  model.Matricula.getAll(req.query)
+  model.Matricula.getAll(req.query, req.user.rol)
     .then(matriculas => res.json(matriculas))
     .catch(e => utils.errorHandler(e, req, res));
 });
