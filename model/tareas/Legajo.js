@@ -1,7 +1,7 @@
 const dot = require('dot-object');
 const moment = require('moment');
 const connector = require(`../../db/connector`);
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 const TipoLegajo = require('../tipos/TipoLegajo')
 const TipoEstadoLegajo = require('../tipos/TipoEstadoLegajo')
@@ -13,6 +13,7 @@ const Boleta = require(`../cobranzas/Boleta`);
 const Persona = require(`../Persona`);
 const PersonaFisica = require(`../PersonaFisica`);
 const Matricula = require('../Matricula');
+const ValoresGlobales = require('../ValoresGlobales');
 const utils = require('../../utils');
 
 
@@ -344,6 +345,7 @@ module.exports.getAll = function (params) {
 
     if (params.sort) {
         if (params.sort.fecha_solicitud) query.order(table.fecha_solicitud[params.sort.fecha_solicitud]);
+        if (params.sort.estado) query.order(TipoEstadoLegajo.table.valor[params.sort.estado]);
         if (params.sort.tipo) query.order(TipoLegajo.table.valor[params.sort.tipo]);
         if (params.sort.numero) query.order(table.numero_legajo[params.sort.numero]);
         if (params.sort.nomenclatura) query.order(table.nomenclatura[params.sort.nomenclatura]);
@@ -426,7 +428,7 @@ module.exports.get = function (id) {
     return connector.execQuery(query.toQuery())
     .then(r => {
         if (r.rows.length == 0)
-            return Promise.reject({ code: 404, message: "No existe el recurso" });
+            return Promise.reject({ http_code: 404, message: "No existe el recurso" });
         legajo = dot.object(r.rows[0]);
         return Promise.all([
             getItems(legajo.id),
@@ -498,25 +500,28 @@ function addLegajo(legajo, client) {
 function addBoleta(legajo, conexion) {
     if (legajo.tipo != 3) return Promise.resolve();
 
-    let boleta = {
-        legajo: legajo.id,
-        delegacion: legajo.delegacion,
-        matricula: legajo.matricula,
-        tipo_comprobante: 20,    //TIPO DE COMPROBANTE LEG
-        fecha: legajo.fecha_solicitud,
-        total: legajo.aporte_neto,
-        estado: 1,
-        fecha_vencimiento: moment(legajo.fecha_solicitud, 'DD/MM/YYYY').add(15, 'days'),
-        numero_solicitud: legajo.id,
-        fecha_update: moment(),
-        items: [{
-            item: 1,
-            descripcion: `Aportes profesional N° Legajo: ${legajo.numero_legajo}`,
-            importe: legajo.aporte_neto
-        }]
-    }
-
-    return Boleta.add(boleta, conexion);
+    return ValoresGlobales.getValida(6, new Date())
+    .then(dias_vencimiento => {
+        let boleta = {
+            legajo: legajo.id,
+            delegacion: legajo.delegacion,
+            matricula: legajo.matricula,
+            tipo_comprobante: 20,    //TIPO DE COMPROBANTE LEG
+            fecha: legajo.fecha_solicitud,
+            total: legajo.aporte_neto,
+            estado: 1,
+            fecha_vencimiento: moment(legajo.fecha_solicitud, 'DD/MM/YYYY').add(dias_vencimiento.valor, 'days'),
+            numero_solicitud: legajo.id,
+            fecha_update: moment(),
+            items: [{
+                item: 1,
+                descripcion: `Aportes profesional N° Legajo: ${legajo.numero_legajo}`,
+                importe: legajo.aporte_neto
+            }]
+        }
+        
+        return Boleta.add(boleta, conexion);
+    })
 }
 
 module.exports.add = function (legajo) {
@@ -578,7 +583,7 @@ module.exports.add = function (legajo) {
             console.log(e);
             connector.rollback(connection.client);
             connection.done();
-            throw Error(e);
+            return Promise.reject(e);
         });
 }
 
@@ -637,7 +642,7 @@ module.exports.edit = function(id, legajo) {
     .then(() => connector.execQuery(Boleta.table.delete().where(Boleta.table.legajo.equals(id)).toQuery(), conexion.client))
     .then(() => { 
         legajo.matricula = legajo.matricula.id;
-        addBoleta(legajo, conexion.client)
+        return addBoleta(legajo, conexion.client)
     })
     .then(() => {
         legajo.updated_at = new Date();

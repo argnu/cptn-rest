@@ -29,7 +29,7 @@ router.get('/:id/foto', function (req, res) {
       let file_path = path.join(__dirname, '..', 'files/fotos', foto);
       if (fs.existsSync(file_path)) res.sendFile(file_path);
       else return Promise.reject({
-        code: 404,
+        http_code: 404,
         msg: 'El recurso solicitado no existe'
       });
     })
@@ -42,7 +42,7 @@ router.get('/:id/firma', function (req, res) {
       let file_path = path.join(__dirname, '..', 'files/firmas', r);
       if (fs.existsSync(file_path)) res.sendFile(file_path);
       else return Promise.reject({
-        code: 404,
+        http_code: 404,
         msg: 'El recurso solicitado no existe'
       });
     })
@@ -94,7 +94,7 @@ router.put('/:id', function (req, res) {
   ])    
   .then(([foto, firma]) => {
     profesional = req.body;
-    profesional.operador = req.user.id;
+    profesional.updated_by = req.user.id;
 
     if (foto) profesional.foto = foto;  
     if (firma) profesional.firma = firma;

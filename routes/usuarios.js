@@ -7,7 +7,7 @@ const model = require('../model');
 router.get('/', function(req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
-    if (!operador.admin) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    if (!operador.admin) return Promise.reject({ http_code: 403, msg: 'No tiene permisos para efectuar esta operación' });
     else return model.Usuario.getAll(req.query);
   })
   .then(r => res.json(r))
@@ -17,7 +17,7 @@ router.get('/', function(req, res) {
 router.get('/:id/delegaciones', function (req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
-    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ http_code: 403, msg: 'No tiene permisos para efectuar esta operación' });
     else return model.Usuario.getDelegaciones(req.params.id);
   })
   .then(r => res.json(r))
@@ -27,7 +27,7 @@ router.get('/:id/delegaciones', function (req, res) {
 router.get('/:id', function(req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
-    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ http_code: 403, msg: 'No tiene permisos para efectuar esta operación' });
     else return model.Usuario.get(req.params.id)
   })
   .then(r => res.json(r))
@@ -37,7 +37,7 @@ router.get('/:id', function(req, res) {
 router.post('/', function(req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
-    if (!operador.admin) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    if (!operador.admin) return Promise.reject({ http_code: 403, msg: 'No tiene permisos para efectuar esta operación' });
     else return model.Usuario.add(req.body)
   })
   .then(r => res.json(r))
@@ -47,7 +47,7 @@ router.post('/', function(req, res) {
 router.post('/:id/delegaciones', function(req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
-    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ http_code: 403, msg: 'No tiene permisos para efectuar esta operación' });
     else return model.Usuario.addDelegacion(req.params.id,req.body)
   })
   .then(r => res.json(r))
@@ -57,8 +57,8 @@ router.post('/:id/delegaciones', function(req, res) {
 router.post('/auth', function(req, res) {
   model.Usuario.auth(req.body)
   .then(r => {
-    if (r.code == 403) res.status(r.code).json({ message: r.message });
-    else res.json(r.user);
+    if (r) res.json(r);
+    else return Promise.reject({ http_code: 403, msg: 'Datos de usuario inválidos' });
   })
   .catch(e => utils.errorHandler(e, req, res));
 });
@@ -82,7 +82,7 @@ router.delete('/:id', function(req, res) {
 router.delete('/:id/delegaciones/:id_del', function(req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
-    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    if (!operador.admin && operador.id!=req.params.id) return Promise.reject({ http_code: 403, msg: 'No tiene permisos para efectuar esta operación' });
     else return model.Usuario.borrarDelegacion(req.params.id_del)
   })
   .then(r => res.json(r))

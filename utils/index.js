@@ -26,9 +26,9 @@ module.exports.numberOrNull = function(value) {
 }
 
 module.exports.errorHandler = function(e, req, res) {
-  if (e.code) res.status(e.code).json({ message: e.message });
+  if (e.http_code) res.status(e.http_code).json({ message: e.message });
   else { 
-    if (!e.code) console.error(e);
+    if (!e.http_code) console.error(e);
     console.error(`Error en ${req.method} ${req.baseUrl}${req.path}`);
     res.status(500).json({ msg: 'Error en el servidor' });
   }

@@ -1,6 +1,6 @@
 const connector = require('../db/connector');
 const utils = require('../utils');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 const Profesional = require('./profesional/Profesional');
 const Empresa = require('./empresa/Empresa');
@@ -94,8 +94,8 @@ module.exports.table = table;
 
 function addSolicitud(solicitud, client) {
   let query = table.insert(
-    table.created_by.value(solicitud.operador),
-    table.updated_by.value(solicitud.operador),
+    table.created_by.value(solicitud.created_by),
+    table.updated_by.value(solicitud.created_by),
     table.fecha.value(solicitud.fecha),
     table.estado.value(1),
     table.delegacion.value(solicitud.delegacion),
@@ -257,7 +257,7 @@ module.exports.edit = function(id, solicitud) {
         let datos_solicitud = {
           fecha: solicitud.fecha,
           delegacion: solicitud.delegacion,
-          updated_by: solicitud.operador,
+          updated_by: solicitud.updated_by,
           updated_at: new Date()
         }
 
@@ -293,7 +293,7 @@ module.exports.edit = function(id, solicitud) {
 module.exports.patch = function (id, solicitud, client) {
   let query = table.update({
     updated_at: new Date(),
-    updated_by: solicitud.operador,
+    updated_by: solicitud.updated_by,
     estado: solicitud.estado
   })
   .where(table.id.equals(id))

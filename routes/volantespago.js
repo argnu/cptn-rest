@@ -16,9 +16,19 @@ router.get('/:id', function(req, res) {
 
 
 router.post('/', function(req, res) {
-  req.body.operador = req.user.id;
+  req.body.created_by = req.user.id;
   model.VolantePago.add(req.body)
     .then(r => res.status(201).json(r))
+    .catch(e => utils.errorHandler(e, req, res));
+});
+
+router.post('/:id/anular', function(req, res) {
+  let volante = {
+    updated_by: req.user.id
+  }
+  
+  model.VolantePago.anular(req.params.id, volante)
+    .then(r => res.status(200).json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 

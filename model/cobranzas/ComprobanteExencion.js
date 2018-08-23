@@ -1,7 +1,7 @@
 const dot = require('dot-object');
 const utils = require('../../utils');
 const connector = require('../../db/connector');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const TipoComprobante = require('../tipos/TipoComprobante');
@@ -132,7 +132,11 @@ module.exports.getAll = function (params) {
             exenciones[index].boleta = boleta;
         });
         return exenciones;
-    });
+    })
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })    
 }
 
 module.exports.get = function(id) {

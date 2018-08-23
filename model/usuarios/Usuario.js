@@ -3,7 +3,7 @@ const config = require(`../../config.private`);
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const connector = require(`../../db/connector`);
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const Delegacion = require(`../Delegacion`);
@@ -243,11 +243,11 @@ module.exports.auth = function(usuario) {
         if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password) && usuario_bd.activo) {
           usuario_bd.token = jwt.sign({ id: usuario_bd.id }, config.secret);
           delete(usuario_bd.hash_password);
-          return { code: 200, user: usuario_bd };
+          return usuario_bd;
         }
-        else return { code: 403, message: 'Datos de usuario inválidos' };
+        else return false;
       }
-      else return { code: 403, message: 'Datos de usuario inválidos' };
+      else return false;
   })
   .catch(e => {
       console.error(e);

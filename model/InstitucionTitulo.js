@@ -1,6 +1,6 @@
 const dot = require('dot-object');
 const connector = require('../db/connector');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const TipoNivelTitulo = require('./tipos/TipoNivelTitulo');
@@ -202,7 +202,7 @@ module.exports.delete = function(id) {
   .then(r => r.rows[0])
   .catch(e => {
     if (e.code == 23503) {
-      return Promise.reject({ code: 409, message: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
+      return Promise.reject({ http_code: 409, message: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
     }
     else return Promise.reject(e);
   });

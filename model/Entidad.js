@@ -1,5 +1,5 @@
 const connector = require('../db/connector');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const Domicilio = require('./Domicilio');
@@ -147,6 +147,6 @@ module.exports.edit = function(id, entidad, client) {
   catch (e) {
     console.log(e);
     console.log('Error en Entidad.edit');
-    throw Error(e);
+    return Promise.reject(e);
   }
 }

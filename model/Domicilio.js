@@ -1,6 +1,6 @@
 const connector = require(`../db/connector`);
 const dot = require('dot-object');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 const Localidad = require('./geograficos/Localidad');
 const Departamento = require('./geograficos/Departamento');

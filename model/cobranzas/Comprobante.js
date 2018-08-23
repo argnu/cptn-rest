@@ -1,6 +1,6 @@
 const dot = require('dot-object');
 const connector = require(`../../db/connector`);
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const utils = require(`../../utils`);
@@ -262,8 +262,8 @@ function addComprobante(comprobante, client) {
     return getNumeroComprobante(comprobante.numero)
         .then(numero_comprobante => {
             let query = table.insert(
-                    table.created_by.value(comprobante.operador),
-                    table.updated_by.value(comprobante.operador),
+                    table.created_by.value(comprobante.created_by),
+                    table.updated_by.value(comprobante.created_by),
                     table.numero.value(numero_comprobante),
                     table.matricula.value(comprobante.matricula),
                     table.fecha.value(comprobante.fecha),
@@ -286,9 +286,11 @@ function addComprobante(comprobante, client) {
 
 module.exports.add = function (comprobante) {
     let comprobante_nuevo;
+    let num_item = 0;
 
-    function addComprobanteItem(boleta, num_item, client) {
+    function addComprobanteItem(boleta, client) {
         let proms = [];
+        num_item++;
         let comprobante_item = {
             boleta: boleta.id,
             comprobante: comprobante_nuevo.id,
@@ -299,16 +301,38 @@ module.exports.add = function (comprobante) {
         proms.push(ComprobanteItem.add(comprobante_item, client));
 
         if (boleta.interes) {
+            num_item++;
             let interes_item = {
                 boleta: boleta.id,
                 comprobante: comprobante_nuevo.id,
-                item: num_item + 1,
+                item: num_item,
                 descripcion: 'Intereses',
                 importe: boleta.interes
             }
             proms.push(ComprobanteItem.add(interes_item, client));
         }
         return proms;
+    }
+
+    function pagarVolante(boleta, client) {
+        return VolantePago.getBoletas(boleta.id)
+        .then(boletas => { 
+            let proms_patch = boletas.map(b => Boleta.patch(b.id, { estado: 2 }, client));
+            let proms_items = boletas.map(b => Promise.all(addComprobanteItem(b, client)));                                 
+            return Promise.all(
+                proms_patch, 
+                proms_items,
+                VolantePago.patch(boleta.id, { pagado: true, updated_by: comprobante.created_by }, client)
+            );
+        });
+    }
+
+    function pagarBoleta(boleta, client) {
+        if (boleta.tipo == 'volante') return pagarVolante(boleta, client);
+        else {
+            return Boleta.patch(boleta.id, { estado: 2 }, client)
+            .then(() => Promise.all(addComprobanteItem(boleta, client)));
+        }
     }
 
     return connector
@@ -324,44 +348,15 @@ module.exports.add = function (comprobante) {
                         return ComprobantePago.add(forma, connection.client);
                     });
 
+                    return Promise.all(proms_comprobante_pago);
+                })
+                .then(() => {
                     let num_item = 1;
                     let proms_items = [];
                     let proms_boleta_estado = [];
                     let proms_volante_pagado = [];
 
-                    comprobante.boletas.forEach(boleta => {
-                        if (boleta.tipo == 'volante') {
-                            // boleta.forEach(b => {
-                            //     proms_boleta_estado.push(Boleta.patch(b.id, { estado: 2 }, connection.client));
-                            //     addComprobanteItem(b, num_item, connection.client)
-                            //     .forEach(p => {
-                            //         proms_items.push(p);
-                            //         num_item++;
-                            //     })
-                            // });
-                            proms_boleta_estado = [
-                                VolantePago.getBoletas(boleta.id)
-                                .then(boletas => Promise.all(boletas.map(b => Boleta.patch(b.id, { estado: 2 }, connection.client))))
-                            ];
-
-                            proms_volante_pagado.push(VolantePago.patch(boleta.id, { pagado: true, updated_by: comprobante.operador }, connection.client));
-                        }
-                        else {
-                            proms_boleta_estado.push(Boleta.patch(boleta.id, { estado: 2 }, connection.client));
-                            addComprobanteItem(boleta, num_item, connection.client)
-                            .forEach(p => {
-                                proms_items.push(p);
-                                num_item++;
-                            })
-                        }
-                    })
-
-                    return Promise.all([
-                        Promise.all(proms_items),
-                        Promise.all(proms_comprobante_pago),
-                        Promise.all(proms_boleta_estado),
-                        Promise.all(proms_volante_pagado)
-                    ])
+                    return Promise.all(comprobante.boletas.map(boleta => pagarBoleta(boleta, connection.client)));
                 })
                 .then(r => {
                     return connector.commit(connection.client)
@@ -376,4 +371,49 @@ module.exports.add = function (comprobante) {
                     return Promise.reject(e);
                 });
         });
+}
+
+
+module.exports.patch = function(id, comprobante, client) {
+    comprobante.updated_at = new Date();
+    let query = table.update(comprobante).where(table.id.equals(id)).toQuery();
+    return connector.execQuery(query, client);
+}
+
+
+module.exports.anular = function(id, comprobante) {
+    let conexion;
+
+    return connector
+    .beginTransaction()
+    .then(con => {
+        conexion = con;
+        comprobante.updated_at = new Date();
+        comprobante.anulado = 1;
+
+        let query = table.update(comprobante)
+        .where(table.id.equals(id))
+        .toQuery();
+
+        return connector.execQuery(query, conexion.client)
+        .then(r => model.ComprobanteItem.getByComprobante(id))
+        .then(items => {
+            return Promise.all(items.map(i => Boleta.patch(i.boleta, {
+                estado: 1,
+                updated_by: comprobante.updated_by
+            }, conexion.client)))
+        })
+        .then(r => {
+            return connector.commit(conexion.client)
+                .then(r => {
+                    conexion.done();
+                    return comprobante;
+                });
+        })
+        .catch(e => {
+            connector.rollback(conexion.client);
+            conexion.done();
+            return Promise.reject(e);
+        });        
+    })
 }

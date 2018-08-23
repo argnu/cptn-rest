@@ -1,7 +1,7 @@
 const dot = require('dot-object');
 const moment = require('moment');
 const connector = require('../../db/connector');
-const sql = require('sql');
+const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const utils = require(`../../utils`);
@@ -9,6 +9,7 @@ const BoletaItem = require('./BoletaItem');
 const TipoComprobante = require('../tipos/TipoComprobante');
 const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
 const Legajo = require('../tareas/Legajo');
+const ValoresGlobales = require('../ValoresGlobales');
 
 const table = sql.define({
     name: 'boleta',
@@ -75,7 +76,25 @@ const table = sql.define({
         {
             name: 'fecha_pago',
             dataType: 'date',
-        }
+        },
+        {
+            name: 'created_by',
+            dataType: 'int',
+        },
+        {
+            name: 'updated_by',
+            dataType: 'int',
+        },
+        {
+            name: 'created_at',
+            dataType: 'timestamptz',
+            defaultValue: 'current_date'
+        },
+        {
+            name: 'updated_at',
+            dataType: 'timestamptz',
+            defaultValue: 'current_date'
+        }        
     ],
 
     foreignKeys: [
@@ -105,7 +124,19 @@ const table = sql.define({
             table: 't_comprobante',
             columns: ['tipo_comprobante'],
             refColumns: ['id']
-        }
+        },
+        {
+            table: 'usuario',
+            columns: ['created_by'],
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
+        },
+        {
+            table: 'usuario',
+            columns: ['updated_by'],
+            refColumns: ['id'],
+            onUpdate: 'CASCADE'
+        }        
     ]
 });
 
@@ -167,6 +198,10 @@ module.exports.getAll = function (params) {
         });
         return boletas;
     })
+    .catch(e => {
+        console.error(e);
+        return Promise.reject(e);
+    })
 }
 
 module.exports.get = function (id) {
@@ -214,34 +249,39 @@ function getNumeroBoleta(numero, client) {
 module.exports.getNumeroBoleta = getNumeroBoleta;
 
 function addDatosBoleta(boleta, client) {
-    return getNumeroBoleta(boleta.numero)
-        .then(numero_boleta => {
-            let query = table.insert(
-                    table.numero.value(numero_boleta),
-                    table.matricula.value(boleta.matricula),
-                    table.tipo_comprobante.value(boleta.tipo_comprobante),
-                    table.fecha.value(boleta.fecha),
-                    table.total.value(utils.getFloat(boleta.total)),
-                    table.estado.value(boleta.estado),
-                    table.fecha_vencimiento.value(boleta.fecha_vencimiento),
-                    table.numero_comprobante.value(boleta.numero_comprobante),
-                    table.numero_condonacion.value(boleta.numero_condonacion),
-                    table.fecha_update.value(boleta.fecha_update ? boleta.fecha_update : moment()),
-                    table.delegacion.value(boleta.delegacion),
-                    table.legajo.value(boleta.legajo)
-                )
-                .returning(table.id, table.numero)
-                .toQuery()
+    return getNumeroBoleta(boleta.numero, client)
+    .then(numero_boleta => {
+        let query = table.insert(
+                table.numero.value(numero_boleta),
+                table.matricula.value(boleta.matricula),
+                table.tipo_comprobante.value(boleta.tipo_comprobante),
+                table.fecha.value(boleta.fecha),
+                table.total.value(utils.getFloat(boleta.total)),
+                table.estado.value(boleta.estado),
+                table.fecha_vencimiento.value(boleta.fecha_vencimiento),
+                table.numero_comprobante.value(boleta.numero_comprobante),
+                table.numero_condonacion.value(boleta.numero_condonacion),
+                table.fecha_update.value(boleta.fecha_update ? boleta.fecha_update : moment()),
+                table.delegacion.value(boleta.delegacion),
+                table.legajo.value(boleta.legajo),
+                table.created_by.value(boleta.created_by),
+                table.updated_by.value(boleta.created_by)
+            )
+            .returning(table.id, table.numero)
+            .toQuery()
 
-            return connector.execQuery(query, client)
-                .then(r => r.rows[0]);
-        })
+        return connector.execQuery(query, client)
+        .then(r => r.rows[0])
+    })
 }
 
 module.exports.add = function (boleta, client) {
     let boleta_nueva;
-
-    return addDatosBoleta(boleta, client)
+    return ValoresGlobales.getValida(6, new Date())
+    .then(dias_vencimiento => {
+        boleta.fecha_vencimiento = moment(boleta.fecha, 'DD/MM/YYYY').add(dias_vencimiento.valor, 'days');
+        return addDatosBoleta(boleta, client);
+    })
     .then(boleta_added => {
         boleta_nueva = boleta_added;
         let proms_items = boleta.items.map((item, index) => {
@@ -259,7 +299,8 @@ module.exports.add = function (boleta, client) {
 
 
 module.exports.patch = function(id, boleta, client) {
-  boleta.fecha_update = moment();
+  boleta.fecha_update = new Date();
+  boleta.updated_at = new Date();
   let query = table.update(boleta).where(table.id.equals(id)).toQuery();
 
   return connector.execQuery(query, client);
