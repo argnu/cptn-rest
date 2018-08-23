@@ -322,7 +322,7 @@ module.exports.add = function (comprobante) {
             return Promise.all(
                 proms_patch, 
                 proms_items,
-                VolantePago.patch(boleta.id, { pagado: true, updated_by: comprobante.created_by }, client)
+                VolantePago.patch(boleta.id, { estado: 2, updated_by: comprobante.created_by }, client)
             );
         });
     }

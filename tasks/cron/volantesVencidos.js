@@ -7,7 +7,7 @@ function getVolantesVencidos() {
     let query = table.select(table.id)
                      .where(
                         table.fecha_vencimiento.lt(moment()),
-                        table.pagado.equals(false),
+                        table.estado.equals(1),
                         table.vencido.equals(false)
                      ).toQuery();
 
