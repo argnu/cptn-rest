@@ -639,11 +639,11 @@ module.exports.edit = function(id, legajo) {
         return Promise.all(proms_items);
     })
     .then(() => Promise.all(items_existentes.map(item => LegajoItem.edit(item.id, item, conexion.client))))
-    .then(() => connector.execQuery(Boleta.table.delete().where(Boleta.table.legajo.equals(id)).toQuery(), conexion.client))
-    .then(() => { 
-        legajo.matricula = legajo.matricula.id;
-        return addBoleta(legajo, conexion.client)
-    })
+    // .then(() => connector.execQuery(Boleta.table.delete().where(Boleta.table.legajo.equals(id)).toQuery(), conexion.client))
+    // .then(() => { 
+    //     legajo.matricula = legajo.matricula.id;
+    //     return addBoleta(legajo, conexion.client)
+    // })
     .then(() => {
         legajo.updated_at = new Date();
         delete(legajo.items);
