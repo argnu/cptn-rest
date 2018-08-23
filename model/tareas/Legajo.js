@@ -519,7 +519,7 @@ function addBoleta(legajo, conexion) {
                 importe: legajo.aporte_neto
             }]
         }
-    
+        
         return Boleta.add(boleta, conexion);
     })
 }
@@ -642,7 +642,7 @@ module.exports.edit = function(id, legajo) {
     .then(() => connector.execQuery(Boleta.table.delete().where(Boleta.table.legajo.equals(id)).toQuery(), conexion.client))
     .then(() => { 
         legajo.matricula = legajo.matricula.id;
-        addBoleta(legajo, conexion.client)
+        return addBoleta(legajo, conexion.client)
     })
     .then(() => {
         legajo.updated_at = new Date();

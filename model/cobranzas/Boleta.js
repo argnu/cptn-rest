@@ -249,7 +249,7 @@ function getNumeroBoleta(numero, client) {
 module.exports.getNumeroBoleta = getNumeroBoleta;
 
 function addDatosBoleta(boleta, client) {
-    return getNumeroBoleta(boleta.numero)
+    return getNumeroBoleta(boleta.numero, client)
     .then(numero_boleta => {
         let query = table.insert(
                 table.numero.value(numero_boleta),
@@ -271,7 +271,7 @@ function addDatosBoleta(boleta, client) {
             .toQuery()
 
         return connector.execQuery(query, client)
-            .then(r => r.rows[0]);
+        .then(r => r.rows[0])
     })
 }
 
@@ -279,7 +279,7 @@ module.exports.add = function (boleta, client) {
     let boleta_nueva;
     return ValoresGlobales.getValida(6, new Date())
     .then(dias_vencimiento => {
-        boleta.fecha_vencimiento = moment(boleta.fecha).add(dias_vencimiento.valor, 'days');
+        boleta.fecha_vencimiento = moment(boleta.fecha, 'DD/MM/YYYY').add(dias_vencimiento.valor, 'days');
         return addDatosBoleta(boleta, client);
     })
     .then(boleta_added => {
