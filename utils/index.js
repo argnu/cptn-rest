@@ -1,3 +1,4 @@
+const moment = require('moment');
 const connector = require(`../db/connector`);
 const path = require('path');
 const fs = require('fs');
@@ -18,6 +19,12 @@ module.exports.checkFecha = function(value) {
 module.exports.getFloat = function(value) {
   if (typeof value == 'number') return value;
   return value && value.length ? parseFloat(value.replace(',', '.')) : null;
+}
+
+module.exports.getFecha = function(value) {
+  if (!value || value.toString().length == 0) return null;
+  else if (value.toString().indexOf('/') != -1)  return moment(value, 'DD/MM/YYYY');
+  else return moment(value);
 }
 
 module.exports.numberOrNull = function(value) {
