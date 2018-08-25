@@ -3,6 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
+
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'Profesional')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/', function (req, res) {
   model.Profesional.getAll(req.query)
@@ -56,9 +62,10 @@ router.get('/:id', function (req, res) {
 });
 
 router.post('/', function (req, res) {
+  if (!req.ability.can('create', 'Profesional')) utils.sinPermiso(res);
   model.Profesional.add(req.body)
-    .then(r => res.status(201).json(r))
-    .catch(e => utils.errorHandler(e, req, res));
+  .then(r => res.status(201).json(r))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.put('/:id/foto', function (req, res) {
@@ -103,10 +110,6 @@ router.put('/:id', function (req, res) {
   })
   .then(id => res.status(200).json(profesional))
   .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.delete('/:id', function (req, res) {
-
 });
 
 module.exports = router;

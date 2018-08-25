@@ -1,8 +1,12 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
 
-
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'MatriculaExterna')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/', function (req, res) {
     model.MatriculaExterna.getAll(req.query)
@@ -17,21 +21,11 @@ router.get('/:id', function (req, res) {
 });
 
 router.post('/', function (req, res) {
+    if (!req.ability.can('create', 'MatriculaExterna')) utils.sinPermiso(res);
+
     model.MatriculaExterna.add(req.body)
-        .then(matricula => res.status(201).json(matricula))
-        .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.patch('/:id', function (req, res) {
-
-});
-
-router.put('/:id', function (req, res) {
-
-});
-
-router.delete('/:id', function (req, res) {
-
+    .then(matricula => res.status(201).json(matricula))
+    .catch(e => utils.errorHandler(e, req, res));
 });
 
 module.exports = router;

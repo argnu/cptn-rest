@@ -1,8 +1,12 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
 
-
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'Usuario')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/', function(req, res) {
   model.Usuario.get(req.user.id)
@@ -35,11 +39,9 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-  model.Usuario.get(req.user.id)
-  .then(operador => {
-    if (!req.ability.can('manage', 'Usuario')) return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
-    else return model.Usuario.add(req.body)
-  })
+  if (!req.ability.can('create', 'Usuario')) utils.sinPermiso(res);
+
+  model.Usuario.add(req.body)
   .then(r => res.json(r))
   .catch(e => utils.errorHandler(e, req, res));     
 });
@@ -47,7 +49,7 @@ router.post('/', function(req, res) {
 router.post('/:id/delegaciones', function(req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
-    if (req.ability.can('manage', 'Usuario') || operador.id==req.params.id) return model.Usuario.addDelegacion(req.params.id,req.body)
+    if (req.ability.can('update', 'Usuario') || operador.id==req.params.id) return model.Usuario.addDelegacion(req.params.id,req.body)
     else return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
   })
   .then(r => res.json(r))
@@ -73,10 +75,6 @@ router.put('/:id', function(req, res) {
   model.Usuario.edit(req.params.id, req.body)
   .then(r => res.json(r))
   .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.delete('/:id', function(req, res) {
-
 });
 
 router.delete('/:id/delegaciones/:id_del', function(req, res) {

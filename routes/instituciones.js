@@ -3,11 +3,9 @@ const router = require('express').Router();
 const model = require('../model');
 const auth = require('../auth');
 
-
-
 router.use(function(req, res, next) {
   if (req.ability.can(auth.getMethodAbility(req.method), 'Institucion')) next();
-  else res.status(403).json({msg: 'No tiene permisos para efectuar esta operación' })
+  else utils.sinPermiso(res);
 });
 
 router.get('/', function(req, res) {
@@ -32,12 +30,16 @@ router.get('/:id/titulos', function(req, res) {
 });
 
 router.post('/', function(req, res) {
+  if (!req.ability.can('create', 'Institucion')) utils.sinPermiso(res);
+
   model.Institucion.add(req.body)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.post('/:id/titulos', function(req, res) {
+  if (!req.ability.can('create', 'InstitucionTitulo')) utils.sinPermiso(res);
+
   req.body.institucion = req.params.id;
   model.InstitucionTitulo.add(req.body)
     .then(r => res.json(r))
@@ -52,18 +54,14 @@ router.put('/:id', function(req, res) {
 
 router.put('/:id_inst/titulos/:id', function(req, res) {
   model.InstitucionTitulo.edit(req.params.id, req.body)
-    .then(r => res.json(r))
-    .catch(e => utils.errorHandler(e, req, res));
+  .then(r => res.json(r))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.patch('/:id', function(req, res) {
   model.Institucion.patch(req.params.id, req.body)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.delete('/:id', function(req, res) {
-
 });
 
 router.delete('/:id_inst/titulos/:id', function(req, res) {

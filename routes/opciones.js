@@ -1,8 +1,12 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
 
-
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'Opciones')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/', function(req, res) {
   Promise.all([
