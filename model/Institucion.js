@@ -196,7 +196,7 @@ module.exports.patch = function(id, institucion) {
 module.exports.edit = function(id, institucion) {
   let connection;
   let titulos_nuevos = institucion.titulos.filter(t => !t.id);
-  let titulos_existentes = institucion.titulos.filter(t => !!t.id);  
+  let titulos_existentes = institucion.titulos.filter(t => !!t.id);
 
   return connector.beginTransaction()
   .then(con => {
@@ -240,7 +240,7 @@ module.exports.edit = function(id, institucion) {
 
     titulos_existentes.forEach(t => proms.push(InstitucionTitulo.edit(t.id, t, connection.client)));
 
-    return Promise.all(proms);    
+    return Promise.all(proms);
   })
   .then(r => {
     return connector.commit(connection.client)
@@ -252,6 +252,9 @@ module.exports.edit = function(id, institucion) {
   .catch(e => {
     connector.rollback(connection.client);
     connection.done();
-    return Promise.reject(e);
-  });  
+    if (e.code == 23503) {
+      return Promise.reject({ http_code: 409, message: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
+    }
+    else return Promise.reject(e);
+  });
 }
