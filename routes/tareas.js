@@ -1,8 +1,12 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
 
-
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'Tareas')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/categorias', function(req, res) {
   model.Categoria.getAll(req.params)
@@ -26,18 +30,6 @@ router.get('/items/:id/predeterminados', function(req, res) {
   model.ItemValorPredeterminado.get({ item: req.params.id })
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.post('/', function(req, res) {
-
-});
-
-router.put('/:id', function(req, res) {
-
-});
-
-router.delete('/:id', function(req, res) {
-
 });
 
 module.exports = router;

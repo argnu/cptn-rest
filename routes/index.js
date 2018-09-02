@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const ABILITIES = require('../auth/roles')
 
 router.use((req, res, next) => {
   if (req.method != 'OPTIONS') {
@@ -7,7 +8,6 @@ router.use((req, res, next) => {
     else return res.status(401).json({ msg: 'Usuario sin autorización' });
   }
   else next();
-
 });
 
 router.get('/*', (req, res, next) => {
@@ -38,7 +38,6 @@ router.use('/departamentos', require('./departamentos'));
 router.use('/localidades', require('./localidades'));
 router.use('/delegaciones', require('./delegaciones'));
 router.use('/instituciones', require('./instituciones'));
-router.use('/titulos', require('./titulos'));
 router.use('/boletas', require('./boletas'));
 router.use('/comprobantes', require('./comprobantes'));
 router.use('/volantespago', require('./volantespago'));

@@ -41,6 +41,10 @@ module.exports.errorHandler = function(e, req, res) {
   }
 }
 
+module.exports.sinPermiso = function(res) {
+  res.status(403).json({msg: 'No tiene permisos para efectuar esta operación' });
+}
+
 module.exports.seqPromises = function(promises) {
   return promises.reduce((previous_prom, current_prom) => {
     return previous_prom.then(current_prom)

@@ -1,8 +1,12 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
 
-
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'ValoresGlobales')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/', function(req, res) {
   model.ValoresGlobales.getAll(req.query)
@@ -16,8 +20,9 @@ router.get('/:id', function(req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
-
 router.post('/', function(req, res) {
+  if (!req.ability.can('create', 'ValoresGlobales')) utils.sinPermiso(res);
+  
   model.ValoresGlobales.add(req.body)
   .then(r => res.status(201).json(r))
   .catch(e => utils.errorHandler(e, req, res));

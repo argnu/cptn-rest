@@ -438,7 +438,7 @@ function filter(query, params) {
   }
 }
 
-module.exports.getAll = function (params) {
+module.exports.getAll = function (params, rol) {
   let matriculas = [];
   let query = table.select([
     table.id,
@@ -486,7 +486,7 @@ module.exports.getAll = function (params) {
   .then(r => {
     matriculas = r.rows.map(row => dot.object(row));
     let proms = matriculas.map(m => {
-      if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad)
+      if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad, rol)
       else if (m.tipoEntidad == 'empresa') return Empresa.get(m.entidad);
     });
 

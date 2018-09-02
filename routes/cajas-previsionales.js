@@ -1,6 +1,12 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
+const auth = require('../auth');
+
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'CajaPrevisional')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/', function(req, res) {
   model.CajaPrevisional.getAll(req.query)
@@ -15,17 +21,11 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
+  if (!req.ability.can('create', 'CajaPrevisonal')) utils.sinPermiso(res);
+  
   model.CajaPrevisional.add(req.body)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.put('/:id', function(req, res) {
-
-});
-
-router.delete('/:id', function(req, res) {
-
 });
 
 module.exports = router;

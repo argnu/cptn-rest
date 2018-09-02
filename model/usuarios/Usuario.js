@@ -1,3 +1,4 @@
+const ABILITIES = require('../../auth/roles')
 const utils = require('../../utils');
 const config = require(`../../config.private`);
 const jwt = require('jsonwebtoken');
@@ -23,10 +24,10 @@ const UsuarioDelegacion = require('./UsuarioDelegacion');
       unique: true
     },
     {
-      name: 'admin',
-      dataType: 'boolean',
+      name: 'rol',
+      dataType: 'varchar(100)',
       notNull: true,
-      defaultValue: false
+      defaultValue: 'usuario_cptn'
     },
     {
       name: 'nombre',
@@ -167,7 +168,7 @@ module.exports.patch = function(id, usuario) {
 
   let query = table.update(usuario_patch)
   .where(table.id.equals(id))
-  .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.admin)
+  .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.rol)
   .toQuery();
 
   return connector.execQuery(query)
@@ -201,7 +202,7 @@ module.exports.edit = function(id, usuario) {
     delete(usuario.delegaciones);
     let query = table.update(usuario)
     .where(table.id.equals(id))
-    .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.admin)
+    .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.rol)
     .toQuery();
 
     return connector.execQuery(query, connection.client)
@@ -229,7 +230,7 @@ module.exports.auth = function(usuario) {
           table.nombre,
           table.apellido,
           table.email,
-          table.admin,
+          table.rol,
           table.activo
         ])
        .from(table)
@@ -241,7 +242,8 @@ module.exports.auth = function(usuario) {
       if (r.rows.length == 1) {
         let usuario_bd =r.rows[0];
         if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password) && usuario_bd.activo) {
-          usuario_bd.token = jwt.sign({ id: usuario_bd.id }, config.secret);
+          usuario_bd.token = jwt.sign({ id: usuario_bd.id, rol: usuario_bd.rol }, config.secret);
+          usuario_bd.rules = ABILITIES[usuario_bd.rol].rules;
           delete(usuario_bd.hash_password);
           return usuario_bd;
         }

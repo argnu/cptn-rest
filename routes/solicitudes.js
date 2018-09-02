@@ -2,6 +2,12 @@ const path = require('path');
 const router = require('express').Router();
 const model = require('../model');
 const utils = require('../utils');
+const auth = require('../auth');
+
+router.use(function(req, res, next) {
+  if (req.ability.can(auth.getMethodAbility(req.method), 'Solicitud')) next();
+  else utils.sinPermiso(res);
+});
 
 router.get('/', function(req, res) {
   model.Solicitud.getAll(req.query)
@@ -16,6 +22,8 @@ router.get('/:id', function(req, res) {
 });
 
 router.post('/', function(req, res) {
+  if (!req.ability.can('create', 'Solicitud')) utils.sinPermiso(res);
+  
   Promise.all([
     utils.guardarArchivo('foto', req.body.entidad.foto),
     utils.guardarArchivo('firma', req.body.entidad.firma)
@@ -52,6 +60,7 @@ router.put('/:id', function(req, res) {
   .catch(e => utils.errorHandler(e, req, res));
 });
 
+
 router.patch('/:id', function(req, res) {
   req.body.updated_by = req.user.id;
   model.Solicitud.patch(req.params.id, req.body)
@@ -59,8 +68,5 @@ router.patch('/:id', function(req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
-router.delete('/:id', function(req, res) {
-
-});
 
 module.exports = router;
