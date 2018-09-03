@@ -31,7 +31,7 @@ function checkMatricula(id) {
             let nuevo_estado = {
                 matricula: id,
                 estado: 24, // Suspendido por mora cuatrimestral
-                operador: 25,   // Procesos de Sistema
+                updated_by: 25,   // Procesos de Sistema
                 documento: 3299    //Resolución 008/18
             }
             return model.Matricula.cambiarEstado(nuevo_estado)
