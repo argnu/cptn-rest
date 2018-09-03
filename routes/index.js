@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const ABILITIES = require('../auth/roles')
 
 router.use((req, res, next) => {
   if (req.method != 'OPTIONS') {
@@ -50,5 +49,6 @@ router.use('/cajas-previsionales', require('./cajas-previsionales'));
 router.use('/personas', require('./personas'));
 router.use('/valores-globales', require('./valores_globales'));
 router.use('/comprobantes-exenciones', require('./comprobantes_exenciones'));
+router.use('/solicitudes-suspension', require('./solicitudes_suspension'));
 
 module.exports = router;

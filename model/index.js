@@ -82,3 +82,5 @@ module.exports.ComprobantePagoTarjeta = require('./cobranzas/ComprobantePagoTarj
 module.exports.ComprobanteExencion = require('./cobranzas/ComprobanteExencion');
 module.exports.VolantePago = require('./cobranzas/VolantePago');
 module.exports.VolantePagoBoleta = require('./cobranzas/VolantePagoBoleta');
+
+module.exports.SolicitudSuspension = require('./SolicitudSuspension');

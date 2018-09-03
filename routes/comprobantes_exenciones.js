@@ -4,7 +4,8 @@ const model = require('../model');
 const auth = require('../auth');
 
 router.use(function(req, res, next) {
-  if (req.ability.can(auth.getMethodAbility(req.method), 'ComprobanteExencion')) next();
+  if (req.method == 'OPTIONS') next();
+  else if (req.ability.can(auth.getMethodAbility(req.method), 'ComprobanteExencion')) next();
   else utils.sinPermiso(res);
 });
 

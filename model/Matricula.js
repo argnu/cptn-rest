@@ -396,7 +396,7 @@ module.exports.cambiarEstado = function(nuevo_estado) {
         usuario: nuevo_estado.updated_by
       }, connection.client)
     )
-    .then(historial => {
+    .then(() => {
       let query = table.update({
         estado: nuevo_estado.estado,
         updated_by: nuevo_estado.updated_by,

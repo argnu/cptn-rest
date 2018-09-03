@@ -5,7 +5,8 @@ const utils = require('../utils');
 const auth = require('../auth');
 
 router.use(function(req, res, next) {
-  if (req.ability.can(auth.getMethodAbility(req.method), 'Solicitud')) next();
+  if (req.method == 'OPTIONS') next();
+  else if (req.ability.can(auth.getMethodAbility(req.method), 'Solicitud')) next();
   else utils.sinPermiso(res);
 });
 

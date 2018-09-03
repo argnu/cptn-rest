@@ -4,7 +4,8 @@ const model = require('../model');
 const auth = require('../auth');
 
 router.use(function(req, res, next) {
-  if (req.ability.can(auth.getMethodAbility(req.method), 'Matricula')) next();
+  if (req.method == 'OPTIONS') next();
+  else if (req.ability.can(auth.getMethodAbility(req.method), 'Matricula')) next();
   else res.status(403).json({msg: 'No tiene permisos para efectuar esta operación' })
 });
 

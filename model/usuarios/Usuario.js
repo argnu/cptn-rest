@@ -26,8 +26,7 @@ const UsuarioDelegacion = require('./UsuarioDelegacion');
     {
       name: 'rol',
       dataType: 'varchar(100)',
-      notNull: true,
-      defaultValue: 'usuario_cptn'
+      notNull: true
     },
     {
       name: 'nombre',

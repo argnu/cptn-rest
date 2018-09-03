@@ -351,11 +351,6 @@ module.exports.add = function (comprobante) {
                     return Promise.all(proms_comprobante_pago);
                 })
                 .then(() => {
-                    let num_item = 1;
-                    let proms_items = [];
-                    let proms_boleta_estado = [];
-                    let proms_volante_pagado = [];
-
                     return Promise.all(comprobante.boletas.map(boleta => pagarBoleta(boleta, connection.client)));
                 })
                 .then(r => {
