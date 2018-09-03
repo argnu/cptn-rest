@@ -5,19 +5,16 @@ const router = require('express').Router();
 const model = require('../model');
 const auth = require('../auth');
 
-router.use(function(req, res, next) {
-  if (req.method == 'OPTIONS') next();
-  else if (req.ability.can(auth.getMethodAbility(req.method), 'Profesional')) next();
-  else utils.sinPermiso(res);
-});
 
 router.get('/', function (req, res) {
+  if (!req.ability.can('read', 'Profesional')) utils.sinPermiso(res);
   model.Profesional.getAll(req.query)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.get('/:id/contactos', function (req, res) {
+  if (!req.ability.can('read', 'Profesional')) utils.sinPermiso(res);
   model.Contacto.getAll(req.params.id)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
@@ -25,6 +22,7 @@ router.get('/:id/contactos', function (req, res) {
 
 
 router.get('/:id/subsidiarios', function (req, res) {
+  if (!req.ability.can('read', 'Profesional')) utils.sinPermiso(res);
   model.Subsidiario.getAll(req.params.id)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
@@ -57,6 +55,7 @@ router.get('/:id/firma', function (req, res) {
 });
 
 router.get('/:id', function (req, res) {
+  if (!req.ability.can('read', 'Profesional')) utils.sinPermiso(res);
   model.Profesional.get(req.params.id)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
@@ -70,6 +69,8 @@ router.post('/', function (req, res) {
 });
 
 router.put('/:id/foto', function (req, res) {
+  if (!req.ability.can('update', 'Profesional')) utils.sinPermiso(res);
+
   if (req.body.foto) {
     return utils.guardarArchivo('foto', req.body.foto)
     .then(foto => model.Profesional.patch(req.params.id, { foto }))
@@ -82,6 +83,7 @@ router.put('/:id/foto', function (req, res) {
 });
 
 router.put('/:id/firma', function (req, res) {
+  if (!req.ability.can('update', 'Profesional')) utils.sinPermiso(res);
   if (req.body.firma) {
     return utils.guardarArchivo('firma', req.body.firma)
     .then(firma => model.Profesional.patch(req.params.id, { firma }))
@@ -94,6 +96,7 @@ router.put('/:id/firma', function (req, res) {
 });
 
 router.put('/:id', function (req, res) {
+  if (!req.ability.can('update', 'Profesional')) utils.sinPermiso(res);
   let profesional;
   
   Promise.all([

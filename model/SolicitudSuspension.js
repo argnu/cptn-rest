@@ -191,12 +191,12 @@ module.exports.aprobar = function(id, aprobacion) {
       return connector.execQuery(query, conexion.client)
       .then(() => {
           let nuevo_estado = {
-            matricula: solicitud.matricula,
+            matricula: solicitud.matricula.id,
             estado: 25, // Suspendido
             updated_by: aprobacion.updated_by,
             documento: aprobacion.documento
         }
-        return model.Matricula.cambiarEstado(nuevo_estado);        
+        return Matricula.cambiarEstado(nuevo_estado, conexion.client);        
       })
       .then(() => {
         return connector.commit(conexion.client)
