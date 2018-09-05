@@ -2,28 +2,25 @@ const path = require('path');
 const router = require('express').Router();
 const model = require('../model');
 const utils = require('../utils');
-const auth = require('../auth');
-
-router.use(function(req, res, next) {
-  if (req.method == 'OPTIONS') next();
-  else if (req.ability.can(auth.getMethodAbility(req.method), 'Solicitud')) next();
-  else utils.sinPermiso(res);
-});
 
 router.get('/', function(req, res) {
+  if (!req.ability.can('read', 'Solicitud')) return utils.sinPermiso(res);
+
   model.Solicitud.getAll(req.query)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.get('/:id', function(req, res) {
+  if (!req.ability.can('read', 'Solicitud')) return utils.sinPermiso(res);
+
   model.Solicitud.get(req.params.id)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.post('/', function(req, res) {
-  if (!req.ability.can('create', 'Solicitud')) utils.sinPermiso(res);
+  if (!req.ability.can('create', 'Solicitud')) return utils.sinPermiso(res);
   
   Promise.all([
     utils.guardarArchivo('foto', req.body.entidad.foto),
@@ -43,6 +40,8 @@ router.post('/', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
+  if (!req.ability.can('update', 'Solicitud')) return utils.sinPermiso(res);
+
   let solicitud;
   Promise.all([
     utils.guardarArchivo('foto', req.body.entidad.foto),
@@ -63,6 +62,8 @@ router.put('/:id', function(req, res) {
 
 
 router.patch('/:id', function(req, res) {
+  if (!req.ability.can('update', 'Solicitud')) return utils.sinPermiso(res);
+
   req.body.updated_by = req.user.id;
   model.Solicitud.patch(req.params.id, req.body)
     .then(r => res.status(200).json(r))

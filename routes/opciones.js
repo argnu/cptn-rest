@@ -1,15 +1,10 @@
 const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
-const auth = require('../auth');
-
-router.use(function(req, res, next) {
-  if (req.method == 'OPTIONS') next();
-  else if (req.ability.can(auth.getMethodAbility(req.method), 'Opciones')) next();
-  else utils.sinPermiso(res);
-});
 
 router.get('/', function(req, res) {
+  if (!req.ability.can('read', 'Opciones')) return utils.sinPermiso(res);
+
   Promise.all([
     model.TipoCondicionAfip.getAll(req.query),
     model.TipoContacto.getAll(req.query),
