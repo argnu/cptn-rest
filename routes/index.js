@@ -3,7 +3,7 @@ const router = require('express').Router();
 router.use((req, res, next) => {
   if (req.method != 'OPTIONS') {
     if (req.path == '/usuarios/auth' || !!req.user) next();
-    else if (req.path.match(/^\/profesionales\/\d+\/(foto|firma)$/)) next();
+    else if (req.path.match(/^\/(profesionales|documentos)\/\d+\/(foto|firma|archivo)$/)) next();
     else return res.status(401).json({ msg: 'Usuario sin autorización' });
   }
   else next();
@@ -50,5 +50,6 @@ router.use('/personas', require('./personas'));
 router.use('/valores-globales', require('./valores_globales'));
 router.use('/comprobantes-exenciones', require('./comprobantes_exenciones'));
 router.use('/solicitudes-suspension', require('./solicitudes_suspension'));
+router.use('/documentos', require('./documentos'));
 
 module.exports = router;

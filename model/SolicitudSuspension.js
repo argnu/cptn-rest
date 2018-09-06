@@ -187,7 +187,14 @@ module.exports.aprobar = function(id, aprobacion) {
     return connector.beginTransaction()
     .then(con => {
       conexion = con;
-      let query = table.update({ estado: 2 }).toQuery(); // Estado de solicitud 'Aprobada'
+      let query = table.update({ 
+        estado: 2, 
+        updated_by: aprobacion.updated_by,
+        updated_at: new Date()
+      })
+      .where(table.id.equals(id))
+      .toQuery(); // Estado de solicitud 'Aprobada'
+
       return connector.execQuery(query, conexion.client)
       .then(() => {
           let nuevo_estado = {
@@ -196,7 +203,7 @@ module.exports.aprobar = function(id, aprobacion) {
             updated_by: aprobacion.updated_by,
             documento: aprobacion.documento
         }
-        return Matricula.cambiarEstado(nuevo_estado, conexion.client);        
+        return Matricula.cambiarEstado(solicitud.matricula.id, nuevo_estado, conexion.client);        
       })
       .then(() => {
         return connector.commit(conexion.client)

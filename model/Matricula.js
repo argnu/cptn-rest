@@ -199,13 +199,19 @@ function completarConCeros(numero) {
     return ceros + result;
 }
 
-function addBoletaInscripcion(id, fecha, delegacion, client) {
+function addBoletaInscripcion(id, documento, delegacion, client) {
+  let fecha;
+
   //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
-  return Promise.all([
-    ValoresGlobales.getValida(1, fecha),
-    ValoresGlobales.getValida(6, fecha)
-  ])
-  .then(valores => {
+  return Documento.get(documento)
+  .then(documento => {
+    fecha = documento.fecha;
+    return Promise.all([
+      ValoresGlobales.getValida(1, fecha),
+      ValoresGlobales.getValida(6, fecha)
+    ])
+  })
+  .then(valores => {  
     let importe = valores[0].valor;
     let dias_vencimiento = valores[1].valor;
 
@@ -281,15 +287,6 @@ function addBoletasMensuales(id, delegacion, client) {
   })
 }
 
-function getDocumento(documento, client) {
-  if (typeof document == 'number') return Promise.resolve({id: documento});
-  return Documento.getAll(documento)
-  .then(docs => {
-    if (docs.length > 0) return Promise.resolve(docs[0]);
-    else return Documento.add(documento, client);
-  })
-}
-
 function getTipoMatricula(id_profesional) {
   return ProfesionalTitulo.getByProfesional(id_profesional)
   .then(p_titulos => Promise.all(p_titulos.map(t => TipoMatricula.get(t.titulo.tipo_matricula))))
@@ -343,7 +340,7 @@ module.exports.aprobar = function(matricula) {
             if (matricula.generar_boleta) {
               return addBoletaInscripcion(
                 matricula_added.id,
-                matricula.documento.fecha,
+                matricula.documento,
                 matricula.delegacion,
                 connection.client
               );
@@ -351,10 +348,9 @@ module.exports.aprobar = function(matricula) {
             else return Promise.resolve(false);
           })
           .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
-          .then(r => getDocumento(matricula.documento, connection.client))
-          .then(documento => MatriculaHistorial.add({
+          .then(() => MatriculaHistorial.add({
               matricula: matricula_added.id,
-              documento: documento.id,
+              documento: matricula.documento,
               estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
               fecha: new Date(),
               usuario: matricula.created_by
@@ -379,22 +375,20 @@ module.exports.aprobar = function(matricula) {
   })
 }
 
-module.exports.cambiarEstado = function(nuevo_estado) {
+module.exports.cambiarEstado = function(id, nuevo_estado) {
   let connection;
 
   return connector.beginTransaction()
   .then(conx => {
     connection = conx;
 
-    return getDocumento(nuevo_estado.documento, connection.client)
-    .then(documento =>
-      MatriculaHistorial.add({
-        matricula: nuevo_estado.matricula,
-        documento: documento.id,
+    return MatriculaHistorial.add({
+        matricula: id,
+        documento: nuevo_estado.documento,
         estado: nuevo_estado.estado,
         fecha: new Date(),
         usuario: nuevo_estado.updated_by
-      }, connection.client)
+      }, connection.client
     )
     .then(() => {
       let query = table.update({
@@ -402,7 +396,7 @@ module.exports.cambiarEstado = function(nuevo_estado) {
         updated_by: nuevo_estado.updated_by,
         updated_at: new Date()
       })
-      .where(table.id.equals(nuevo_estado.matricula))
+      .where(table.id.equals(id))
       .returning(table.id, table.estado)
       .toQuery();
 

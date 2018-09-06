@@ -30,8 +30,6 @@ router.get('/:id/subsidiarios', function (req, res) {
 });
 
 router.get('/:id/foto', function (req, res) {
-  if (!req.ability.can('read', 'Profesional')) return utils.sinPermiso(res);
-
   model.Profesional.getFoto(req.params.id)
     .then(foto => {
       let file_path = path.join(__dirname, '..', 'files/fotos', foto);
@@ -45,8 +43,6 @@ router.get('/:id/foto', function (req, res) {
 });
 
 router.get('/:id/firma', function (req, res) {
-  if (!req.ability.can('read', 'Profesional')) return utils.sinPermiso(res);
-  
   model.Profesional.getFirma(req.params.id)
     .then(r => {
       let file_path = path.join(__dirname, '..', 'files/firmas', r);

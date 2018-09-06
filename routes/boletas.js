@@ -28,7 +28,7 @@ router.post('/', function(req, res) {
 });
 
 router.patch('/:id', function(req, res) {
-  if (!req.ability.can('update', 'Banco')) return utils.sinPermiso(res);
+  if (!req.ability.can('update', 'Boleta')) return utils.sinPermiso(res);
 
   req.body.updated_by = req.user.id;
   model.Boleta.patch(req.params.id, req.body)

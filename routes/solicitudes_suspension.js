@@ -30,12 +30,8 @@ router.post('/', function(req, res) {
 router.post('/:id/aprobar', function(req, res) {
   if (!req.ability.can('update', 'SolicitudSuspension')) return utils.sinPermiso(res);
 
-  let aprobacion = {
-    documento: req.body,
-    updated_by: req.user.id
-  }
-  
-  model.SolicitudSuspension.aprobar(req.params.id, aprobacion)
+  req.body.updated_by = req.user.id
+  model.SolicitudSuspension.aprobar(req.params.id, req.body)
   .then(solicitud => res.status(200).json(solicitud))
   .catch(e => utils.errorHandler(e, req, res));
 });

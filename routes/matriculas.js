@@ -44,11 +44,11 @@ router.post('/', function(req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
-router.post('/cambiar-estado', function(req, res) {
+router.post('/:id/cambiar-estado', function(req, res) {
   if (!req.ability.can('update', 'Matricula')) return utils.sinPermiso(res);
 
   req.body.updated_by = req.user.id;
-  model.Matricula.cambiarEstado(req.body)
+  model.Matricula.cambiarEstado(req.params.id, req.body)
     .then(total => res.status(200).json(total))
     .catch(e => utils.errorHandler(e, req, res));
 });
