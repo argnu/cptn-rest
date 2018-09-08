@@ -32,15 +32,18 @@ router.get('/:id', function(req, res) {
     .catch(e => utils.errorHandler(e, req, res));
 });
 
+const notFound =  {
+    http_code: 404,
+    mensaje: 'El recurso solicitado no existe'
+}
+
 router.get('/:id/archivo', function(req, res) {
   model.Documento.getArchivo(req.params.id)
     .then(r => {
+      if (!r) return Promise.reject(notFound);
       let file_path = path.join(__dirname, '..', 'files/documentos', r);
       if (fs.existsSync(file_path)) res.sendFile(file_path);
-      else return Promise.reject({
-        http_code: 404,
-        msg: 'El recurso solicitado no existe'
-      });
+      else return Promise.reject(notFound);
     })
     .catch(e => utils.errorHandler(e, req, res));
 });

@@ -16,7 +16,7 @@ router.get('/:id/delegaciones', function (req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
     if (req.ability.can('manage', 'Usuario') || operador.id==req.params.id) return model.Usuario.getDelegaciones(req.params.id);
-    else return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    else return Promise.reject({ code: 403, mensaje: 'No tiene permisos para efectuar esta operación' });
   })
   .then(r => res.json(r))
   .catch(e => utils.errorHandler(e, req, res));    
@@ -28,7 +28,7 @@ router.get('/:id', function(req, res) {
   model.Usuario.get(req.user.id)
   .then(operador => {
     if (req.ability.can('manage', 'Usuario') || operador.id==req.params.id) return model.Usuario.get(req.params.id)
-    else return Promise.reject({ code: 403, msg: 'No tiene permisos para efectuar esta operación' });
+    else return Promise.reject({ code: 403, mensaje: 'No tiene permisos para efectuar esta operación' });
   })
   .then(r => res.json(r))
   .catch(e => utils.errorHandler(e, req, res));  
@@ -55,7 +55,7 @@ router.post('/auth', function(req, res) {
   model.Usuario.auth(req.body)
   .then(r => {
     if (r) res.json(r);
-    else return Promise.reject({ http_code: 403, msg: 'Datos de usuario inválidos' });
+    else return Promise.reject({ http_code: 403, mensaje: 'Datos de usuario inválidos' });
   })
   .catch(e => utils.errorHandler(e, req, res));
 });

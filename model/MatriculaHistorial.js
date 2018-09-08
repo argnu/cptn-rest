@@ -79,6 +79,7 @@ const select = [
   Documento.table.id.as('documento.id'),
   Documento.table.numero.as('documento.numero'),
   Documento.table.fecha.as('documento.fecha'),
+  Documento.table.archivo.as('documento.archivo'),
   TipoDocumento.table.id.as('documento.tipo.id'),
   TipoDocumento.table.valor.as('documento.tipo.valor')
 ]

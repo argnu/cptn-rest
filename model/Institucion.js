@@ -253,7 +253,7 @@ module.exports.edit = function(id, institucion) {
     connector.rollback(connection.client);
     connection.done();
     if (e.code == 23503) {
-      return Promise.reject({ http_code: 409, message: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
+      return Promise.reject({ http_code: 409, mensaje: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
     }
     else return Promise.reject(e);
   });

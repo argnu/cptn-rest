@@ -36,7 +36,7 @@ router.get('/:id/foto', function (req, res) {
       if (fs.existsSync(file_path)) res.sendFile(file_path);
       else return Promise.reject({
         http_code: 404,
-        msg: 'El recurso solicitado no existe'
+        mensaje: 'El recurso solicitado no existe'
       });
     })
     .catch(e => utils.errorHandler(e, req, res));
@@ -49,7 +49,7 @@ router.get('/:id/firma', function (req, res) {
       if (fs.existsSync(file_path)) res.sendFile(file_path);
       else return Promise.reject({
         http_code: 404,
-        msg: 'El recurso solicitado no existe'
+        mensaje: 'El recurso solicitado no existe'
       });
     })
     .catch(e => utils.errorHandler(e, req, res));
@@ -81,7 +81,7 @@ router.put('/:id/foto', function (req, res) {
     .catch(e => utils.errorHandler(e, req, res));
   } 
   else res.status(500).json({
-    msg: 'Error en el servidor'
+    mensaje: 'Error en el servidor'
   });
 });
 
@@ -95,7 +95,7 @@ router.put('/:id/firma', function (req, res) {
     .catch(e => utils.errorHandler(e, req, res));
   } 
   else res.status(500).json({
-    msg: 'Error en el servidor'
+    mensaje: 'Error en el servidor'
   });
 });
 

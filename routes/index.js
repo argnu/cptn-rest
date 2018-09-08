@@ -4,7 +4,7 @@ router.use((req, res, next) => {
   if (req.method != 'OPTIONS') {
     if (req.path == '/usuarios/auth' || !!req.user) next();
     else if (req.path.match(/^\/(profesionales|documentos)\/\d+\/(foto|firma|archivo)$/)) next();
-    else return res.status(401).json({ msg: 'Usuario sin autorización' });
+    else return res.status(401).json({ mensaje: 'Usuario sin autorización' });
   }
   else next();
 });

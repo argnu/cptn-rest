@@ -112,13 +112,17 @@ else {
                 alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP NOT NULL`);
 
             if (column.dataType != 'serial') {
-                let def_value = typeof column.defaultValue == 'string' ? `'${column.defaultValue}'` : column.defaultValue;
+                let def_value = column.defaultValue
+                // typeof column.defaultValue == 'string' ? `'${column.defaultValue}'` : column.defaultValue;
                 
                 if (!column_bd.default) def_db_value = null;
                 else if (column_bd.type == 'boolean') def_db_value = (column_bd.default === 'true');
                 else if (column_bd.type == 'integer') def_db_value = parseInt(column_bd.default);
                 else if (column_bd.type == 'double precision') def_db_value = parseFloat(column_bd.default);
-                else if (column_bd.type.includes('character')) column_bd.default.replace(/\:\:.+$/, '');
+                else if (column_bd.type.includes('character')) def_db_value = column_bd.default.replace(/\:\:.+$/, '');
+                else if (column_bd.type.includes('timestamp')) {
+                    def_db_value = column_bd.default.replace("('now'::text)::date", 'current_date');
+                }
 
 
                 if (column.defaultValue != undefined && column_bd.default == null) 
@@ -126,7 +130,10 @@ else {
                 else if (column.defaultValue == undefined && column_bd.default != null)
                     alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" DROP DEFAULT`);
                 else if (column.defaultValue != undefined && column_bd.default != null && column.defaultValue != def_db_value) {
-                    alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
+                    if (def_db_value != null && def_db_value.toString().toLowerCase() != column.defaultValue.toString().toLowerCase())
+                        alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
+                    else if (def_db_value == null) 
+                        alters.alter.push(`ALTER TABLE "${column.table._name}" ALTER COLUMN "${column.name}" SET DEFAULT ${def_value}`);
                 }
             }
         }

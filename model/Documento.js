@@ -184,5 +184,11 @@ module.exports.delete = function(id) {
   .toQuery();
 
   return connector.execQuery(query)
-  .then(r => r.rows[0]);  
+  .then(r => r.rows[0])
+  .catch(e => {
+    if (e.code == 23503) {
+      return Promise.reject({ http_code: 409, mensaje: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
+    }
+    else return Promise.reject(e);    
+  })  
 }

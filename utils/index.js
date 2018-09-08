@@ -33,16 +33,16 @@ module.exports.numberOrNull = function(value) {
 }
 
 module.exports.errorHandler = function(e, req, res) {
-  if (e.http_code) res.status(e.http_code).json({ message: e.message });
+  if (e.http_code) res.status(e.http_code).json({ mensaje: e.mensaje });
   else { 
     console.error(e);
     console.error(`Error en ${req.method} ${req.baseUrl}${req.path}`);
-    res.status(500).json({ msg: 'Error en el servidor' });
+    res.status(500).json({ mensaje: 'Error en el servidor' });
   }
 }
 
 module.exports.sinPermiso = function(res) {
-  res.status(403).json({msg: 'No tiene permisos para efectuar esta operación' });
+  res.status(403).json({mensaje: 'No tiene permisos para efectuar esta operación' });
 }
 
 module.exports.seqPromises = function(promises) {
