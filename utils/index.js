@@ -23,8 +23,8 @@ module.exports.getFloat = function(value) {
 
 module.exports.getFecha = function(value) {
   if (!value || value.toString().length == 0) return null;
-  else if (value.toString().indexOf('/') != -1)  return moment(value, 'DD/MM/YYYY');
-  else return moment(value);
+  else if (value.toString().indexOf('/') != -1)  return moment(value, 'DD/MM/YYYY').format('YYYY-MM-DD');
+  else return moment(value).format('YYYY-MM-DD');
 }
 
 module.exports.numberOrNull = function(value) {

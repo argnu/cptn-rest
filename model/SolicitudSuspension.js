@@ -130,8 +130,8 @@ function filter(query, params) {
   if (params.matricula) query.where(table.matricula.equals(params.matricula));
 
   if (params.fecha) {
-    if (params.fecha.desde) query.where(table.fecha.gte(params.fecha.desde));
-    if (params.fecha.hasta) query.where(table.fecha.lte(params.fecha.hasta));
+    if (params.fecha.desde) query.where(table.fecha.gte(utils.getFecha(params.fecha.desde)));
+    if (params.fecha.hasta) query.where(table.fecha.lte(utils.getFecha(params.fecha.hasta)));
   }
 
   if (params.filtros) {
