@@ -122,6 +122,7 @@ module.exports.add = function(usuario) {
       table.nombre.value(usuario.nombre),
       table.apellido.value(usuario.apellido),
       table.email.value(usuario.email),
+      table.rol.value(usuario.rol),
       table.hash_password.value(bcrypt.hashSync(usuario.password, 10))
     )
     .returning(table.id, table.nombre, table.apellido, table.email)

@@ -18,8 +18,12 @@ const usuario_cptn = AbilityBuilder.define(can => {
   can('manage', 'Comprobante')
   can('manage', 'VolantePago')
   can('manage', 'SolicitudSuspension')
+})
+
+const moderador_titulos = AbilityBuilder.define(can => {
+  can('read', 'all')
   can('manage', 'Institucion')
   can('manage', 'InstitucionTitulo')
 })
 
-module.exports = { admin, usuario_cptn, anonimo }
+module.exports = { admin, usuario_cptn, anonimo, moderador_titulos }
