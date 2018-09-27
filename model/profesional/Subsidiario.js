@@ -62,7 +62,6 @@ module.exports.getAll = function(id_profesional) {
 }
 
 module.exports.add = function(subsidiario, client) {
-  console.log(subsidiario)
   try {
     let query = table.insert(
       table.dni.value(subsidiario.dni), 
