@@ -155,7 +155,6 @@ module.exports.add = function(titulo, client) {
 
 module.exports.edit = function(id, titulo, client) {
   try {
-    let titulo_edit;
     let query = table.update({
       nombre: titulo.nombre,
       tipo_matricula: titulo.tipo_matricula,

@@ -56,6 +56,7 @@ module.exports.MatriculaMovimiento = require('./MatriculaMovimiento');
 
 module.exports.Empresa = require('./empresa/Empresa');
 module.exports.EmpresaRepresentante = require('./empresa/EmpresaRepresentante');
+module.exports.EmpresaIncumbencia = require('./empresa/EmpresaIncumbencia');
 module.exports.CajaPrevisional = require('./profesional/CajaPrevisional');
 module.exports.Profesional = require('./profesional/Profesional');
 module.exports.ProfesionalCajaPrevisional = require('./profesional/ProfesionalCajaPrevisional');

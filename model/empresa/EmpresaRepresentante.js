@@ -1,3 +1,4 @@
+const dot = require('dot-object');
 const connector = require(`../../db/connector`);
 const sql = require('node-sql-2');
 sql.setDialect('postgres');
@@ -73,10 +74,24 @@ module.exports.add = function(representante, client) {
                 table.empresa.value(representante.empresa),
                 table.matricula.value(representante.matricula),
                 table.matricula_externa.value(representante.matricula_externa),
-                table.fechaInicio.value(utils.checkNull(representante.fechaInicio))
+                table.fechaInicio.value(utils.checkNull(representante.fechaInicio)),
+                table.fechaFin.value(utils.checkNull(representante.fechaFin))
               )
               .returning(table.id, table.empresa, table.matricula, table.fechaInicio)
               .toQuery();
+
+  return connector.execQuery(query, client);
+}
+
+module.exports.edit = function(id, representante, client) {
+  let query = table.update({
+    matricula: representante.matricula,
+    matricula_externa: representante.matricula_externa,
+    fechaInicio: utils.checkNull(representante.fechaInicio),
+    fechaFin: utils.checkNull(representante.fechaFin)
+  })
+  .where(table.id.equals(id))
+  .toQuery();
 
   return connector.execQuery(query, client);
 }
@@ -85,23 +100,23 @@ function getMatricula(id) {
   let query = table.select(
     table.id, 
     table.tipo,
-    table.matricula,
     table.fechaInicio.cast('varchar(10)'),
     table.fechaFin.cast('varchar(10)'),
-    Matricula.table.numeroMatricula,
-    Profesional.table.nombre,
-    Profesional.table.apellido,
-    Profesional.table.dni
+    table.matricula.as('matricula.id'),
+    Matricula.table.numeroMatricula.as('matricula.numeroMatricula'),
+    Profesional.table.nombre.as('matricula.entidad.nombre'),
+    Profesional.table.apellido.as('matricula.entidad.apellido'),
+    Profesional.table.dni.as('matricula.entidad.dni')
   )
   .from(
     table.join(Matricula.table).on(table.matricula.equals(Matricula.table.id))
-         .join(Profesional.table).on(Matricula.table.entidad.equals(Profesional.table.id))
+    .join(Profesional.table).on(Matricula.table.entidad.equals(Profesional.table.id))
   )
   .where(table.id.equals(id))
   .toQuery();
 
   return connector.execQuery(query)
-  .then(r => r.rows[0]);
+  .then(r => dot.object(r.rows[0]));
 }
 
 function getMatriculaExterna(id) {

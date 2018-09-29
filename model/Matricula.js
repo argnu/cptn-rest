@@ -199,6 +199,44 @@ function completarConCeros(numero) {
     return ceros + result;
 }
 
+function getImporteInscripcion(id_matricula) {
+  return Matricula.get(id_matricula)
+  .then(r => {
+    if (r.tipoEntidad == 'profesional') return ValoresGlobales.getValida(6, fecha);
+    else {
+      let dom_real = r.entidad.domicilios.find(d => d.tipo == 'real');
+      let provincia = dom_real ? dom_real.domicilio.provincia.id
+        : r.entidad.domicilios[0].domi.provincia.id;
+
+      //NEUQUEN
+      if (provincia === 14) ValoresGlobales.getValida(7, fecha);
+      //LIMITROFES
+      else if (provincia === 7 || provincia === 8 || provincia === 23) ValoresGlobales.getValida(8, fecha);
+      //OTRAS PROVINCIAS
+      else ValoresGlobales.getValida(9, fecha);
+    }
+  })
+}
+
+function getDerechoAnual(id_matricula, fecha) {
+  return Matricula.get(id_matricula)
+  .then(r => {
+    if (r.tipoEntidad == 'profesional') return ValoresGlobales.getValida(5, fecha);
+    else {
+      let dom_real = r.entidad.domicilios.find(d => d.tipo == 'real');
+      let provincia = dom_real ? dom_real.domicilio.provincia.id
+        : r.entidad.domicilios[0].domi.provincia.id;
+
+      //NEUQUEN
+      if (provincia === 14) ValoresGlobales.getValida(10, fecha);
+      //LIMITROFES
+      else if (provincia === 7 || provincia === 8 || provincia === 23) ValoresGlobales.getValida(11, fecha);
+      //OTRAS PROVINCIAS
+      else ValoresGlobales.getValida(12, fecha);
+    }
+  })
+}
+
 function addBoletaInscripcion(id, documento, delegacion, client) {
   let fecha;
 
@@ -208,10 +246,10 @@ function addBoletaInscripcion(id, documento, delegacion, client) {
     fecha = documento.fecha;
     return Promise.all([
       ValoresGlobales.getValida(1, fecha),
-      ValoresGlobales.getValida(6, fecha)
+      getImporteInscripcion(id, fecha)
     ])
   })
-  .then(valores => {  
+  .then(valores => {
     let importe = valores[0].valor;
     let dias_vencimiento = valores[1].valor;
 
@@ -240,7 +278,7 @@ function addBoletasMensuales(id, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
-    ValoresGlobales.getValida(5, new Date()),
+    getDerechoAnual(id, new Date()),
     ValoresGlobales.getValida(6, new Date()),
     Boleta.getNumeroBoleta(null, client)
   ])
