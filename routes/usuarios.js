@@ -43,7 +43,7 @@ router.post('/', function(req, res) {
 });
 
 router.post('/:id/delegaciones', function(req, res) {
-  if (!req.ability.can('update', 'Usuario') || req.params.id!=req.user.id) return utils.sinPermiso(res);
+  if (!req.ability.can('update', 'Usuario') && req.params.id!=req.user.id) return utils.sinPermiso(res);
 
   model.Usuario.get(req.user.id)
   .then(operador => model.Usuario.addDelegacion(req.params.id,req.body))
@@ -61,7 +61,7 @@ router.post('/auth', function(req, res) {
 });
 
 router.patch('/:id', function(req, res) {
-  if (!req.ability.can('update', 'Usuario') || req.params.id!=req.user.id) return utils.sinPermiso(res);
+  if (!req.ability.can('update', 'Usuario') && req.params.id!=req.user.id) return utils.sinPermiso(res);
   
   model.Usuario.patch(req.params.id, req.body)
   .then(r => res.json(r))
@@ -69,7 +69,7 @@ router.patch('/:id', function(req, res) {
 });
 
 router.put('/:id', function(req, res) {
-  if (!req.ability.can('update', 'Usuario') || req.params.id!=req.user.id) return utils.sinPermiso(res);
+  if (!req.ability.can('update', 'Usuario') && req.params.id!=req.user.id) return utils.sinPermiso(res);
 
   model.Usuario.edit(req.params.id, req.body)
   .then(r => res.json(r))
@@ -77,7 +77,7 @@ router.put('/:id', function(req, res) {
 });
 
 router.delete('/:id/delegaciones/:id_del', function(req, res) {
-  if (!req.ability.can('update', 'Usuario') || req.params.id!=req.user.id) return utils.sinPermiso(res);
+  if (!req.ability.can('update', 'Usuario') && req.params.id!=req.user.id) return utils.sinPermiso(res);
 
   model.Usuario.get(req.user.id)
   .then(operador => model.Usuario.borrarDelegacion(req.params.id_del))
