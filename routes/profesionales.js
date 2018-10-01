@@ -5,12 +5,15 @@ const router = require('express').Router();
 const model = require('../model');
 
 router.get('/', function (req, res) {
+  if (!req.ability.can('read', 'Profesional')) return utils.sinPermiso(res);
   model.Profesional.getAll(req.query)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.get('/:id/contactos', function (req, res) {
+  if (!req.ability.can('read', 'Profesional') || !req.ability.can('read', 'Contacto')) 
+    return utils.sinPermiso(res);
   model.Contacto.getAll(req.params.id)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
@@ -18,6 +21,9 @@ router.get('/:id/contactos', function (req, res) {
 
 
 router.get('/:id/subsidiarios', function (req, res) {
+  if (!req.ability.can('read', 'Profesional') || !req.ability.can('read', 'Subsidiario')) 
+    return utils.sinPermiso(res);
+
   model.Subsidiario.getAll(req.params.id)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
@@ -30,7 +36,7 @@ router.get('/:id/foto', function (req, res) {
       if (fs.existsSync(file_path)) res.sendFile(file_path);
       else return Promise.reject({
         http_code: 404,
-        msg: 'El recurso solicitado no existe'
+        mensaje: 'El recurso solicitado no existe'
       });
     })
     .catch(e => utils.errorHandler(e, req, res));
@@ -43,25 +49,31 @@ router.get('/:id/firma', function (req, res) {
       if (fs.existsSync(file_path)) res.sendFile(file_path);
       else return Promise.reject({
         http_code: 404,
-        msg: 'El recurso solicitado no existe'
+        mensaje: 'El recurso solicitado no existe'
       });
     })
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.get('/:id', function (req, res) {
+  if (!req.ability.can('read', 'Profesional')) return utils.sinPermiso(res);
+
   model.Profesional.get(req.params.id)
     .then(r => res.json(r))
     .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.post('/', function (req, res) {
+  if (!req.ability.can('create', 'Profesional')) return utils.sinPermiso(res);
+
   model.Profesional.add(req.body)
-    .then(r => res.status(201).json(r))
-    .catch(e => utils.errorHandler(e, req, res));
+  .then(r => res.status(201).json(r))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 router.put('/:id/foto', function (req, res) {
+  if (!req.ability.can('update', 'Profesional')) return utils.sinPermiso(res);
+
   if (req.body.foto) {
     return utils.guardarArchivo('foto', req.body.foto)
     .then(foto => model.Profesional.patch(req.params.id, { foto }))
@@ -69,11 +81,13 @@ router.put('/:id/foto', function (req, res) {
     .catch(e => utils.errorHandler(e, req, res));
   } 
   else res.status(500).json({
-    msg: 'Error en el servidor'
+    mensaje: 'Error en el servidor'
   });
 });
 
 router.put('/:id/firma', function (req, res) {
+  if (!req.ability.can('update', 'Profesional')) return utils.sinPermiso(res);
+
   if (req.body.firma) {
     return utils.guardarArchivo('firma', req.body.firma)
     .then(firma => model.Profesional.patch(req.params.id, { firma }))
@@ -81,11 +95,13 @@ router.put('/:id/firma', function (req, res) {
     .catch(e => utils.errorHandler(e, req, res));
   } 
   else res.status(500).json({
-    msg: 'Error en el servidor'
+    mensaje: 'Error en el servidor'
   });
 });
 
 router.put('/:id', function (req, res) {
+  if (!req.ability.can('update', 'Profesional')) return utils.sinPermiso(res);
+  
   let profesional;
   
   Promise.all([
@@ -103,10 +119,6 @@ router.put('/:id', function (req, res) {
   })
   .then(id => res.status(200).json(profesional))
   .catch(e => utils.errorHandler(e, req, res));
-});
-
-router.delete('/:id', function (req, res) {
-
 });
 
 module.exports = router;

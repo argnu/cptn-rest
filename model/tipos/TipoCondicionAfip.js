@@ -13,6 +13,10 @@ sql.setDialect('postgres');
       name: 'valor',
       dataType: 'varchar(255)',
       notNull: true
+    },
+    {
+      name: 't_entidad',
+      dataType: 'varchar(45)'
     }
   ]
 });
@@ -21,7 +25,7 @@ module.exports.table = table;
 
 module.exports.getAll = function(params) {
   let query = table.select(table.star()).from(table);
-  if (params.sort && params.sort.valor) query.order(table.valor[params.sort.valor]);
+  query.order(table.valor.asc);
 
   return connector.execQuery(query.toQuery())
   .then(r => r.rows);

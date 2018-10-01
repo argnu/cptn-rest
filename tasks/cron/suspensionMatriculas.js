@@ -34,7 +34,7 @@ function checkMatricula(id) {
                 updated_by: 25,   // Procesos de Sistema
                 documento: 3299    //Resolución 008/18
             }
-            return model.Matricula.cambiarEstado(nuevo_estado)
+            return model.Matricula.cambiarEstado(id, nuevo_estado)
             .then(r => {
                 console.log(`Matrícula ${id} Suspendida por Mora Cuatrimestral`);
                 return Promise.resolve();

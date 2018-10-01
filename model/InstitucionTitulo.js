@@ -155,7 +155,6 @@ module.exports.add = function(titulo, client) {
 
 module.exports.edit = function(id, titulo, client) {
   try {
-    let titulo_edit;
     let query = table.update({
       nombre: titulo.nombre,
       tipo_matricula: titulo.tipo_matricula,
@@ -202,7 +201,7 @@ module.exports.delete = function(id) {
   .then(r => r.rows[0])
   .catch(e => {
     if (e.code == 23503) {
-      return Promise.reject({ http_code: 409, message: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
+      return Promise.reject({ http_code: 409, mensaje: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
     }
     else return Promise.reject(e);
   });

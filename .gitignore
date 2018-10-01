@@ -8,4 +8,6 @@ files/fotos/*
 !files/fotos/.gitkeep
 files/firmas/*
 !files/firmas/.gitkeep
+files/documentos/*
+!files/documentos/.gitkeep
 

@@ -23,8 +23,8 @@ module.exports.getFloat = function(value) {
 
 module.exports.getFecha = function(value) {
   if (!value || value.toString().length == 0) return null;
-  else if (value.toString().indexOf('/') != -1)  return moment(value, 'DD/MM/YYYY');
-  else return moment(value);
+  else if (value.toString().indexOf('/') != -1)  return moment(value, 'DD/MM/YYYY').format('YYYY-MM-DD');
+  else return moment(value).format('YYYY-MM-DD');
 }
 
 module.exports.numberOrNull = function(value) {
@@ -33,12 +33,16 @@ module.exports.numberOrNull = function(value) {
 }
 
 module.exports.errorHandler = function(e, req, res) {
-  if (e.http_code) res.status(e.http_code).json({ message: e.message });
+  if (e.http_code) res.status(e.http_code).json({ mensaje: e.mensaje });
   else { 
-    if (!e.http_code) console.error(e);
+    console.error(e);
     console.error(`Error en ${req.method} ${req.baseUrl}${req.path}`);
-    res.status(500).json({ msg: 'Error en el servidor' });
+    res.status(500).json({ mensaje: 'Error en el servidor' });
   }
+}
+
+module.exports.sinPermiso = function(res) {
+  res.status(403).json({mensaje: 'No tiene permisos para efectuar esta operación' });
 }
 
 module.exports.seqPromises = function(promises) {

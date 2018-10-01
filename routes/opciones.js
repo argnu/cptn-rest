@@ -2,9 +2,9 @@ const utils = require('../utils');
 const router = require('express').Router();
 const model = require('../model');
 
-
-
 router.get('/', function(req, res) {
+  if (!req.ability.can('read', 'Opciones')) return utils.sinPermiso(res);
+
   Promise.all([
     model.TipoCondicionAfip.getAll(req.query),
     model.TipoContacto.getAll(req.query),

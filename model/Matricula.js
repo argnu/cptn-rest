@@ -199,12 +199,60 @@ function completarConCeros(numero) {
     return ceros + result;
 }
 
-function addBoletaInscripcion(id, fecha, delegacion, client) {
+function getTipoDom(domicilios) {
+  let tipo = 'otras';
+  for(let domicilio of domicilios) {
+    let provincia = domicilio.domicilio.provincia.id;
+    if (provincia === 14) return 'neuquen';
+    else if (provincia === 7 || provincia === 8 || provincia === 23) tipo = 'limitrofes';
+  }
+  return tipo;
+}
+
+function getImporteInscripcion(id_matricula, fecha, client) {
+  return module.exports.get(id_matricula, client)
+  .then(matricula => {
+    let id_var;
+    if (matricula.tipoEntidad == 'profesional') id_var = 1;
+    else {
+      let tipo_dom = getTipoDom(matricula.entidad.domicilios);
+      if (tipo_dom == 'neuquen') id_var = 7;
+      else if (tipo_dom == 'limitrofes') id_var = 8;
+      else id_var = 9;
+    }
+
+    return ValoresGlobales.getValida(id_var, fecha);
+  })
+}
+
+function getDerechoAnual(id_matricula, fecha, client) {
+  return module.exports.get(id_matricula, client)
+  .then(r => {
+    let id_var;
+    if (r.tipoEntidad == 'profesional') id_var = 5;
+    else {
+      let tipo_dom = getTipoDom(matricula.entidad.domicilios);
+      if (tipo_dom == 'neuquen') id_var = 10;
+      else if (tipo_dom == 'limitrofes') id_var = 11;
+      else id_var = 12;
+    }
+
+    return ValoresGlobales.getValida(id_var, fecha);
+  })
+}
+
+function addBoletaInscripcion(id, documento, delegacion, client) {
+  let fecha;
+
   //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
-  return Promise.all([
-    ValoresGlobales.getValida(1, fecha),
-    ValoresGlobales.getValida(6, fecha)
-  ])
+  return Documento.get(documento)
+  .then(documento => {
+    fecha = documento.fecha;
+    return Promise.all([
+      getImporteInscripcion(id, fecha, client),
+      ValoresGlobales.getValida(6, fecha),
+    ])
+  })
   .then(valores => {
     let importe = valores[0].valor;
     let dias_vencimiento = valores[1].valor;
@@ -234,7 +282,7 @@ function addBoletasMensuales(id, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
-    ValoresGlobales.getValida(5, new Date()),
+    getDerechoAnual(id, new Date(), client),
     ValoresGlobales.getValida(6, new Date()),
     Boleta.getNumeroBoleta(null, client)
   ])
@@ -278,15 +326,6 @@ function addBoletasMensuales(id, delegacion, client) {
     }
 
     return Promise.all(promesas_boletas);
-  })
-}
-
-function getDocumento(documento, client) {
-  if (typeof document == 'number') return Promise.resolve({id: documento});
-  return Documento.getAll(documento)
-  .then(docs => {
-    if (docs.length > 0) return Promise.resolve(docs[0]);
-    else return Documento.add(documento, client);
   })
 }
 
@@ -343,7 +382,7 @@ module.exports.aprobar = function(matricula) {
             if (matricula.generar_boleta) {
               return addBoletaInscripcion(
                 matricula_added.id,
-                matricula.documento.fecha,
+                matricula.documento,
                 matricula.delegacion,
                 connection.client
               );
@@ -351,10 +390,9 @@ module.exports.aprobar = function(matricula) {
             else return Promise.resolve(false);
           })
           .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
-          .then(r => getDocumento(matricula.documento, connection.client))
-          .then(documento => MatriculaHistorial.add({
+          .then(() => MatriculaHistorial.add({
               matricula: matricula_added.id,
-              documento: documento.id,
+              documento: matricula.documento,
               estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
               fecha: new Date(),
               usuario: matricula.created_by
@@ -375,34 +413,32 @@ module.exports.aprobar = function(matricula) {
           });
         })
       }
-      else return Promise.reject({ http_code: 409, message: "Ya existe una matrícula para dicha solicitud" });
+      else return Promise.reject({ http_code: 409, mensaje: "Ya existe una matrícula para dicha solicitud" });
   })
 }
 
-module.exports.cambiarEstado = function(nuevo_estado) {
+module.exports.cambiarEstado = function(id, nuevo_estado) {
   let connection;
 
   return connector.beginTransaction()
   .then(conx => {
     connection = conx;
 
-    return getDocumento(nuevo_estado.documento, connection.client)
-    .then(documento =>
-      MatriculaHistorial.add({
-        matricula: nuevo_estado.matricula,
-        documento: documento.id,
+    return MatriculaHistorial.add({
+        matricula: id,
+        documento: nuevo_estado.documento,
         estado: nuevo_estado.estado,
         fecha: new Date(),
         usuario: nuevo_estado.updated_by
-      }, connection.client)
+      }, connection.client
     )
-    .then(historial => {
+    .then(() => {
       let query = table.update({
         estado: nuevo_estado.estado,
         updated_by: nuevo_estado.updated_by,
         updated_at: new Date()
       })
-      .where(table.id.equals(nuevo_estado.matricula))
+      .where(table.id.equals(id))
       .returning(table.id, table.estado)
       .toQuery();
 
@@ -438,7 +474,7 @@ function filter(query, params) {
   }
 }
 
-module.exports.getAll = function (params) {
+module.exports.getAll = function (params, rol) {
   let matriculas = [];
   let query = table.select([
     table.id,
@@ -486,7 +522,7 @@ module.exports.getAll = function (params) {
   .then(r => {
     matriculas = r.rows.map(row => dot.object(row));
     let proms = matriculas.map(m => {
-      if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad)
+      if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad, rol)
       else if (m.tipoEntidad == 'empresa') return Empresa.get(m.entidad);
     });
 
@@ -512,7 +548,7 @@ module.exports.getAll = function (params) {
   })
 }
 
-module.exports.get = function (id) {
+module.exports.get = function (id, client) {
   let query = table.select([
     table.id,
     table.legajo,
@@ -531,26 +567,25 @@ module.exports.get = function (id) {
     Entidad.table.tipo.as('tipoEntidad'),
     table.idMigracion
   ])
-                    .from(
-                      table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
-                      .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-                      .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-                      .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-                      .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
-                    )
-                    .where(table.id.equals(id))
-                    .toQuery();
+  .from(
+    table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
+    .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+    .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+    .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
+    .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
+  )
+  .where(table.id.equals(id))
+  .toQuery();
 
-  return connector.execQuery(query)
+  return connector.execQuery(query, client)
     .then(r => {
       matricula = dot.object(r.rows[0]);
-      if (!matricula) throw ({ http_code: 404, message: "No existe el recurso solicitado" });
+      if (!matricula) throw ({ http_code: 404, mensaje: "No existe el recurso solicitado" });
       if (matricula.tipoEntidad == 'profesional') return Profesional.get(matricula.entidad)
       else if (matricula.tipoEntidad == 'empresa') return Empresa.get(matricula.entidad);
     })
     .then(r => {
       matricula.entidad = r;
-      delete(matricula.tipoEntidad);
       return matricula;
     })
 }

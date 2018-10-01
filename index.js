@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('./config.private');
 const routes = require('./routes');
 const bodyParser = require('body-parser');
+const ABILITIES = require('./auth/roles')
 
 const app = express();
 app.listen(config.entry.port, config.entry.host);
@@ -29,6 +30,7 @@ app.use(function(req, res, next) {
       jwt.verify(auth_token, config.secret, function(err, decode) {
         if (err) req.user = null;
         req.user = decode;
+        req.ability = ABILITIES[req.user.rol];
         next();
       });
     } else noUser();
@@ -37,6 +39,7 @@ app.use(function(req, res, next) {
 });
 
 app.use('/api', routes);
+
 app.use(function (err, req, res, next) {
   console.error(err.stack)
   res.status(500).send('Error en servidor');

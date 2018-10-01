@@ -3,11 +3,10 @@ const router = require('express').Router();
 router.use((req, res, next) => {
   if (req.method != 'OPTIONS') {
     if (req.path == '/usuarios/auth' || !!req.user) next();
-    else if (req.path.match(/^\/profesionales\/\d+\/(foto|firma)$/)) next();
-    else return res.status(401).json({ msg: 'Usuario sin autorización' });
+    else if (req.path.match(/^\/(profesionales|documentos)\/\d+\/(foto|firma|archivo)$/)) next();
+    else return res.status(401).json({ mensaje: 'Usuario sin autorización' });
   }
   else next();
-
 });
 
 router.get('/*', (req, res, next) => {
@@ -38,7 +37,6 @@ router.use('/departamentos', require('./departamentos'));
 router.use('/localidades', require('./localidades'));
 router.use('/delegaciones', require('./delegaciones'));
 router.use('/instituciones', require('./instituciones'));
-router.use('/titulos', require('./titulos'));
 router.use('/boletas', require('./boletas'));
 router.use('/comprobantes', require('./comprobantes'));
 router.use('/volantespago', require('./volantespago'));
@@ -51,5 +49,7 @@ router.use('/cajas-previsionales', require('./cajas-previsionales'));
 router.use('/personas', require('./personas'));
 router.use('/valores-globales', require('./valores_globales'));
 router.use('/comprobantes-exenciones', require('./comprobantes_exenciones'));
+router.use('/solicitudes-suspension', require('./solicitudes_suspension'));
+router.use('/documentos', require('./documentos'));
 
 module.exports = router;
