@@ -18,6 +18,7 @@ const usuario_cptn = AbilityBuilder.define(can => {
   can('manage', 'Comprobante')
   can('manage', 'VolantePago')
   can('manage', 'SolicitudSuspension')
+  can('manage', 'Documento')
 })
 
 const moderador_titulos = AbilityBuilder.define(can => {
