@@ -271,6 +271,11 @@ function filter(query, params) {
     if (params.matricula && params.matricula.id) query.where(table.matricula.equals(params.matricula.id));
     if (params.estado) query.where(table.estado.equals(params.estado));
 
+    if (params.fecha) {
+        if (params.fecha.desde) query.where(table.fecha_solicitud.gte(params.fecha.desde));
+        if (params.fecha.hasta) query.where(table.fecha_solicitud.lte(params.fecha.hasta));
+      }    
+
     if (params.filtros) {
         if (params.filtros.numero) query.where(table.numero_legajo.cast('text').ilike(`%${params.filtros.numero}%`));
         if (params.filtros.nomenclatura) query.where(table.nomenclatura.ilike(`%${params.filtros.nomenclatura}%`));

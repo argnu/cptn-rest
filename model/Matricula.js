@@ -461,9 +461,26 @@ module.exports.cambiarEstado = function(id, nuevo_estado) {
 }
 
 function filter(query, params) {
-  if (params.entidad && !isNaN(+params.entidad)) query.where(table.entidad.equals(params.entidad));
-  if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
+  if (params.entidad) {
+    // if (params.entidad && !isNaN(+params.entidad)) query.where(table.entidad.equals(params.entidad));
+    if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
+  }
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
+  
+  if (params.tipo) 
+    if (Array.isArray(params.tipo)) {
+      let q_or = params.tipo.map(t => ` "numeroMatricula" ILIKE '${t}%' `).join('OR');
+      query.where(q_or);
+    }
+    else query.where(table.numeroMatricula.ilike(`${params.tipo}%`));
+
+
+  if (params.solicitud) { 
+    if (params.solicitud.publicarEmail) query.where(Profesional.table.publicarEmail.equals(params.solicitud.publicarEmail));
+    if (params.solicitud.publicarAcervo) query.where(Profesional.table.publicarAcervo.equals(params.solicitud.publicarAcervo));
+    if (params.solicitud.publicarDireccion) query.where(Profesional.table.publicarDireccion.equals(params.solicitud.publicarDireccion));
+    if (params.solicitud.publicarCelular) query.where(Profesional.table.publicarCelular.equals(params.solicitud.publicarCelular));
+  }
 
   if (params.filtros) {
     if (params.filtros.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.filtros.numeroMatricula}%`));
