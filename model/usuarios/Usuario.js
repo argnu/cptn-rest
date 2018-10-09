@@ -9,6 +9,7 @@ sql.setDialect('postgres');
 
 const Delegacion = require(`../Delegacion`);
 const UsuarioDelegacion = require('./UsuarioDelegacion');
+const UsuarioRol = require('./UsuarioRol');
 
  const table = sql.define({
   name: 'usuario',
@@ -22,11 +23,6 @@ const UsuarioDelegacion = require('./UsuarioDelegacion');
       name: 'username',
       dataType: 'varchar(45)',
       unique: true
-    },
-    {
-      name: 'rol',
-      dataType: 'varchar(100)',
-      notNull: true
     },
     {
       name: 'nombre',
@@ -93,7 +89,14 @@ module.exports.getAll = function(params) {
 
   return connector.execQuery(query.toQuery())
   .then(r => {
-    usuarios = r.rows
+    usuarios = r.rows;
+    return Promise.all(usuarios.map(u => getRoles(u.id)));
+  })
+  .then(roles_list => {
+    roles_list.forEach((roles, index) => {
+      usuarios[index].roles = roles;
+    });
+
     return utils.getTotalQuery(
       table, table,
       (query) => filter(query, params)
@@ -103,54 +106,73 @@ module.exports.getAll = function(params) {
 }
 
 module.exports.get = function(id) {
+  let usuario;
   let query = table.select(table.star())
-       .from(table)
-       .where(table.id.equals(id))
-       .toQuery();
+  .from(table)
+  .where(table.id.equals(id))
+  .toQuery();
 
   return connector.execQuery(query)
-  .then(r => r.rows[0]);
+  .then(r => { 
+    usuario = r.rows[0];
+    return getRoles(usuario.id);
+  })
+  .then(roles => {
+    usuario.roles = roles;
+    return usuario;
+  })
+}
+
+function getRoles(id) {
+  let table = UsuarioRol.table;
+  let query = table.select(table.rol)
+  .where(table.usuario.equals(id))
+  .toQuery();
+
+  return connector.execQuery(query)
+  .then(r => r.rows.map(e => e.rol));
 }
 
 module.exports.add = function(usuario) {
-  let connection;
+  let conexion;
+
   return connector.beginTransaction()
   .then(con => {
-    connection = con;
+    conexion = con;
     let query = table.insert(
       table.username.value(usuario.username),
       table.nombre.value(usuario.nombre),
       table.apellido.value(usuario.apellido),
       table.email.value(usuario.email),
-      table.rol.value(usuario.rol),
       table.hash_password.value(bcrypt.hashSync(usuario.password, 10))
     )
     .returning(table.id, table.nombre, table.apellido, table.email)
     .toQuery();
-    return connector.execQuery(query, connection.client)
+    return connector.execQuery(query, conexion.client)
   })
   .then(r => {
-    let usuario_nuevo = r.rows[0];
-    usuario.id = usuario_nuevo.id;
-    let proms = usuario.delegaciones.map(d => addDelegacion(usuario_nuevo.id, d, connection.client));
-    return Promise.all(proms);
+    usuario.id = r.rows[0].id;
+    return Promise.all(usuario.roles.map(rol => addRol(usuario.id, rol, conexion.client)));
+  })
+  .then(roles => {
+    usuario.roles = roles;
+    return Promise.all(usuario.delegaciones.map(d => addDelegacion(usuario.id, d, conexion.client)))
   })
   .then(delegaciones => {
     usuario.delegaciones = delegaciones;
-    return connector.commit(connection.client)
+    return connector.commit(conexion.client)
     .then(r => {
-        connection.done();
+        conexion.done();
         return usuario;
     });
   })
   .catch(e => {
-      connector.rollback(connection.client);
-      connection.done();
+      connector.rollback(conexion.client);
+      conexion.done();
       console.error(e);
       return Promise.reject(e);
   });
 }
-
 
 module.exports.patch = function(id, usuario) {
   let usuario_patch = {};
@@ -164,11 +186,9 @@ module.exports.patch = function(id, usuario) {
   if (usuario.email) usuario_patch.email = usuario.email;
   if (usuario.activo != null || usuario.activo != undefined) usuario_patch.activo = usuario.activo;
 
-  console.log(usuario_patch)
-
   let query = table.update(usuario_patch)
   .where(table.id.equals(id))
-  .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.rol)
+  .returning(table.id, table.nombre, table.apellido, table.email, table.activo)
   .toQuery();
 
   return connector.execQuery(query)
@@ -180,7 +200,7 @@ module.exports.patch = function(id, usuario) {
 }
 
 module.exports.edit = function(id, usuario) {
-  let connection;
+  let conexion;
 
   if (usuario.password) {
     usuario.hash_password = bcrypt.hashSync(usuario.password, 10);
@@ -189,34 +209,45 @@ module.exports.edit = function(id, usuario) {
 
   return connector.beginTransaction()
   .then(con => {
-    connection = con;
-    return connector.execQuery(
-      UsuarioDelegacion.table.delete().where(
-        UsuarioDelegacion.table.usuario.equals(id)
-      ).toQuery(), connection.client);
+    conexion = con;
+    return Promise.all([
+      connector.execQuery(
+        UsuarioDelegacion.table.delete().where(
+          UsuarioDelegacion.table.usuario.equals(id)
+        ).toQuery(), 
+        conexion.client
+      ),
+
+      connector.execQuery(
+        UsuarioRol.table.delete().where(
+          UsuarioRol.table.usuario.equals(id)
+        ).toQuery(), 
+        conexion.client
+      )
+    ]);
   })
-  .then(r => {
-    return Promise.all(usuario.delegaciones.map(d => addDelegacion(id, d, connection.client)))
-  })
-  .then(delegaciones => {
+  .then(r => Promise.all(usuario.roles.map(rol => addRol(id, rol, conexion.client))))
+  .then(r => Promise.all(usuario.delegaciones.map(d => addDelegacion(id, d, conexion.client))))
+  .then(() => {
     delete(usuario.delegaciones);
+    delete(usuario.roles);
     let query = table.update(usuario)
     .where(table.id.equals(id))
-    .returning(table.id, table.nombre, table.apellido, table.email, table.activo, table.rol)
+    .returning(table.id, table.nombre, table.apellido, table.email, table.activo)
     .toQuery();
 
-    return connector.execQuery(query, connection.client)
+    return connector.execQuery(query, conexion.client)
   })
   .then(usuario => {
-    return connector.commit(connection.client)
+    return connector.commit(conexion.client)
     .then(r => {
-      connection.done();
+      conexion.done();
       return usuario;
     });
   })
   .catch(e => {
-    connector.rollback(connection.client);
-    connection.done();
+    connector.rollback(conexion.client);
+    conexion.done();
     return Promise.reject(e);
   });  
 }
@@ -224,29 +255,31 @@ module.exports.edit = function(id, usuario) {
 
 module.exports.auth = function(usuario) {
   let query = table.select(
-          [table.id,
-          table.username,
-          table.hash_password,
-          table.nombre,
-          table.apellido,
-          table.email,
-          table.rol,
-          table.activo
-        ])
-       .from(table)
-       .where(table.username.equals(usuario.username))
-       .toQuery();
+    table.id,
+    table.username,
+    table.hash_password,
+    table.nombre,
+    table.apellido,
+    table.email,
+    table.activo
+  )
+  .from(table)
+  .where(table.username.equals(usuario.username))
+  .toQuery();
 
   return connector.execQuery(query)
   .then(r => {
       if (r.rows.length == 1) {
         let usuario_bd =r.rows[0];
         if (bcrypt.compareSync(usuario.password, usuario_bd.hash_password) && usuario_bd.activo) {
-          usuario_bd.token = jwt.sign({ id: usuario_bd.id, rol: usuario_bd.rol }, config.secret);
-          usuario_bd.rules = ABILITIES[usuario_bd.rol].rules;
-          delete(usuario_bd.hash_password);
-          return usuario_bd;
-        }
+          return getRoles(usuario_bd.id)
+          .then(roles => {
+            usuario_bd.token = jwt.sign({ id: usuario_bd.id, roles }, config.secret);
+            usuario_bd.rules = roles.map(rol => ABILITIES[rol].rules).reduce((a,b) => [...a, ...b], []);
+            delete(usuario_bd.hash_password);
+            return usuario_bd;
+          })
+        }        
         else return false;
       }
       else return false;
@@ -280,6 +313,29 @@ function addDelegacion(id, delegacion, client) {
 
     return connector.execQuery(query, client)
     .then(r => r.rows[0])
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);
+    })
+  }
+  catch(e) {
+    console.error(e);
+    return Promise.reject(e);
+  }
+}
+
+function addRol(id, rol, client) {
+  try {
+    let table = UsuarioRol.table;
+    let query = table.insert(
+      table.usuario.value(id),
+      table.rol.value(rol)
+    )
+    .returning(table.rol)
+    .toQuery();
+
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0].rol)
     .catch(e => {
       console.error(e);
       return Promise.reject(e);

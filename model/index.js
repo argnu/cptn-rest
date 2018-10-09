@@ -7,6 +7,7 @@ module.exports.Domicilio = require('./Domicilio');
 module.exports.Delegacion = require('./Delegacion');
 
 module.exports.Usuario = require('./usuarios/Usuario');
+module.exports.UsuarioRol = require('./usuarios/UsuarioRol');
 module.exports.UsuarioDelegacion = require('./usuarios/UsuarioDelegacion');
 
 module.exports.TipoSexo = require('./tipos/TipoSexo');
