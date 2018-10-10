@@ -287,6 +287,7 @@ function addComprobante(comprobante, client) {
 module.exports.add = function (comprobante) {
     let comprobante_nuevo;
     let num_item = 0;
+    let check_matricula = null;
 
     function addComprobanteItem(boleta, client) {
         let proms = [];
@@ -317,6 +318,10 @@ module.exports.add = function (comprobante) {
     function pagarVolante(boleta, client) {
         return VolantePago.getBoletas(boleta.id)
         .then(boletas => { 
+            let boleta_find = boletas.filter(b => boleta.tipo_comprobante.id === 10 
+                || boleta.tipo_comprobante.id === 16);
+            if (boleta_find) check_matricula = boleta_find.matricula;
+
             let proms_patch = boletas.map(b => Boleta.patch(b.id, { estado: 2 }, client));
             let proms_items = boletas.map(b => Promise.all(addComprobanteItem(b, client)));                                 
             return Promise.all(
@@ -330,6 +335,9 @@ module.exports.add = function (comprobante) {
     function pagarBoleta(boleta, client) {
         if (boleta.tipo == 'volante') return pagarVolante(boleta, client);
         else {
+            let tipo_comprobante = +boleta.tipo_comprobante.id;
+            if (tipo_comprobante === 10 || tipo_comprobante === 16)
+                check_matricula = boleta.matricula;
             return Boleta.patch(boleta.id, { estado: 2 }, client)
             .then(() => Promise.all(addComprobanteItem(boleta, client)));
         }
@@ -357,6 +365,9 @@ module.exports.add = function (comprobante) {
                     return connector.commit(connection.client)
                         .then(r => {
                             connection.done();
+
+                            // Si alguna boleta era de derecho anual, se verifica la matricula
+                            if (check_matricula) Matricula.verificarSuspension(check_matricula);
                             return comprobante_nuevo;
                         });
                 })

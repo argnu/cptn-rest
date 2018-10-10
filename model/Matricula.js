@@ -466,8 +466,8 @@ function filter(query, params) {
     if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
   }
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
-  
-  if (params.tipo) 
+
+  if (params.tipo)
     if (Array.isArray(params.tipo)) {
       let q_or = params.tipo.map(t => ` "numeroMatricula" ILIKE '${t}%' `).join('OR');
       query.where(q_or);
@@ -475,7 +475,7 @@ function filter(query, params) {
     else query.where(table.numeroMatricula.ilike(`${params.tipo}%`));
 
 
-  if (params.solicitud) { 
+  if (params.solicitud) {
     if (params.solicitud.publicarEmail) query.where(Profesional.table.publicarEmail.equals(params.solicitud.publicarEmail));
     if (params.solicitud.publicarAcervo) query.where(Profesional.table.publicarAcervo.equals(params.solicitud.publicarAcervo));
     if (params.solicitud.publicarDireccion) query.where(Profesional.table.publicarDireccion.equals(params.solicitud.publicarDireccion));
@@ -636,4 +636,40 @@ module.exports.patch = function (id, matricula, client) {
     .toQuery();
 
   return connector.execQuery(query, client);
+}
+
+module.exports.verificarSuspension = function(id) {
+  return module.exports.get(id)
+  .then(matricula => {
+    let table = Boleta.table;
+    let query = table.select(table.count().as('cantidad_sin_pagar'))
+    .where(
+        table.estado.equals(1),
+        table.tipo_comprobante.in([10,16]),
+        table.matricula.equals(matricula.id),
+        table.fecha_vencimiento.lt(new Date())
+    )
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => {
+        let cantidad_sin_pagar = +r.rows[0].cantidad_sin_pagar;
+        let nuevo_estado = {
+          matricula: matricula.id,
+          updated_by: 25,   // Procesos de Sistema
+          documento: 3299    //Resolución 008/18
+        }
+
+        //Tiene 4 o más cuotas sin abonar y está habilitado
+        if (matricula.estado.id === 13 && cantidad_sin_pagar >= 4) {
+          nuevo_estado.estado = 24; // Suspendido por mora cuatrimestral
+        }
+        else if (matricula.estado.id === 24 && cantidad_sin_pagar < 4) {
+          nuevo_estado.estado = 13; // Suspendido por mora cuatrimestral
+        }
+        else return Promise.resolve();
+
+        return module.exports.cambiarEstado(id, nuevo_estado);
+    });
+  });
 }
