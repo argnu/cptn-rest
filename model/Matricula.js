@@ -241,7 +241,7 @@ function getDerechoAnual(id_matricula, fecha, client) {
   })
 }
 
-function addBoletaInscripcion(id, documento, delegacion, client) {
+function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
   let fecha;
 
   //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
@@ -259,7 +259,7 @@ function addBoletaInscripcion(id, documento, delegacion, client) {
 
     let boleta = {
       matricula: id,
-      tipo_comprobante: 18,  //18 ES PRI
+      tipo_comprobante: tipoEntidad == 'profesional' ? 18 : 3, //18 es PRI, 3 es EMI
       fecha: fecha,
       total: importe,
       estado: 1,   //1 ES 'Pendiente de Pago'
@@ -268,7 +268,7 @@ function addBoletaInscripcion(id, documento, delegacion, client) {
       delegacion: delegacion,
       items: [{
         item: 1,
-        descripcion: `Derecho de inscripción profesional`,
+        descripcion: `Derecho de inscripción de ${tipoEntidad}`,
         importe: importe
       }]
     }
@@ -278,7 +278,7 @@ function addBoletaInscripcion(id, documento, delegacion, client) {
 }
 
 
-function addBoletasMensuales(id, delegacion, client) {
+function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
@@ -307,7 +307,7 @@ function addBoletasMensuales(id, delegacion, client) {
       let boleta = {
         numero: numero_boleta,
         matricula: id,
-        tipo_comprobante: 16,  //16 ES PRA
+        tipo_comprobante: tipoEntidad == 'profesional' ? 16 : 10,  //16 ES PRA, 10 EMD
         fecha: fecha_primero_mes,
         total: importe,
         estado: 1,   //1 ES 'Pendiente de Pago'
@@ -316,7 +316,7 @@ function addBoletasMensuales(id, delegacion, client) {
         delegacion: delegacion,
         items: [{
           item: 1,
-          descripcion: `Derecho anual profesionales ${utils.getNombreMes(mes_inicio+1)} ${anio_actual}`,
+          descripcion: `Derecho anual ${tipoEntidad == 'profesional' ? 'profesionales' : 'empresas'} ${utils.getNombreMes(mes_inicio+1)} ${anio_actual}`,
           importe: importe
         }]
       }
@@ -382,6 +382,7 @@ module.exports.aprobar = function(matricula) {
             if (matricula.generar_boleta) {
               return addBoletaInscripcion(
                 matricula_added.id,
+                solicitud.tipoEntidad,
                 matricula.documento,
                 matricula.delegacion,
                 connection.client
@@ -389,7 +390,7 @@ module.exports.aprobar = function(matricula) {
             }
             else return Promise.resolve(false);
           })
-          .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
+          .then(r => addBoletasMensuales(matricula_added.id, solicitud.tipoEntidad, matricula.delegacion, connection.client))
           .then(() => MatriculaHistorial.add({
               matricula: matricula_added.id,
               documento: matricula.documento,
