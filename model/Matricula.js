@@ -382,7 +382,7 @@ module.exports.aprobar = function(matricula) {
             if (matricula.generar_boleta) {
               return addBoletaInscripcion(
                 matricula_added.id,
-                matricula.tipoEntidad,
+                solicitud.tipoEntidad,
                 matricula.documento,
                 matricula.delegacion,
                 connection.client
@@ -390,7 +390,7 @@ module.exports.aprobar = function(matricula) {
             }
             else return Promise.resolve(false);
           })
-          .then(r => addBoletasMensuales(matricula_added.id, matricula.tipoEntidad, matricula.delegacion, connection.client))
+          .then(r => addBoletasMensuales(matricula_added.id, solicitud.tipoEntidad, matricula.delegacion, connection.client))
           .then(() => MatriculaHistorial.add({
               matricula: matricula_added.id,
               documento: matricula.documento,
