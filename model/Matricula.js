@@ -241,7 +241,7 @@ function getDerechoAnual(id_matricula, fecha, client) {
   })
 }
 
-function addBoletaInscripcion(id, documento, delegacion, client) {
+function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
   let fecha;
 
   //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
@@ -259,7 +259,7 @@ function addBoletaInscripcion(id, documento, delegacion, client) {
 
     let boleta = {
       matricula: id,
-      tipo_comprobante: 18,  //18 ES PRI
+      tipo_comprobante: tipoEntidad == 'profesional' ? 18 : 3, //18 es PRI, 3 es EMI
       fecha: fecha,
       total: importe,
       estado: 1,   //1 ES 'Pendiente de Pago'
@@ -268,7 +268,7 @@ function addBoletaInscripcion(id, documento, delegacion, client) {
       delegacion: delegacion,
       items: [{
         item: 1,
-        descripcion: `Derecho de inscripción profesional`,
+        descripcion: `Derecho de inscripción de ${tipoEntidad == 'profesional' ? 'profesional' : 'empresa'}`,
         importe: importe
       }]
     }
@@ -382,6 +382,7 @@ module.exports.aprobar = function(matricula) {
             if (matricula.generar_boleta) {
               return addBoletaInscripcion(
                 matricula_added.id,
+                matricula.tipoEntidad,
                 matricula.documento,
                 matricula.delegacion,
                 connection.client
