@@ -278,7 +278,7 @@ function addBoletaInscripcion(id, documento, delegacion, client) {
 }
 
 
-function addBoletasMensuales(id, delegacion, client) {
+function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
@@ -307,7 +307,7 @@ function addBoletasMensuales(id, delegacion, client) {
       let boleta = {
         numero: numero_boleta,
         matricula: id,
-        tipo_comprobante: 16,  //16 ES PRA
+        tipo_comprobante: tipoEntidad == 'profesional' ? 16 : 10,  //16 ES PRA, 10 EMD
         fecha: fecha_primero_mes,
         total: importe,
         estado: 1,   //1 ES 'Pendiente de Pago'
@@ -316,7 +316,7 @@ function addBoletasMensuales(id, delegacion, client) {
         delegacion: delegacion,
         items: [{
           item: 1,
-          descripcion: `Derecho anual profesionales ${utils.getNombreMes(mes_inicio+1)} ${anio_actual}`,
+          descripcion: `Derecho anual ${tipoEntidad == 'profesional' ? 'profesionales' : 'empresas'} ${utils.getNombreMes(mes_inicio+1)} ${anio_actual}`,
           importe: importe
         }]
       }
@@ -389,7 +389,7 @@ module.exports.aprobar = function(matricula) {
             }
             else return Promise.resolve(false);
           })
-          .then(r => addBoletasMensuales(matricula_added.id, matricula.delegacion, connection.client))
+          .then(r => addBoletasMensuales(matricula_added.id, matricula.tipoEntidad, matricula.delegacion, connection.client))
           .then(() => MatriculaHistorial.add({
               matricula: matricula_added.id,
               documento: matricula.documento,
