@@ -42,6 +42,7 @@ module.exports.getAll = function(params) {
                      .from(table.leftJoin(PersonaJuridica.table).on(table.id.equals(PersonaJuridica.table.id))
                                 .leftJoin(PersonaFisica.table).on(table.id.equals(PersonaFisica.table.id)));
 
+    if (params.tipo) query.where(table.tipo.equals(params.tipo));
     if (params.cuit) query.where(table.cuit.equals(params.cuit));
     if (params.dni) query.where(PersonaFisica.table.dni.equals(params.dni));
 

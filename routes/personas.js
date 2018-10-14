@@ -19,5 +19,13 @@ router.get('/:id', function (req, res) {
         .catch(e => utils.errorHandler(e, req, res));
 });
 
+router.post('/', function (req, res) {
+    if (!req.ability.can('create', 'Persona')) return utils.sinPermiso(res);
+
+    model.Persona.add(req.body)
+    .then(r => res.json(r))
+    .catch(e => utils.errorHandler(e, req, res));
+});
+
 
 module.exports = router;
