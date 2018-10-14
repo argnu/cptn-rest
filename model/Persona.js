@@ -3,6 +3,7 @@ const sql = require('node-sql-2');
 sql.setDialect('postgres');
 const PersonaFisica = require(`./PersonaFisica`);
 const PersonaJuridica = require(`./PersonaJuridica`);
+const utils = require('../utils');
 
 
 const table = sql.define({
@@ -36,15 +37,24 @@ const table = sql.define({
 
 module.exports.table = table;
 
-module.exports.getAll = function(params) {
-    let personas;
-    let query = table.select(table.id, table.tipo, table.cuit, PersonaFisica.table.dni)
-                     .from(table.leftJoin(PersonaJuridica.table).on(table.id.equals(PersonaJuridica.table.id))
-                                .leftJoin(PersonaFisica.table).on(table.id.equals(PersonaFisica.table.id)));
-
+function filter(query, params) {
     if (params.tipo) query.where(table.tipo.equals(params.tipo));
     if (params.cuit) query.where(table.cuit.equals(params.cuit));
     if (params.dni) query.where(PersonaFisica.table.dni.equals(params.dni));
+}
+
+module.exports.getAll = function(params) {
+    let personas;
+    let from = table.leftJoin(PersonaJuridica.table).on(table.id.equals(PersonaJuridica.table.id))
+    .leftJoin(PersonaFisica.table).on(table.id.equals(PersonaFisica.table.id));
+
+    let query = table.select(table.id, table.tipo, table.cuit, PersonaFisica.table.dni)
+                     .from(from);
+
+    filter(query, params);
+
+    if (params.limit) query.limit(+params.limit);
+    if (params.limit && params.offset) query.offset(+params.offset);    
 
     return connector.execQuery(query.toQuery())
     .then(r => {
@@ -54,7 +64,12 @@ module.exports.getAll = function(params) {
             else if (p.tipo == 'juridica') return PersonaJuridica.get(p.id);
         })
         return Promise.all(proms);
-    });
+    })
+    .then(result => {
+        personas = result;
+        return utils.getTotalQuery(table, from, (query) => filter(query, params))
+    })
+    .then(totalQuery => ({ resultados: personas, totalQuery }));
 }
 
 module.exports.get = function(id) {
@@ -153,3 +168,20 @@ module.exports.edit = function(id, persona, client) {
         return Promise.reject(e);
     }
 }
+
+module.exports.delete = function(id) {
+    let query = table.delete()
+    .where(table.id.equals(id))
+    .returning(table.id, table.nombre)
+    .toQuery();
+  
+    return connector.execQuery(query)
+    .then(r => r.rows[0])
+    .catch(e => {
+      if (e.code == 23503) {
+        return Promise.reject({ http_code: 409, mensaje: "No se puede borrar el recurso. Otros recursos dependen del mismo" });
+      }
+      else return Promise.reject(e);
+    });
+  }
+  

@@ -2,6 +2,7 @@ const dot = require('dot-object');
 const connector = require('../db/connector');
 const sql = require('node-sql-2');
 sql.setDialect('postgres');
+const utils = require('../utils');
 
 const TipoSexo = require('./tipos/TipoSexo');
 const TipoEstadoCivil = require('./tipos/TipoEstadoCivil');
@@ -106,13 +107,18 @@ module.exports.get = function(id) {
     ).from(
         table.join(Persona.table).on(table.id.equals(Persona.table.id))
         .leftJoin(TipoSexo.table).on(table.sexo.equals(TipoSexo.table.id))
-        .leftJoin   (TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id))        
+        .leftJoin(TipoEstadoCivil.table).on(table.estadoCivil.equals(TipoEstadoCivil.table.id))        
     )
     .where(table.id.equals(id))
     .toQuery();
     
     return connector.execQuery(query)
-    .then(r => dot.object(r.rows[0]));
+    .then(r => {
+        let persona = r.rows[0];
+        if (!persona['sexo.id']) persona.sexo = null;
+        if (!persona['estadoCivil.id']) persona.estadoCivil = null;
+        return dot.object(persona);
+    });
 }
 
 module.exports.add = function (persona, client) {
@@ -140,7 +146,12 @@ module.exports.add = function (persona, client) {
 module.exports.edit = function (id, persona, client) {
     let query = table.update({
         apellido: persona.apellido,
-        dni: persona.dni
+        dni: persona.dni,
+        fechaNacimiento: utils.checkFecha(persona.fechaNacimiento),
+        lugarNacimiento: persona.lugarNacimiento,
+        nacionalidad: persona.nacionalidad,
+        sexo: persona.sexo,
+        estadoCivil: persona.estadoCivil
     })
     .where(table.id.equals(id))
     .returning(table.star())

@@ -37,8 +37,7 @@ const table = sql.define({
         {
             table: 'persona',
             columns: ['persona'],
-            refColumns: ['id'],
-            onDelete: 'cascade'
+            refColumns: ['id']
         },
     ]
 });

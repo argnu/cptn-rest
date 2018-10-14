@@ -23,3 +23,6 @@ ALTER TABLE "persona_fisica" ADD COLUMN "lugarNacimiento" varchar(100);
 ALTER TABLE "persona_fisica" ADD COLUMN "sexo" int;
 ALTER TABLE "persona_fisica" ADD COLUMN "nacionalidad" varchar(45);
 ALTER TABLE "persona_fisica" ADD COLUMN "estadoCivil" int;
+
+ALTER TABLE legajo_comitente DROP CONSTRAINT "legajo_comitente_persona_fkey";
+ALTER TABLE legajo_comitente ADD FOREIGN KEY ("persona") REFERENCES persona("id");
