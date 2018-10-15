@@ -339,7 +339,7 @@ function getTipoMatricula(id_profesional) {
 }
 
 // tipo_provisorio hasta que se determine automáticamente una vez validados los titulos
-function getNumeroMatricula(tipo) {
+module.exports.getNumeroMatricula = function(tipo) {
   let query = `
     select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
     from matricula
@@ -352,7 +352,22 @@ function getNumeroMatricula(tipo) {
   });
 }
 
-module.exports.getNumeroMatricula = getNumeroMatricula;
+//Devuelve false si no es joven profesional, y sino la cantidad de meses bonificados
+function isJovenProfesional(entidad) {
+  Profesional.get(entidad)
+  .then(profesional => {
+    let anios = moment().diff(profesional.fechaNacimiento, 'years');
+    if (anios >= 25) return false;
+    
+    let titulo_principal = profesional.formaciones.find(f => f.principal === true);
+    if (!titulo_principal || !titulo_principal.fechaEmision) return false;
+
+    let meses_dif = moment().diff(titulo_principal.fechaEmision, 'months');
+    if (meses_dif < 24);
+
+    
+  })
+}
 
 module.exports.aprobar = function(matricula) {
   let solicitud, matricula_added, connection;
@@ -364,7 +379,7 @@ module.exports.aprobar = function(matricula) {
         .then(solicitud_get => {
           solicitud = solicitud_get;
           let tipo_matricula = solicitud.tipoEntidad == 'empresa' ? 'EMP' : matricula.tipo;
-          return getNumeroMatricula(tipo_matricula);
+          return module.exports.getNumeroMatricula(tipo_matricula);
         })
         .then(numero_mat => {
           return connector.beginTransaction()
