@@ -242,17 +242,13 @@ function getDerechoAnual(id_matricula, fecha, client) {
 }
 
 function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
-  let fecha;
+  let fecha = new Date();
 
   //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
-  return Documento.get(documento)
-  .then(documento => {
-    fecha = documento.fecha;
-    return Promise.all([
-      getImporteInscripcion(id, fecha, client),
-      ValoresGlobales.getValida(6, fecha),
-    ])
-  })
+  return Promise.all([
+    getImporteInscripcion(id, fecha, client),
+    ValoresGlobales.getValida(6, fecha),
+  ])
   .then(valores => {
     let importe = valores[0].valor;
     let dias_vencimiento = valores[1].valor;
@@ -264,7 +260,6 @@ function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
       total: importe,
       estado: 1,   //1 ES 'Pendiente de Pago'
       fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(dias_vencimiento, 'days'),
-      fecha_update: fecha,
       delegacion: delegacion,
       items: [{
         item: 1,
