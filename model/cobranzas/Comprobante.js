@@ -287,7 +287,8 @@ function addComprobante(comprobante, client) {
 module.exports.add = function (comprobante) {
     let comprobante_nuevo;
     let num_item = 0;
-    let check_matricula = null;
+    let check_matricula_suspension = null;
+    let check_matricula_inscripcion = null;
 
     function addComprobanteItem(boleta, client) {
         let proms = [];
@@ -320,7 +321,10 @@ module.exports.add = function (comprobante) {
         .then(boletas => { 
             let boleta_find = boletas.filter(b => boleta.tipo_comprobante.id === 10 
                 || boleta.tipo_comprobante.id === 16);
-            if (boleta_find) check_matricula = boleta_find.matricula;
+            let boleta2_find = boletas.filter(b => boleta.tipo_comprobante.id === 3 
+                || boleta.tipo_comprobante.id === 18);
+            if (boleta_find) check_matricula_suspension = boleta_find.matricula;
+            if (boleta2_find) check_matricula_inscripcion = boleta_find.matricula;
 
             let proms_patch = boletas.map(b => Boleta.patch(b.id, { estado: 2 }, client));
             let proms_items = boletas.map(b => Promise.all(addComprobanteItem(b, client)));                                 
@@ -337,7 +341,9 @@ module.exports.add = function (comprobante) {
         else {
             let tipo_comprobante = +boleta.tipo_comprobante.id;
             if (tipo_comprobante === 10 || tipo_comprobante === 16)
-                check_matricula = boleta.matricula;
+                check_matricula_suspension = boleta.matricula;
+            else if (tipo_comprobante === 3 || tipo_comprobante === 18)
+                check_matricula_inscripcion = boleta.matricula;
             return Boleta.patch(boleta.id, { estado: 2 }, client)
             .then(() => Promise.all(addComprobanteItem(boleta, client)));
         }
@@ -367,7 +373,10 @@ module.exports.add = function (comprobante) {
                             connection.done();
 
                             // Si alguna boleta era de derecho anual, se verifica la matricula
-                            if (check_matricula) Matricula.verificarSuspension(check_matricula);
+                            if (check_matricula_suspension) Matricula.verificarSuspension(check_matricula_suspension);
+                            // Si alguna boleta era de inscripción, se verifica la matricula
+                            if (check_matricula_inscripcion) Matricula.verificarInscripcion(check_matricula_inscripcion);
+
                             return comprobante_nuevo;
                         });
                 })

@@ -15,7 +15,6 @@ const TipoMatricula = require('./tipos/TipoMatricula');
 const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
 const MatriculaHistorial = require('./MatriculaHistorial');
-const Documento = require('./Documento');
 
 const table = sql.define({
   name: 'matricula',
@@ -472,6 +471,7 @@ function filter(query, params) {
 
 
   if (params.solicitud) {
+    if (params.solicitud.id) query.where(table.solicitud.equals(params.solicitud.id));
     if (params.solicitud.publicarEmail) query.where(Profesional.table.publicarEmail.equals(params.solicitud.publicarEmail));
     if (params.solicitud.publicarAcervo) query.where(Profesional.table.publicarAcervo.equals(params.solicitud.publicarAcervo));
     if (params.solicitud.publicarDireccion) query.where(Profesional.table.publicarDireccion.equals(params.solicitud.publicarDireccion));
@@ -651,7 +651,6 @@ module.exports.verificarSuspension = function(id) {
     .then(r => {
         let cantidad_sin_pagar = +r.rows[0].cantidad_sin_pagar;
         let nuevo_estado = {
-          matricula: matricula.id,
           updated_by: 25,   // Procesos de Sistema
           documento: 3299    //Resolución 008/18
         }
@@ -668,4 +667,25 @@ module.exports.verificarSuspension = function(id) {
         return module.exports.cambiarEstado(id, nuevo_estado);
     });
   });
+}
+
+module.exports.verificarInscripcion = function(id) {
+  return module.exports.get(id)
+  .then(matricula => {
+    //Si está como pendiente de pago de inscripcion, habilito, sino no
+    if (matricula.estado.id === 12) {
+      return MatriculaHistorial.getByMatricula(id)
+      .then(historial => {
+        let documento = historial.find(h => h.estado.id === 12).documento.id;
+        let nuevo_estado = {
+          updated_by: 25,   // Procesos de Sistema
+          documento,
+          estado: 13 //Habilitado
+        }
+        
+        return module.exports.cambiarEstado(id, nuevo_estado);
+      })
+    }
+    else return Promise.resolve(false);
+  })
 }

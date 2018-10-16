@@ -275,27 +275,65 @@ function addDatosBoleta(boleta, client) {
     })
 }
 
+//Verifico que no exista una boleta (PRA | EMD) para la matrícula en la misma fecha
+//TRUE si está todo bien, FALSE si ya existe boleta
+function checkBoletaPRA(boleta) {
+    let mes = boleta.fecha.month() + 1;
+    let anio = boleta.fecha.year();
+    let query = table.select(table.id)
+    .where(
+        table.tipo_comprobante.in([16,10]),
+        table.matricula.equals(boleta.matricula),
+        sql.functions.MONTH(table.fecha).equals(mes),
+        sql.functions.YEAR(table.fecha).equals(anio)
+    )
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => r.rows.length === 0)
+}
+
+function boletaValida(boleta) {
+    // SI ES PRA o EMD
+    if (boleta.tipo_comprobante === 16 || boleta.tipo_comprobante === 10){
+        return checkBoletaPRA(boleta);
+    }
+    else return Promise.resolve(true);
+}
+
 module.exports.add = function (boleta, client) {
     let boleta_nueva;
-    return ValoresGlobales.getValida(6, new Date())
-    .then(dias_vencimiento => {
-        let fecha = moment(utils.getFecha(boleta.fecha), 'YYYY-MM-DD');
-        boleta.fecha_vencimiento = fecha.add(dias_vencimiento.valor, 'days');
-        return addDatosBoleta(boleta, client);
+    boleta.fecha = moment(utils.getFecha(boleta.fecha), 'YYYY-MM-DD');
+
+    return boletaValida(boleta)
+    .then(valida => {
+        if (!valida) {
+            return Promise.reject({ 
+                http_code: 409, 
+                mensaje: "No se puede crear la boleta. Ya existe una para el mismo mes" 
+            });
+        }
+        else {
+            return ValoresGlobales.getValida(6, new Date())
+            .then(dias_vencimiento => {
+                boleta.fecha_vencimiento = boleta.fecha.add(dias_vencimiento.valor, 'days');
+                return addDatosBoleta(boleta, client);
+            })
+            .then(boleta_added => {
+                boleta_nueva = boleta_added;
+                let proms_items = boleta.items.map((item, index) => {
+                    item.item = item.item ? item.item : (index + 1);
+                    item.boleta = boleta_nueva.id;
+                    return BoletaItem.add(item, client);
+                })
+                return Promise.all(proms_items);
+            })
+            .then(items => {
+                boleta_nueva.items = items;
+                return boleta_nueva;
+            });
+        }
     })
-    .then(boleta_added => {
-        boleta_nueva = boleta_added;
-        let proms_items = boleta.items.map((item, index) => {
-            item.item = item.item ? item.item : (index + 1);
-            item.boleta = boleta_nueva.id;
-            return BoletaItem.add(item, client);
-        })
-        return Promise.all(proms_items);
-    })
-    .then(items => {
-        boleta_nueva.items = items;
-        return boleta_nueva;
-    });
 };
 
 
