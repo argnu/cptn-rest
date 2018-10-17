@@ -319,10 +319,10 @@ module.exports.add = function (comprobante) {
     function pagarVolante(boleta, client) {
         return VolantePago.getBoletas(boleta.id)
         .then(boletas => { 
-            let boleta_find = boletas.filter(b => boleta.tipo_comprobante.id === 10 
-                || boleta.tipo_comprobante.id === 16);
-            let boleta2_find = boletas.filter(b => boleta.tipo_comprobante.id === 3 
-                || boleta.tipo_comprobante.id === 18);
+            let boleta_find = boletas.filter(b => b.tipo_comprobante.id === 10
+                || b.tipo_comprobante.id === 16);
+            let boleta2_find = boletas.filter(b => b.tipo_comprobante.id === 3 
+                || b.tipo_comprobante.id === 18);
             if (boleta_find) check_matricula_suspension = boleta_find.matricula;
             if (boleta2_find) check_matricula_inscripcion = boleta_find.matricula;
 
