@@ -15,7 +15,6 @@ const TipoMatricula = require('./tipos/TipoMatricula');
 const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
 const MatriculaHistorial = require('./MatriculaHistorial');
-const Documento = require('./Documento');
 
 const table = sql.define({
   name: 'matricula',
@@ -242,17 +241,13 @@ function getDerechoAnual(id_matricula, fecha, client) {
 }
 
 function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
-  let fecha;
+  let fecha = new Date();
 
   //Obtengo el valor válido para el importe de matriculación(id=1) en la fecha correspondiente
-  return Documento.get(documento)
-  .then(documento => {
-    fecha = documento.fecha;
-    return Promise.all([
-      getImporteInscripcion(id, fecha, client),
-      ValoresGlobales.getValida(6, fecha),
-    ])
-  })
+  return Promise.all([
+    getImporteInscripcion(id, fecha, client),
+    ValoresGlobales.getValida(6, fecha),
+  ])
   .then(valores => {
     let importe = valores[0].valor;
     let dias_vencimiento = valores[1].valor;
@@ -264,11 +259,10 @@ function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
       total: importe,
       estado: 1,   //1 ES 'Pendiente de Pago'
       fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(dias_vencimiento, 'days'),
-      fecha_update: fecha,
       delegacion: delegacion,
       items: [{
         item: 1,
-        descripcion: `Derecho de inscripción de ${tipoEntidad}`,
+        descripcion: `Derecho de inscripción de ${tipoEntidad == 'profesional' ? 'profesional' : 'empresa'}`,
         importe: importe
       }]
     }
@@ -462,9 +456,27 @@ module.exports.cambiarEstado = function(id, nuevo_estado) {
 }
 
 function filter(query, params) {
-  if (params.entidad && !isNaN(+params.entidad)) query.where(table.entidad.equals(params.entidad));
-  if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
+  if (params.entidad) {
+    // if (params.entidad && !isNaN(+params.entidad)) query.where(table.entidad.equals(params.entidad));
+    if (params.entidad.tipo) query.where(Entidad.table.tipo.equals(params.entidad.tipo));
+  }
   if (params.estado && !isNaN(+params.estado)) query.where(table.estado.equals(params.estado));
+
+  if (params.tipo)
+    if (Array.isArray(params.tipo)) {
+      let q_or = params.tipo.map(t => ` "numeroMatricula" ILIKE '${t}%' `).join('OR');
+      query.where(q_or);
+    }
+    else query.where(table.numeroMatricula.ilike(`${params.tipo}%`));
+
+
+  if (params.solicitud) {
+    if (params.solicitud.id) query.where(table.solicitud.equals(params.solicitud.id));
+    if (params.solicitud.publicarEmail) query.where(Profesional.table.publicarEmail.equals(params.solicitud.publicarEmail));
+    if (params.solicitud.publicarAcervo) query.where(Profesional.table.publicarAcervo.equals(params.solicitud.publicarAcervo));
+    if (params.solicitud.publicarDireccion) query.where(Profesional.table.publicarDireccion.equals(params.solicitud.publicarDireccion));
+    if (params.solicitud.publicarCelular) query.where(Profesional.table.publicarCelular.equals(params.solicitud.publicarCelular));
+  }
 
   if (params.filtros) {
     if (params.filtros.numeroMatricula) query.where(table.numeroMatricula.ilike(`%${params.filtros.numeroMatricula}%`));
@@ -620,4 +632,60 @@ module.exports.patch = function (id, matricula, client) {
     .toQuery();
 
   return connector.execQuery(query, client);
+}
+
+module.exports.verificarSuspension = function(id) {
+  return module.exports.get(id)
+  .then(matricula => {
+    let table = Boleta.table;
+    let query = table.select(table.count().as('cantidad_sin_pagar'))
+    .where(
+        table.estado.equals(1),
+        table.tipo_comprobante.in([10,16]),
+        table.matricula.equals(matricula.id),
+        table.fecha_vencimiento.lt(new Date())
+    )
+    .toQuery();
+
+    return connector.execQuery(query)
+    .then(r => {
+        let cantidad_sin_pagar = +r.rows[0].cantidad_sin_pagar;
+        let nuevo_estado = {
+          updated_by: 25,   // Procesos de Sistema
+          documento: 3299    //Resolución 008/18
+        }
+
+        //Tiene 4 o más cuotas sin abonar y está habilitado
+        if (matricula.estado.id === 13 && cantidad_sin_pagar >= 4) {
+          nuevo_estado.estado = 24; // Suspendido por mora cuatrimestral
+        }
+        else if (matricula.estado.id === 24 && cantidad_sin_pagar < 4) {
+          nuevo_estado.estado = 13; // Suspendido por mora cuatrimestral
+        }
+        else return Promise.resolve();
+
+        return module.exports.cambiarEstado(id, nuevo_estado);
+    });
+  });
+}
+
+module.exports.verificarInscripcion = function(id) {
+  return module.exports.get(id)
+  .then(matricula => {
+    //Si está como pendiente de pago de inscripcion, habilito, sino no
+    if (matricula.estado.id === 12) {
+      return MatriculaHistorial.getByMatricula(id)
+      .then(historial => {
+        let documento = historial.find(h => h.estado.id === 12).documento.id;
+        let nuevo_estado = {
+          updated_by: 25,   // Procesos de Sistema
+          documento,
+          estado: 13 //Habilitado
+        }
+        
+        return module.exports.cambiarEstado(id, nuevo_estado);
+      })
+    }
+    else return Promise.resolve(false);
+  })
 }

@@ -1,8 +1,9 @@
+const connector = require(`../../db/connector`);
 const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
 const table = sql.define({
-    name: 'usuario_delegacion',
+    name: 'usuario_rol',
     columns: [
         {
             name: 'id',
@@ -15,8 +16,8 @@ const table = sql.define({
             notNull: true
         },
         {
-            name: 'delegacion',
-            dataType: 'int',
+            name: 'rol',
+            dataType: 'varchar(100)',
             notNull: true
         },
    ],
@@ -27,12 +28,7 @@ const table = sql.define({
             columns: ['usuario'],
             refColumns: ['id'],
             onDelete: 'CASCADE'
-        },
-        {
-            table: 'delegacion',
-            columns: ['delegacion'],
-            refColumns: ['id']
-        }        
+        }
     ]   
 });
 

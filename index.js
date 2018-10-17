@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 const config = require('./config.private');
 const routes = require('./routes');
 const bodyParser = require('body-parser');
-const ABILITIES = require('./auth/roles')
+const Ability = require('@casl/ability').Ability;
+const ABILITIES = require('./auth').roles;
 
 const app = express();
 app.listen(config.entry.port, config.entry.host);
@@ -30,7 +31,8 @@ app.use(function(req, res, next) {
       jwt.verify(auth_token, config.secret, function(err, decode) {
         if (err) req.user = null;
         req.user = decode;
-        req.ability = ABILITIES[req.user.rol];
+        let rules = req.user.roles.map(rol => ABILITIES[rol].rules).reduce((a,b) => [...a, ...b], []);
+        req.ability = new Ability(rules);
         next();
       });
     } else noUser();
