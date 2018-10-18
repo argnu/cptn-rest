@@ -22,13 +22,11 @@ const table = sql.define({
         },
         {
             name: 'boleta',
-            dataType: 'int',
-            notNull: true
+            dataType: 'int'
         },
         {
             name: 'importe',
-            dataType: 'float',
-            notNull: true
+            dataType: 'float'
         },
         {
             name: 'documento',
@@ -102,6 +100,7 @@ const select = [
     table.boleta,
     table.matricula,
     table.importe,
+    table.descripcion,
     table.documento,
     table.created_by,
     table.created_at,
@@ -114,7 +113,7 @@ const from = table.join(TipoComprobante.table).on(table.tipo.equals(TipoComproba
 
 module.exports.getAll = function (params) {
     let exenciones = [];
-    let query = table.select(select).from(from);
+    let query = table.select(select).from(from).where(table.boleta.isNotNull());
 
     if (params.matricula) query.where(table.matricula.equals(params.matricula));
     if (params.boleta) query.where(table.boleta.equals(params.boleta));
@@ -162,10 +161,12 @@ module.exports.get = function(id) {
 
 module.exports.add = function (comprobante_exencion, client) {
     let query = table.insert(
+            table.fecha.value(comprobante_exencion.fecha),
             table.boleta.value(comprobante_exencion.boleta),
             table.tipo.value(comprobante_exencion.tipo),
             table.importe.value(utils.getFloat(comprobante_exencion.importe)),
             table.matricula.value(comprobante_exencion.matricula),
+            table.descripcion.value(comprobante_exencion.descripcion),
             table.documento.value(comprobante_exencion.documento),
             table.created_by.value(comprobante_exencion.created_by),
             table.delegacion.value(comprobante_exencion.delegacion)
@@ -173,5 +174,16 @@ module.exports.add = function (comprobante_exencion, client) {
         .returning(table.id, table.boleta, table.importe, table.matricula, table.tipo)
         .toQuery();
 
-    return connector.execQuery(query, client).then(r => r.rows[0]);
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0]);
+}
+
+module.exports.patch = function(id, data, client) {
+    let query = table.update(data)
+    .where(table.id.equals(id))
+    .returning(table.id, table.boleta, table.importe, table.matricula, table.tipo)
+    .toQuery();
+
+    return connector.execQuery(query, client)
+    .then(r => r.rows[0]);
 }
