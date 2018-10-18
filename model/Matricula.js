@@ -227,7 +227,7 @@ function getImporteInscripcion(id_matricula, fecha, client) {
   })
 }
 
-function getDerechoAnual(id_matricula, fecha, client) {
+module.exports.getDerechoAnual = function(id_matricula, fecha, client) {
   return module.exports.get(id_matricula, client)
   .then(r => {
     let id_var;
@@ -284,7 +284,7 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
-    getDerechoAnual(id, new Date(), client),
+    module.exports.getDerechoAnual(id, new Date(), client),
     ValoresGlobales.getValida(6, new Date()),
     Boleta.getNumeroBoleta(null, client)
   ])
