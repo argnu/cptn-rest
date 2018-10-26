@@ -316,7 +316,8 @@ module.exports.add = function (boleta, client) {
         else {
             return ValoresGlobales.getValida(6, new Date())
             .then(dias_vencimiento => {
-                boleta.fecha_vencimiento = boleta.fecha.add(dias_vencimiento.valor, 'days');
+                boleta.fecha_vencimiento = moment(utils.getFecha(boleta.fecha), 'YYYY-MM-DD')
+                boleta.fecha_vencimiento.add(dias_vencimiento.valor, 'days');
                 return addDatosBoleta(boleta, client);
             })
             .then(boleta_added => {
