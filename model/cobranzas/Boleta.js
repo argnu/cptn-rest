@@ -10,6 +10,7 @@ const TipoComprobante = require('../tipos/TipoComprobante');
 const TipoEstadoBoleta = require('../tipos/TipoEstadoBoleta');
 const Legajo = require('../tareas/Legajo');
 const ValoresGlobales = require('../ValoresGlobales');
+const ComprobanteExencion = require('./ComprobanteExencion');
 
 const table = sql.define({
     name: 'boleta',
@@ -94,7 +95,7 @@ const table = sql.define({
             name: 'updated_at',
             dataType: 'timestamptz',
             defaultValue: 'current_date'
-        }        
+        }
     ],
 
     foreignKeys: [
@@ -136,7 +137,7 @@ const table = sql.define({
             columns: ['updated_by'],
             refColumns: ['id'],
             onUpdate: 'CASCADE'
-        }        
+        }
     ]
 });
 
@@ -183,7 +184,7 @@ module.exports.getAll = function (params) {
     return connector.execQuery(query.toQuery())
     .then(r => {
         boletas = r.rows.map(row => dot.object(row));
-        let proms = boletas.map(b => { 
+        let proms = boletas.map(b => {
             return Promise.all([
                 BoletaItem.getByBoleta(b.id),
                 b.legajo ? Legajo.get(b.legajo) : Promise.resolve(null)
@@ -213,18 +214,18 @@ module.exports.get = function (id) {
     let boleta;
 
     return connector.execQuery(query)
-        .then(r => {
-            boleta = dot.object(r.rows[0]);
-            return Promise.all([
-                BoletaItem.getByBoleta(boleta.id),
-                boleta.legajo ? Legajo.get(boleta.legajo) : Promise.resolve(null)
-            ])
-        })
-        .then(([items, legajo]) => {
-            boleta.items = items;
-            boleta.legajo = legajo;
-            return boleta;
-        });
+    .then(r => {
+        boleta = dot.object(r.rows[0]);
+        return Promise.all([
+            BoletaItem.getByBoleta(boleta.id),
+            boleta.legajo ? Legajo.get(boleta.legajo) : Promise.resolve(null)
+        ])
+    })
+    .then(([items, legajo]) => {
+        boleta.items = items;
+        boleta.legajo = legajo;
+        return boleta;
+    });
 }
 
 module.exports.getByNumero = function(numero) {
@@ -295,46 +296,116 @@ function checkBoletaPRA(boleta) {
 
 function boletaValida(boleta) {
     // SI ES PRA o EMD
-    if (boleta.tipo_comprobante === 16 || boleta.tipo_comprobante === 10){
+    if (boleta.tipo_comprobante === 16 || boleta.tipo_comprobante === 10) {
         return checkBoletaPRA(boleta);
     }
     else return Promise.resolve(true);
 }
 
+//VERIFICA SI EXISTE UNA BONIFICACION PARA LA BOLETA EN ESA FECHA
+//SOLO PARA BOLETAS DE DERECHO ANUAL PRA|EMD
+function hayBonificacion(boleta, client) {
+    if (boleta.tipo_comprobante != 10 && boleta.tipo_comprobante != 16)
+        return Promise.resolve(false);
+    else {
+        let fecha = moment(utils.getFecha(boleta.fecha), 'YYYY-MM-DD');
+        let mes = fecha.month() + 1;
+        let anio = fecha.year();
+        let table = ComprobanteExencion.table;
+        let query = table.select(table.id)
+        .where(
+            table.matricula.equals(boleta.matricula),
+            table.tipo.equals(21),
+            sql.functions.MONTH(table.fecha).equals(mes),
+            sql.functions.YEAR(table.fecha).equals(anio)
+        )
+        .toQuery();
+
+        return connector.execQuery(query, client)
+        .then(r => r.rows.length === 0 ? false : r.rows[0])
+    }
+}
+
+function crearTransaccion(client) {
+    if (!client) return connector.beginTransaction();
+    return Promise.resolve(false);
+}
+
 module.exports.add = function (boleta, client) {
     let boleta_nueva;
+    let conexion;
+    let client_transaccion = client;
     boleta.fecha = moment(utils.getFecha(boleta.fecha), 'YYYY-MM-DD');
 
-    return boletaValida(boleta)
-    .then(valida => {
-        if (!valida) {
-            return Promise.reject({ 
-                http_code: 409, 
-                mensaje: "No se puede crear la boleta. Ya existe una para el mismo mes" 
-            });
+    return crearTransaccion(client)
+    .then(con => {
+        if (con) {
+            conexion = con;
+            client_transaccion = conexion.client;
         }
-        else {
-            return ValoresGlobales.getValida(6, new Date())
-            .then(dias_vencimiento => {
-                boleta.fecha_vencimiento = moment(utils.getFecha(boleta.fecha), 'YYYY-MM-DD').add(dias_vencimiento.valor, 'days');
-                return addDatosBoleta(boleta, client);
-            })
-            .then(boleta_added => {
-                boleta_nueva = boleta_added;
-                let proms_items = boleta.items.map((item, index) => {
-                    item.item = item.item ? item.item : (index + 1);
-                    item.boleta = boleta_nueva.id;
-                    return BoletaItem.add(item, client);
+
+        return boletaValida(boleta)
+        .then(valida => {
+            if (!valida) {
+                return Promise.reject({
+                    http_code: 409,
+                    mensaje: "No se puede crear la boleta. Ya existe una para el mismo mes"
+                });
+            }
+            else {
+                return ValoresGlobales.getValida(6, new Date())
+                .then(dias_vencimiento => {
+                    let fecha = moment(utils.getFecha(boleta.fecha), 'YYYY-MM-DD');
+                    boleta.fecha_vencimiento = fecha.add(dias_vencimiento.valor, 'days');
+                    return addDatosBoleta(boleta, client_transaccion);
                 })
-                return Promise.all(proms_items);
-            })
-            .then(items => {
-                boleta_nueva.items = items;
-                return boleta_nueva;
-            });
-        }
+                .then(boleta_added => {
+                    boleta_nueva = boleta_added;
+                    let proms_items = boleta.items.map((item, index) => {
+                        item.item = item.item ? item.item : (index + 1);
+                        item.boleta = boleta_nueva.id;
+                        return BoletaItem.add(item, client_transaccion);
+                    })
+                    return Promise.all(proms_items);
+                })
+                .then(items => {
+                    boleta_nueva.items = items;
+                    return hayBonificacion(boleta, client_transaccion)
+                })
+                .then(bonificacion => {
+                    bonificacion ? Promise.all([
+                            ComprobanteExencion.patch(bonificacion.id, {
+                                boleta: boleta_nueva.id,
+                                importe: boleta_nueva.total
+                            }, client_transaccion),
+
+                            module.exports.patch(boleta_nueva.id, {
+                                estado: 5
+                            }, client_transaccion)
+                        ])
+                    : Promise.resolve();
+                })
+                .then(() => {
+                    if (conexion) {
+                        return connector.commit(conexion.client)
+                        .then(r => {
+                            conexion.done();
+                          return boleta_nueva;
+                        })
+                    }
+                    else return boleta_nueva;
+                })
+            }
+        })
     })
-};
+    .catch(e => {
+        if (conexion) {
+            connector.rollback(conexion.client);
+            conexion.done();
+        }
+        return Promise.reject(e);
+    })
+}
 
 
 module.exports.patch = function(id, boleta, client) {
