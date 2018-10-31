@@ -294,9 +294,9 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
 
       //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
       if (fecha_vencimiento.day() === 0)
-        fecha_vencimiento = moment(fecha_vencimiento).add(1, 'days');
+        fecha_vencimiento = fecha_vencimiento.add(1, 'days');
       else if (fecha_vencimiento.day() === 6)
-        fecha_vencimiento = moment(fecha_vencimiento).add(2, 'days');
+        fecha_vencimiento = fecha_vencimiento.add(2, 'days');
 
       let boleta = {
         numero: numero_boleta,
