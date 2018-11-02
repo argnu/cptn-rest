@@ -97,7 +97,7 @@ module.exports.edit = function(id, representante, client) {
 
 function getMatricula(id) {
   let query = table.select(
-    table.id, 
+    table.id,
     table.tipo,
     table.fechaInicio.cast('varchar(10)'),
     table.fechaFin.cast('varchar(10)'),
@@ -120,24 +120,24 @@ function getMatricula(id) {
 
 function getPersona(id) {
   let query = table.select(
-    table.id, 
+    table.id,
     table.tipo,
-    table.fechaInicio,
-    table.fechaFin,
+    table.fechaInicio.cast('varchar(10)'),
+    table.fechaFin.cast('varchar(10)'),
     table.persona.as('persona.id'),
     Persona.table.nombre.as('persona.nombre'),
     PersonaFisica.table.apellido.as('persona.apellido'),
     PersonaFisica.table.dni.as('persona.dni')
   )
   .from(
-    table.persona.on(Persona.table.persona.equals(Persona.table.id))
+    table.join(Persona.table).on(table.persona.equals(Persona.table.id))
     .join(PersonaFisica.table).on(Persona.table.id.equals(PersonaFisica.table.id))
   )
   .where(table.id.equals(id))
   .toQuery();
 
   return connector.execQuery(query)
-  .then(r => r.rows[0]);  
+  .then(r => dot.object(r.rows[0]));
 }
 
 
@@ -151,8 +151,8 @@ module.exports.getAll = function(id_empresa) {
       let proms = r.rows.map(row => {
         if (row.matricula) return getMatricula(row.id)
         else if (row.persona) return getPersona(row.id);
-      });   
-      
+      });
+
       return Promise.all(proms);
   })
   .then(representantes => representantes)
