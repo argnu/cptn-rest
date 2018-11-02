@@ -111,15 +111,10 @@ module.exports.add = function(empresa, client) {
             }, client));
 
             let proms_representantes = empresa.representantes
-            .map(r => EmpresaRepresentante.add({
-                tipo: r.tipo,
-                empresa: empresa_added.id,
-                matricula: r.matricula,
-                matricula_externa: r.matricula_externa,
-                fechaInicio: r.fechaInicio,
-                fechaFin: r.fechaFin
-              }, client)
-            );
+            .map(r => { 
+              r.empresa = empresa_added.id;
+              EmpresaRepresentante.add(r, client)
+            });
 
             return Promise.all([
               Promise.all(proms_contactos),
@@ -277,23 +272,12 @@ module.exports.edit = function (id, empresa, client) {
             }, client));
 
             let proms_representantes = representantes_nuevos.map(r => {
-              return  EmpresaRepresentante.add({
-                tipo: r.tipo,
-                empresa: id,
-                matricula: r.matricula,
-                matricula_externa: r.matricula_externa,
-                fechaInicio: r.fechaInicio,
-                fechaFin: r.fechaFin                
-              }, client)
+              r.empresa = id;
+              return  EmpresaRepresentante.add(r, client);
             });
 
             let proms_representantes_existentes = representantes_existentes.map(r => {
-              return  EmpresaRepresentante.edit(r.id, {
-                matricula: r.matricula,
-                matricula_externa: r.matricula_externa,
-                fechaInicio: r.fechaInicio,
-                fechaFin: r.fechaFin                
-              }, client)
+              return  EmpresaRepresentante.edit(r.id, r, client)
             });
 
             return Promise.all([
