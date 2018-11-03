@@ -41,6 +41,13 @@ function filter(query, params) {
     if (params.tipo) query.where(table.tipo.equals(params.tipo));
     if (params.cuit) query.where(table.cuit.equals(params.cuit));
     if (params.dni) query.where(PersonaFisica.table.dni.equals(params.dni));
+
+    if (params.filtros) {
+        if (params.filtros.nombre) query.where(table.nombre.ilike(`%${params.filtros.nombre}%`));
+        if (params.filtros.apellido) query.where(PersonaFisica.table.apellido.ilike(`%${params.filtros.apellido}%`));
+        if (params.filtros.dni) query.where(PersonaFisica.table.dni.ilike(`%${params.filtros.dni}%`));
+        if (params.filtros.cuit) query.where(table.cuit.ilike(`%${params.filtros.cuit}%`));
+    }
 }
 
 module.exports.getAll = function(params) {
