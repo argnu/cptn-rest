@@ -445,9 +445,8 @@ module.exports.aprobar = function(matricula) {
             }
             else return Promise.resolve(false);
           })
-          .then(r => esJovenProfesional(solicitud.entidad.id, conexion.client))
+          .then(r => solicitud.tipoEntidad == 'profesional' ? esJovenProfesional(solicitud.entidad.id, conexion.client): Promise.resolve(false))
           .then(es_joven => {
-            console.log(es_joven)
             if (!es_joven) return Promise.resolve();
             else return crearBonificaciones(matricula, conexion.client);
           })
