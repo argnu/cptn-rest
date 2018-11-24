@@ -360,7 +360,7 @@ function crearBonificaciones(matricula, client) {
       matricula: matricula.id,
       tipo: 21, //BONIFICACION DE APORTES
       descripcion: 'Jóvenes Profesionales',
-      documento: 3353, //FALTA CARGAR EL ACTA 83
+      documento: 3284, //FALTA CARGAR EL ACTA 83
       created_by: matricula.created_by,
       delegacion: matricula.delegacion
     }
