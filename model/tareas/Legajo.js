@@ -531,43 +531,33 @@ function addBoleta(legajo, conexion) {
 
 module.exports.add = function (legajo) {
     let legajo_nuevo;
-    let personas;
-    let connection;
+    let conexion;
 
     return connector
         .beginTransaction()
         .then(con => {
-            connection = con;
+            conexion = con;
             if (legajo.domicilio.localidad && legajo.domicilio.direccion.length) {
-                return Domicilio.add(legajo.domicilio, connection.client)
+                return Domicilio.add(legajo.domicilio, conexion.client)
             }
             else return Promise.resolve(null)
         })
         .then(domicilio_nuevo => {
             legajo.domicilio = domicilio_nuevo ? domicilio_nuevo.id : null;
-            let proms = legajo.comitentes.map(c => {
-                if (!c.persona.id) return Persona.add(c.persona, connection.client);
-                else return Promise.resolve(c.persona);
-            })
-            return Promise.all(proms);
-        })
-        .then(comitentes => {
-            personas = comitentes;
-            return addLegajo(legajo, connection.client);
+            return addLegajo(legajo, conexion.client);
         })
         .then(legajo_added => {
             legajo_nuevo = legajo_added;
             let proms_comitentes = legajo.comitentes.map((comitente, index) => {
                 comitente.legajo = legajo_nuevo.id;
-                comitente.persona = personas[index].id;
-                return LegajoComitente.add(comitente, connection.client);
+                return LegajoComitente.add(comitente, conexion.client);
             })
             return Promise.all(proms_comitentes);
         })
-        .then(comitentes => {
+        .then(() => {
             let proms_items = legajo.items.map(item => {
                 item.legajo = legajo_nuevo.id;
-                return LegajoItem.add(item, connection.client);
+                return LegajoItem.add(item, conexion.client);
             })
             return Promise.all(proms_items);
         })
@@ -575,19 +565,19 @@ module.exports.add = function (legajo) {
             legajo.id = legajo_nuevo.id;
             legajo.numero_legajo = legajo_nuevo.numero_legajo;
             legajo_nuevo.items = items;
-            return addBoleta(legajo, connection.client);
+            return addBoleta(legajo, conexion.client);
         })
         .then(r => {
-            return connector.commit(connection.client)
+            return connector.commit(conexion.client)
                 .then(r => {
-                    connection.done();
+                    conexion.done();
                     return legajo_nuevo;
                 });
         })
         .catch(e => {
             console.log(e);
-            connector.rollback(connection.client);
-            connection.done();
+            connector.rollback(conexion.client);
+            conexion.done();
             return Promise.reject(e);
         });
 }
@@ -616,16 +606,11 @@ module.exports.edit = function(id, legajo) {
               .and(LegajoComitente.table.id.notIn(comitentes_existentes.map(c => c.id)))
             ).toQuery(), conexion.client);
     })
-    .then(() => Promise.all(comitentes_existentes.map(c => Persona.edit(c.persona.id, c.persona, conexion.client))))
+    .then(() => Promise.all(comitentes_existentes.map(c => LegajoComitente.edit(c.id, c, conexion.client))))
     .then(() => {
-        let proms = comitentes_nuevos.map(c => Persona.add(c.persona, conexion.client));
-        return Promise.all(proms);
-    })
-    .then(personas => {
-        let proms_comitentes = comitentes_nuevos.map((comitente, index) => {
-            comitente.legajo = id;
-            comitente.persona = personas[index].id;
-            return LegajoComitente.add(comitente, conexion.client);
+        let proms_comitentes = comitentes_nuevos.map(c => {
+            c.legajo = id;
+            return LegajoComitente.add(c, conexion.client);
         })
         return Promise.all(proms_comitentes);
     })

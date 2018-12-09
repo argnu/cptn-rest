@@ -1,14 +1,13 @@
 const dot = require('dot-object');
-const connector = require(`../../db/connector`);
+const connector = require('../../db/connector');
 const sql = require('node-sql-2');
 sql.setDialect('postgres');
 
-const utils = require(`../../utils`);
-const Matricula = require(`../Matricula`);
-const MatriculaExterna = require(`../MatriculaExterna`);
-const Profesional = require(`../profesional/Profesional`);
-const Persona = require(`../Persona`);
-const PersonaFisica = require(`../PersonaFisica`);
+const utils = require('../../utils');
+const Matricula = require('../Matricula');
+const Profesional = require('../profesional/Profesional');
+const Persona = require('../Persona');
+const PersonaFisica = require('../PersonaFisica');
 
 
 const table = sql.define({
@@ -28,7 +27,7 @@ const table = sql.define({
       dataType: 'int'
     },
     {
-      name: 'matricula_externa',
+      name: 'persona',
       dataType: 'int'
     },
     {
@@ -59,8 +58,8 @@ const table = sql.define({
       refColumns: [ 'id' ]
     },
     {
-      table: 'matricula_externa',
-      columns: [ 'matricula_externa' ],
+      table: 'persona_fisica',
+      columns: [ 'persona' ],
       refColumns: [ 'id' ]
     },
   ]
@@ -73,7 +72,7 @@ module.exports.add = function(representante, client) {
                 table.tipo.value(representante.tipo),
                 table.empresa.value(representante.empresa),
                 table.matricula.value(representante.matricula),
-                table.matricula_externa.value(representante.matricula_externa),
+                table.persona.value(representante.persona),
                 table.fechaInicio.value(utils.checkNull(representante.fechaInicio)),
                 table.fechaFin.value(utils.checkNull(representante.fechaFin))
               )
@@ -86,7 +85,7 @@ module.exports.add = function(representante, client) {
 module.exports.edit = function(id, representante, client) {
   let query = table.update({
     matricula: representante.matricula,
-    matricula_externa: representante.matricula_externa,
+    persona: representante.persona,
     fechaInicio: utils.checkNull(representante.fechaInicio),
     fechaFin: utils.checkNull(representante.fechaFin)
   })
@@ -98,7 +97,7 @@ module.exports.edit = function(id, representante, client) {
 
 function getMatricula(id) {
   let query = table.select(
-    table.id, 
+    table.id,
     table.tipo,
     table.fechaInicio.cast('varchar(10)'),
     table.fechaFin.cast('varchar(10)'),
@@ -119,29 +118,26 @@ function getMatricula(id) {
   .then(r => dot.object(r.rows[0]));
 }
 
-function getMatriculaExterna(id) {
+function getPersona(id) {
   let query = table.select(
-    table.id, 
+    table.id,
     table.tipo,
-    table.matricula_externa,
-    table.fechaInicio,
-    table.fechaFin,
-    MatriculaExterna.table.numeroMatricula,
-    MatriculaExterna.table.nombreInstitucion,
-    Persona.table.nombre,
-    PersonaFisica.table.apellido,
-    PersonaFisica.table.dni
+    table.fechaInicio.cast('varchar(10)'),
+    table.fechaFin.cast('varchar(10)'),
+    table.persona.as('persona.id'),
+    Persona.table.nombre.as('persona.nombre'),
+    PersonaFisica.table.apellido.as('persona.apellido'),
+    PersonaFisica.table.dni.as('persona.dni')
   )
   .from(
-    table.join(MatriculaExterna.table).on(table.matricula_externa.equals(MatriculaExterna.table.id))
-         .join(Persona.table).on(MatriculaExterna.table.persona.equals(Persona.table.id))
-         .join(PersonaFisica.table).on(MatriculaExterna.table.persona.equals(PersonaFisica.table.id))
+    table.join(Persona.table).on(table.persona.equals(Persona.table.id))
+    .join(PersonaFisica.table).on(Persona.table.id.equals(PersonaFisica.table.id))
   )
   .where(table.id.equals(id))
   .toQuery();
 
   return connector.execQuery(query)
-  .then(r => r.rows[0]);  
+  .then(r => dot.object(r.rows[0]));
 }
 
 
@@ -154,9 +150,9 @@ module.exports.getAll = function(id_empresa) {
   .then(r => {
       let proms = r.rows.map(row => {
         if (row.matricula) return getMatricula(row.id)
-        else if (row.matricula_externa) return getMatriculaExterna(row.id);
-      });   
-      
+        else if (row.persona) return getPersona(row.id);
+      });
+
       return Promise.all(proms);
   })
   .then(representantes => representantes)
@@ -164,21 +160,4 @@ module.exports.getAll = function(id_empresa) {
     console.error(e);
     return Promise.reject(e);
   })
-}
-
-module.exports.delete = function (data, client) {
-  let query;
-
-  if (data.matricula) {
-    query = table.delete()
-    .where(table.empresa.equals(data.empresa).and(table.matricula.equals(data.matricula)))
-    .toQuery();
-  }
-  else if (data.matricula_externa) {
-    query = table.delete()
-    .where(table.empresa.equals(data.empresa).and(table.matricula_externa.equals(data.matricula_externa)))
-    .toQuery();
-  }
-  
-  return connector.execQuery(query, client);
 }

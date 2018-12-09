@@ -52,7 +52,6 @@ module.exports.EntidadCondicionAfip = require('./EntidadCondicionAfip');
 module.exports.Solicitud = require('./Solicitud');
 module.exports.Matricula = require('./Matricula');
 module.exports.MatriculaHistorial = require('./MatriculaHistorial');
-module.exports.MatriculaExterna = require('./MatriculaExterna');
 module.exports.MatriculaMovimiento = require('./MatriculaMovimiento');
 
 module.exports.Empresa = require('./empresa/Empresa');

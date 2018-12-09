@@ -37,8 +37,7 @@ const table = sql.define({
         {
             table: 'persona',
             columns: ['persona'],
-            refColumns: ['id'],
-            onDelete: 'cascade'
+            refColumns: ['id']
         },
     ]
 });
@@ -51,6 +50,18 @@ module.exports.add = function (data, client) {
         table.persona.value(data.persona),
         table.porcentaje.value(data.porcentaje)
     )
+    .returning(table.star())
+    .toQuery();
+
+    return connector.execQuery(query, client).then(r => r.rows[0]);
+}
+
+module.exports.edit = function (id, data, client) {
+    let query = table.update({
+        persona: data.persona,
+        porcentaje: data.porcentaje
+    })
+    .where(table.id.equals(id))
     .returning(table.star())
     .toQuery();
 

@@ -10,9 +10,7 @@ const EntidadCondicionAfip = require('../EntidadCondicionAfip');
 const Entidad = require('../Entidad');
 const TipoSexo = require('../tipos/TipoSexo');
 const TipoEstadoCivil = require('../tipos/TipoEstadoCivil');
-const TipoCondicionAfip = require('../tipos/TipoCondicionAfip');
 const utils = require('../../utils');
-const ABILITIES = require('../../auth/roles')
 
 const sql = require('node-sql-2');
 sql.setDialect('postgres');

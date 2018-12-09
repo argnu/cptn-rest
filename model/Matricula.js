@@ -15,6 +15,8 @@ const TipoMatricula = require('./tipos/TipoMatricula');
 const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
 const MatriculaHistorial = require('./MatriculaHistorial');
+const Documento = require('./Documento');
+const ComprobanteExencion = require('./cobranzas/ComprobanteExencion');
 
 const table = sql.define({
   name: 'matricula',
@@ -153,7 +155,8 @@ function addMatriculaMigracion(matricula, client) {
     table.asientoBajaF.value(matricula.asientoBajaF),
     table.codBajaF.value(matricula.codBajaF),
     table.estado.value(matricula.estado)
-  ).returning(table.id).toQuery()
+  )
+  .returning(table.id).toQuery()
 
   return connector.execQuery(query, client)
     .then(r => r.rows[0]);
@@ -224,7 +227,7 @@ function getImporteInscripcion(id_matricula, fecha, client) {
   })
 }
 
-function getDerechoAnual(id_matricula, fecha, client) {
+module.exports.getDerechoAnual = function(id_matricula, fecha, client) {
   return module.exports.get(id_matricula, client)
   .then(r => {
     let id_var;
@@ -276,7 +279,7 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
-    getDerechoAnual(id, new Date(), client),
+    module.exports.getDerechoAnual(id, new Date(), client),
     ValoresGlobales.getValida(6, new Date()),
     Boleta.getNumeroBoleta(null, client)
   ])
@@ -294,9 +297,9 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
 
       //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
       if (fecha_vencimiento.day() === 0)
-        fecha_vencimiento = moment(fecha_vencimiento).add(1, 'days');
+        fecha_vencimiento = fecha_vencimiento.add(1, 'days');
       else if (fecha_vencimiento.day() === 6)
-        fecha_vencimiento = moment(fecha_vencimiento).add(2, 'days');
+        fecha_vencimiento = fecha_vencimiento.add(2, 'days');
 
       let boleta = {
         numero: numero_boleta,
@@ -333,7 +336,7 @@ function getTipoMatricula(id_profesional) {
 }
 
 // tipo_provisorio hasta que se determine automáticamente una vez validados los titulos
-function getNumeroMatricula(tipo) {
+module.exports.getNumeroMatricula = function(tipo) {
   let query = `
     select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
     from matricula
@@ -346,10 +349,67 @@ function getNumeroMatricula(tipo) {
   });
 }
 
-module.exports.getNumeroMatricula = getNumeroMatricula;
+function crearBonificaciones(matricula, client) {
+  let anio = new Date().getFullYear();
+  let mes = new Date().getMonth();
+  let promesas_bonifs = [];
+
+  for(let cantidad = 0; cantidad < 12; cantidad++) {
+    let bonificacion = {
+      fecha: new Date(anio, mes, 1),
+      matricula: matricula.id,
+      tipo: 21, //BONIFICACION DE APORTES
+      descripcion: 'Jóvenes Profesionales',
+      documento: 3284, //FALTA CARGAR EL ACTA 83
+      created_by: matricula.created_by,
+      delegacion: matricula.delegacion
+    }
+
+    promesas_bonifs.push(ComprobanteExencion.add(bonificacion, client));
+
+    mes++;
+
+    if (mes === 12) {
+      mes = 0;
+      anio++;
+    }
+  }
+
+  return Promise.all(promesas_bonifs);
+}
+
+//Devuelve si es joven profesional
+function esJovenProfesional(entidad, client) {
+  return Profesional.get(entidad, client)
+  .then(profesional => {
+    let anios = moment().diff(profesional.fechaNacimiento, 'years');
+
+    //Si no tiene menos de 25 años, no es jóven profesional
+    if (anios >= 25) return false;
+    
+    let titulo_principal = profesional.formaciones.find(f => f.principal === true);
+
+    //Si no tiene título principal o el mismo no tiene fecha de emisión, no se puede determinar
+    //false por defecto
+    if (!titulo_principal || !titulo_principal.fechaEmision) return false;
+
+    let meses_dif = moment().diff(titulo_principal.fechaEmision, 'months');
+
+    //Si es Nivel Secundario y hace menos de 24 meses
+    if (titulo_principal.titulo.nivel.id === 1 && meses_dif < 24) return true;
+
+    //Si es Técnico o Nivel Universitario y hace menos de 12 meses
+    if (titulo_principal.titulo.nivel.id > 1 
+      && titulo_principal.titulo.nivel.id < 5 
+      && meses_dif < 12) return true;
+
+    //Cualquier otro caso no es jóven profesional
+    return false;    
+  })
+}
 
 module.exports.aprobar = function(matricula) {
-  let solicitud, matricula_added, connection;
+  let solicitud, matricula_added, conexion;
 
   return existMatricula(matricula.solicitud)
   .then(exist => {
@@ -358,52 +418,58 @@ module.exports.aprobar = function(matricula) {
         .then(solicitud_get => {
           solicitud = solicitud_get;
           let tipo_matricula = solicitud.tipoEntidad == 'empresa' ? 'EMP' : matricula.tipo;
-          return getNumeroMatricula(tipo_matricula);
+          return module.exports.getNumeroMatricula(tipo_matricula);
         })
         .then(numero_mat => {
           return connector.beginTransaction()
           .then(con => {
-            connection = con;
+            conexion = con;
             matricula.solicitud = solicitud.id;
             matricula.entidad = solicitud.entidad.id;
             matricula.estado = matricula.generar_boleta ? 12 : 13; // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
             matricula.numeroMatricula = numero_mat;
-            return Solicitud.patch(solicitud.id, { estado: 2 }, connection.client)  // 2 es 'Aprobada'
+            return Solicitud.patch(solicitud.id, { estado: 2 }, conexion.client)  // 2 es 'Aprobada'
           })
-          .then(r => addMatricula(matricula, connection.client))
+          .then(r => addMatricula(matricula, conexion.client))
           .then(r => {
             matricula_added = r;
+            matricula.id = matricula_added.id;
             if (matricula.generar_boleta) {
               return addBoletaInscripcion(
                 matricula_added.id,
                 solicitud.tipoEntidad,
                 matricula.documento,
                 matricula.delegacion,
-                connection.client
+                conexion.client
               );
             }
             else return Promise.resolve(false);
           })
-          .then(r => addBoletasMensuales(matricula_added.id, solicitud.tipoEntidad, matricula.delegacion, connection.client))
+          .then(r => solicitud.tipoEntidad == 'profesional' ? esJovenProfesional(solicitud.entidad.id, conexion.client): Promise.resolve(false))
+          .then(es_joven => {
+            if (!es_joven) return Promise.resolve();
+            else return crearBonificaciones(matricula, conexion.client);
+          })
+          .then(r => addBoletasMensuales(matricula_added.id, solicitud.tipoEntidad, matricula.delegacion, conexion.client))
           .then(() => MatriculaHistorial.add({
               matricula: matricula_added.id,
               documento: matricula.documento,
               estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
               fecha: new Date(),
               usuario: matricula.created_by
-            }, connection.client)
+            }, conexion.client)
           )
           .then(r => {
-            return connector.commit(connection.client)
+            return connector.commit(conexion.client)
               .then(r => {
-                connection.done();
+                conexion.done();
                 return matricula_added;
               })
           })
           .catch(e => {
             console.error(e)
-            connector.rollback(connection.client);
-            connection.done();
+            connector.rollback(conexion.client);
+            conexion.done();
             return Promise.reject(e);
           });
         })
@@ -413,11 +479,11 @@ module.exports.aprobar = function(matricula) {
 }
 
 module.exports.cambiarEstado = function(id, nuevo_estado) {
-  let connection;
+  let conexion;
 
   return connector.beginTransaction()
   .then(conx => {
-    connection = conx;
+    conexion = conx;
 
     return MatriculaHistorial.add({
         matricula: id,
@@ -425,7 +491,7 @@ module.exports.cambiarEstado = function(id, nuevo_estado) {
         estado: nuevo_estado.estado,
         fecha: new Date(),
         usuario: nuevo_estado.updated_by
-      }, connection.client
+      }, conexion.client
     )
     .then(() => {
       let query = table.update({
@@ -437,19 +503,19 @@ module.exports.cambiarEstado = function(id, nuevo_estado) {
       .returning(table.id, table.estado)
       .toQuery();
 
-      return connector.execQuery(query, connection.client)
+      return connector.execQuery(query, conexion.client)
       .then(r => r.rows[0]);
     })
     .then(matricula => {
-      return connector.commit(connection.client)
+      return connector.commit(conexion.client)
         .then(r => {
-          connection.done();
+          conexion.done();
           return matricula;
         })
     })
     .catch(e => {
-      connector.rollback(connection.client);
-      connection.done();
+      connector.rollback(conexion.client);
+      conexion.done();
       return Promise.reject(e);
     });
   })

@@ -324,7 +324,7 @@ module.exports.add = function (comprobante) {
             let boleta2_find = boletas.find(b => b.tipo_comprobante.id === 3 
                 || b.tipo_comprobante.id === 18);
             if (boleta_find) check_matricula_suspension = boleta_find.matricula;
-            if (boleta2_find) check_matricula_inscripcion = boleta_find.matricula;
+            if (boleta2_find) check_matricula_inscripcion = boleta2_find.matricula;
 
             let proms_patch = boletas.map(b => Boleta.patch(b.id, { estado: 2 }, client));
             let proms_items = boletas.map(b => Promise.all(addComprobanteItem(b, client)));                                 
