@@ -276,19 +276,23 @@ function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
 
 
 function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
+  function* itBoleta(boletas) {
+    for(let b of boletas) yield Boleta.add(b, client);
+  }
+
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
     module.exports.getDerechoAnual(id, new Date(), client),
-    ValoresGlobales.getValida(6, new Date()),
-    Boleta.getNumeroBoleta(null, client)
+    ValoresGlobales.getValida(6, new Date())
   ])
-  .then(([importe_anual, dias_vencimiento, numero_boleta]) => {
+  .then(([importe_anual, dias_vencimiento]) => {
     let importe = importe_anual.valor / 12;
     let anio_actual = new Date().getFullYear();
 
-    let promesas_boletas = [];
+    let boletas_creadas = [];
     let primera_boleta = true;
+
 
     for(let mes_inicio = new Date().getMonth(); mes_inicio < 12; mes_inicio++) {
       let fecha_primero_mes = primera_boleta ? new Date() : new Date(anio_actual, mes_inicio, 1);
@@ -302,13 +306,12 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
         fecha_vencimiento = fecha_vencimiento.add(2, 'days');
 
       let boleta = {
-        numero: numero_boleta,
         matricula: id,
         tipo_comprobante: tipoEntidad == 'profesional' ? 16 : 10,  //16 ES PRA, 10 EMD
         fecha: fecha_primero_mes,
         total: importe,
         estado: 1,   //1 ES 'Pendiente de Pago'
-        fecha_vencimiento: fecha_vencimiento,
+        fecha_vencimiento: fecha_vencimiento.format('YYYY-MM-DD'),
         fecha_update: new Date(),
         delegacion: delegacion,
         items: [{
@@ -318,11 +321,18 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
         }]
       }
 
-      numero_boleta++;
-      promesas_boletas.push(Boleta.add(boleta, client));
+      boletas_creadas.push(boleta);
     }
 
-    return Promise.all(promesas_boletas);
+    let it = itBoleta(boletas_creadas);
+
+    function crearBoletas() {
+      let p = it.next().value;
+      if (p) return p.then(r => crearBoletas())
+      else return Promise.resolve();
+    }
+
+    crearBoletas();
   })
 }
 
@@ -386,7 +396,7 @@ function esJovenProfesional(entidad, client) {
 
     //Si no tiene menos de 25 años, no es jóven profesional
     if (anios >= 25) return false;
-    
+
     let titulo_principal = profesional.formaciones.find(f => f.principal === true);
 
     //Si no tiene título principal o el mismo no tiene fecha de emisión, no se puede determinar
@@ -399,12 +409,12 @@ function esJovenProfesional(entidad, client) {
     if (titulo_principal.titulo.nivel.id === 1 && meses_dif < 24) return true;
 
     //Si es Técnico o Nivel Universitario y hace menos de 12 meses
-    if (titulo_principal.titulo.nivel.id > 1 
-      && titulo_principal.titulo.nivel.id < 5 
+    if (titulo_principal.titulo.nivel.id > 1
+      && titulo_principal.titulo.nivel.id < 5
       && meses_dif < 12) return true;
 
     //Cualquier otro caso no es jóven profesional
-    return false;    
+    return false;
   })
 }
 
@@ -701,6 +711,8 @@ module.exports.patch = function (id, matricula, client) {
 }
 
 module.exports.verificarSuspension = function(id) {
+  let check_boletas_anio = false;
+
   return module.exports.get(id)
   .then(matricula => {
     let table = Boleta.table;
@@ -727,10 +739,12 @@ module.exports.verificarSuspension = function(id) {
         }
         else if (matricula.estado.id === 24 && cantidad_sin_pagar < 4) {
           nuevo_estado.estado = 13; // Suspendido por mora cuatrimestral
+          check_boletas_anio = true;
         }
         else return Promise.resolve();
 
-        return module.exports.cambiarEstado(id, nuevo_estado);
+        return module.exports.cambiarEstado(id, nuevo_estado)
+        .then(() => check_boletas_anio ? module.exports.verificarBoletasAnio(matricula.id, new Date().getFullYear()) : Promise.resolve());
     });
   });
 }
@@ -748,7 +762,7 @@ module.exports.verificarInscripcion = function(id) {
           documento,
           estado: 13 //Habilitado
         }
-        
+
         return module.exports.cambiarEstado(id, nuevo_estado);
       })
     }
@@ -768,11 +782,12 @@ module.exports.verificarBoletasAnio = function(id, anio) {
     .toQuery();
 
   return connector.execQuery(query)
-    .then(r => {
-      let boletas_anio = +r.rows[0].boletas_anio;
+  .then(r => {
+    let boletas_anio = +r.rows[0].boletas_anio;
 
-      //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
-      if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
-      else return Promise.resolve(false);
-    });
+    //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
+    if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
+    else return Promise.resolve(false);
+  })
+  .catch(e => console.error(e))
 }

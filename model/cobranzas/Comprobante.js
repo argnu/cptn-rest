@@ -369,16 +369,16 @@ module.exports.add = function (comprobante) {
                 })
                 .then(r => {
                     return connector.commit(connection.client)
-                        .then(r => {
-                            connection.done();
-
-                            // Si alguna boleta era de derecho anual, se verifica la matricula
-                            if (check_matricula_suspension) Matricula.verificarSuspension(check_matricula_suspension);
-                            // Si alguna boleta era de inscripción, se verifica la matricula
-                            if (check_matricula_inscripcion) Matricula.verificarInscripcion(check_matricula_inscripcion);
-
-                            return comprobante_nuevo;
-                        });
+                    .then(r => {
+                        connection.done();
+                        // Si alguna boleta era de derecho anual, se verifica la matricula
+                        return check_matricula_suspension ? 
+                            Matricula.verificarSuspension(check_matricula_suspension)
+                            : Promise.resolve();
+                    })
+                    .then(() => check_matricula_inscripcion ? Matricula.verificarInscripcion(check_matricula_inscripcion) : Promise.resolve())
+                    .then(() => check_matricula_inscripcion ? Matricula.verificarInscripcion(check_matricula_inscripcion) : Promise.resolve())
+                    .then(() => comprobante_nuevo);
                 })
                 .catch(e => {
                     connector.rollback(connection.client);
