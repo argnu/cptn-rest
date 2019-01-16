@@ -755,3 +755,24 @@ module.exports.verificarInscripcion = function(id) {
     else return Promise.resolve(false);
   })
 }
+
+module.exports.verificarBoletasAnio = function(id, anio) {
+  let fecha_anio_verficiar = `${anio}-01-01`;
+  let table = Boleta.table;
+  let query = table.select(table.count().as('boletas_anio'))
+    .where(
+      table.tipo_comprobante.in([10, 16]),
+      table.matricula.equals(id),
+      table.fecha.gte(fecha_anio_verficiar)
+    )
+    .toQuery();
+
+  return connector.execQuery(query)
+    .then(r => {
+      let boletas_anio = +r.rows[0].boletas_anio;
+
+      //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
+      if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
+      else return Promise.resolve(false);
+    });
+}
