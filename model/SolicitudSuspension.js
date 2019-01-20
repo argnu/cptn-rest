@@ -220,3 +220,15 @@ module.exports.aprobar = function(id, aprobacion) {
     })
   })
 }
+
+module.exports.patch = function (id, solicitud, client) {
+  let query = table.update({
+    updated_at: new Date(),
+    updated_by: solicitud.updated_by,
+    estado: solicitud.estado
+  })
+  .where(table.id.equals(id))
+  .toQuery();
+
+  return connector.execQuery(query, client);
+}
