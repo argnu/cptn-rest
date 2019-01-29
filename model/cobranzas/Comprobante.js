@@ -285,6 +285,7 @@ function addComprobante(comprobante, client) {
 
 
 module.exports.add = function (comprobante) {
+    let id_matricula = comprobante.boletas[0].matricula;
     let comprobante_nuevo;
     let num_item = 0;
     let check_matricula_suspension = null;
@@ -377,7 +378,7 @@ module.exports.add = function (comprobante) {
                             : Promise.resolve();
                     })
                     .then(() => check_matricula_inscripcion ? Matricula.verificarInscripcion(check_matricula_inscripcion) : Promise.resolve())
-                    .then(() => check_matricula_inscripcion ? Matricula.verificarInscripcion(check_matricula_inscripcion) : Promise.resolve())
+                    .then(() => Matricula.verificarBoletasAnio(id_matricula, new Date().getFullYear()))
                     .then(() => comprobante_nuevo);
                 })
                 .catch(e => {

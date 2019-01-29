@@ -711,8 +711,6 @@ module.exports.patch = function (id, matricula, client) {
 }
 
 module.exports.verificarSuspension = function(id) {
-  let check_boletas_anio = false;
-
   return module.exports.get(id)
   .then(matricula => {
     let table = Boleta.table;
@@ -739,12 +737,10 @@ module.exports.verificarSuspension = function(id) {
         }
         else if (matricula.estado.id === 24 && cantidad_sin_pagar < 4) {
           nuevo_estado.estado = 13; // Suspendido por mora cuatrimestral
-          check_boletas_anio = true;
         }
         else return Promise.resolve();
 
-        return module.exports.cambiarEstado(id, nuevo_estado)
-        .then(() => check_boletas_anio ? module.exports.verificarBoletasAnio(matricula.id, new Date().getFullYear()) : Promise.resolve());
+        return module.exports.cambiarEstado(id, nuevo_estado);
     });
   });
 }
