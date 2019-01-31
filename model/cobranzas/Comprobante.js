@@ -285,6 +285,7 @@ function addComprobante(comprobante, client) {
 
 
 module.exports.add = function (comprobante) {
+    let id_matricula = comprobante.boletas[0].matricula;
     let comprobante_nuevo;
     let num_item = 0;
     let check_matricula_suspension = null;
@@ -324,7 +325,7 @@ module.exports.add = function (comprobante) {
             let boleta2_find = boletas.find(b => b.tipo_comprobante.id === 3 
                 || b.tipo_comprobante.id === 18);
             if (boleta_find) check_matricula_suspension = boleta_find.matricula;
-            if (boleta2_find) check_matricula_inscripcion = boleta_find.matricula;
+            if (boleta2_find) check_matricula_inscripcion = boleta2_find.matricula;
 
             let proms_patch = boletas.map(b => Boleta.patch(b.id, { estado: 2 }, client));
             let proms_items = boletas.map(b => Promise.all(addComprobanteItem(b, client)));                                 
@@ -369,16 +370,16 @@ module.exports.add = function (comprobante) {
                 })
                 .then(r => {
                     return connector.commit(connection.client)
-                        .then(r => {
-                            connection.done();
-
-                            // Si alguna boleta era de derecho anual, se verifica la matricula
-                            if (check_matricula_suspension) Matricula.verificarSuspension(check_matricula_suspension);
-                            // Si alguna boleta era de inscripción, se verifica la matricula
-                            if (check_matricula_inscripcion) Matricula.verificarInscripcion(check_matricula_inscripcion);
-
-                            return comprobante_nuevo;
-                        });
+                    .then(r => {
+                        connection.done();
+                        // Si alguna boleta era de derecho anual, se verifica la matricula
+                        return check_matricula_suspension ? 
+                            Matricula.verificarSuspension(check_matricula_suspension)
+                            : Promise.resolve();
+                    })
+                    .then(() => check_matricula_inscripcion ? Matricula.verificarInscripcion(check_matricula_inscripcion) : Promise.resolve())
+                    .then(() => Matricula.verificarBoletasAnio(id_matricula, new Date().getFullYear()))
+                    .then(() => comprobante_nuevo);
                 })
                 .catch(e => {
                     connector.rollback(connection.client);

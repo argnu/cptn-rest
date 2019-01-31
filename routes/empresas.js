@@ -29,9 +29,17 @@ router.get('/:id/contactos', function(req, res) {
 router.post('/', function(req, res) {
   if(!req.ability.can('create', 'Empresa')) return utils.sinPermiso(res);
 
-  model.Profesional.add(req.body)
+  model.Empresa.add(req.body)
     .then(r => res.status(201).json(r))
     .catch(e => utils.errorHandler(e, req, res));
+});
+
+router.put('/:id', function (req, res) {
+  if (!req.ability.can('update', 'Empresa')) return utils.sinPermiso(res);
+  
+  model.Empresa.edit(req.params.id, req.body)
+  .then(id => res.status(200).json(req.body))
+  .catch(e => utils.errorHandler(e, req, res));
 });
 
 module.exports = router;

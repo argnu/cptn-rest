@@ -275,19 +275,23 @@ function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
 
 
 function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
+  function* itBoleta(boletas) {
+    for (let b of boletas) yield Boleta.add(b, client);
+  }
+
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
   //y el número de la próxima boleta
   return Promise.all([
     module.exports.getDerechoAnual(id, new Date(), client),
-    ValoresGlobales.getValida(6, new Date()),
-    Boleta.getNumeroBoleta(null, client)
+    ValoresGlobales.getValida(6, new Date())
   ])
-    .then(([importe_anual, dias_vencimiento, numero_boleta]) => {
+    .then(([importe_anual, dias_vencimiento]) => {
       let importe = importe_anual.valor / 12;
       let anio_actual = new Date().getFullYear();
 
-      let promesas_boletas = [];
+      let boletas_creadas = [];
       let primera_boleta = true;
+
 
       for (let mes_inicio = new Date().getMonth(); mes_inicio < 12; mes_inicio++) {
         let fecha_primero_mes = primera_boleta ? new Date() : new Date(anio_actual, mes_inicio, 1);
@@ -301,13 +305,12 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
           fecha_vencimiento = fecha_vencimiento.add(2, 'days');
 
         let boleta = {
-          numero: numero_boleta,
           matricula: id,
           tipo_comprobante: tipoEntidad == 'profesional' ? 16 : 10,  //16 ES PRA, 10 EMD
           fecha: fecha_primero_mes,
           total: importe,
           estado: 1,   //1 ES 'Pendiente de Pago'
-          fecha_vencimiento: fecha_vencimiento,
+          fecha_vencimiento: fecha_vencimiento.format('YYYY-MM-DD'),
           fecha_update: new Date(),
           delegacion: delegacion,
           items: [{
@@ -317,11 +320,18 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
           }]
         }
 
-        numero_boleta++;
-        promesas_boletas.push(Boleta.add(boleta, client));
+        boletas_creadas.push(boleta);
       }
 
-      return Promise.all(promesas_boletas);
+      let it = itBoleta(boletas_creadas);
+
+      function crearBoletas() {
+        let p = it.next().value;
+        if (p) return p.then(r => crearBoletas())
+        else return Promise.resolve();
+      }
+
+      crearBoletas();
     })
 }
 
@@ -359,7 +369,7 @@ function crearBonificaciones(matricula, client) {
       matricula: matricula.id,
       tipo: 21, //BONIFICACION DE APORTES
       descripcion: 'Jóvenes Profesionales',
-      documento: 3353, //FALTA CARGAR EL ACTA 83
+      documento: 3284, //FALTA CARGAR EL ACTA 83
       created_by: matricula.created_by,
       delegacion: matricula.delegacion
     }
@@ -394,9 +404,6 @@ function esJovenProfesional(entidad, client) {
 
       let meses_dif = moment().diff(titulo_principal.fechaEmision, 'months');
 
-      //Si es Nivel Secundario y hace menos de 24 meses
-      if (titulo_principal.titulo.nivel.id === 1 && meses_dif < 24) return true;
-
       //Si es Técnico o Nivel Universitario y hace menos de 12 meses
       if (titulo_principal.titulo.nivel.id > 1
         && titulo_principal.titulo.nivel.id < 5
@@ -419,17 +426,22 @@ module.exports.aprobar = function (matricula) {
             let tipo_matricula = solicitud.tipoEntidad == 'empresa' ? 'EMP' : matricula.tipo;
             return module.exports.getNumeroMatricula(tipo_matricula);
           })
-          .then(numero_mat => {
-            return connector.beginTransaction()
-              .then(con => {
-                conexion = con;
-                matricula.solicitud = solicitud.id;
-                matricula.entidad = solicitud.entidad.id;
-                matricula.estado = matricula.generar_boleta ? 12 : 13; // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
-                matricula.numeroMatricula = numero_mat;
-                return Solicitud.patch(solicitud.id, { estado: 2 }, conexion.client)  // 2 es 'Aprobada'
-              })
-              .then(r => addMatricula(matricula, conexion.client))
+          .then(r => solicitud.tipoEntidad == 'profesional' ? esJovenProfesional(solicitud.entidad.id, conexion.client) : Promise.resolve(false))
+          .then(es_joven => {
+            if (!es_joven) return Promise.resolve();
+            else return crearBonificaciones(matricula, conexion.client);
+          })
+          .then(r => addBoletasMensuales(matricula_added.id, solicitud.tipoEntidad, matricula.delegacion, conexion.client))
+          .then(() => MatriculaHistorial.add({
+            matricula: matricula_added.id,
+            documento: matricula.documento,
+            estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
+            fecha: new Date(),
+            usuario: matricula.created_by
+          }, conexion.client)
+          )
+          .then(r => {
+            return connector.commit(conexion.client)
               .then(r => {
                 matricula_added = r;
                 matricula.id = matricula_added.id;
@@ -760,4 +772,26 @@ module.exports.verificarInscripcion = function (id) {
       }
       else return Promise.resolve(false);
     })
+}
+
+module.exports.verificarBoletasAnio = function (id, anio) {
+  let fecha_anio_verficiar = `${anio}-01-01`;
+  let table = Boleta.table;
+  let query = table.select(table.count().as('boletas_anio'))
+    .where(
+      table.tipo_comprobante.in([10, 16]),
+      table.matricula.equals(id),
+      table.fecha.gte(fecha_anio_verficiar)
+    )
+    .toQuery();
+
+  return connector.execQuery(query)
+    .then(r => {
+      let boletas_anio = +r.rows[0].boletas_anio;
+
+      //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
+      if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
+      else return Promise.resolve(false);
+    })
+    .catch(e => console.error(e))
 }
