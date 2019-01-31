@@ -298,11 +298,7 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
         let fecha_vencimiento = moment(fecha_primero_mes).add(dias_vencimiento.valor, 'days');
         primera_boleta = false;
 
-        //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
-        if (fecha_vencimiento.day() === 0)
-          fecha_vencimiento = fecha_vencimiento.add(1, 'days');
-        else if (fecha_vencimiento.day() === 6)
-          fecha_vencimiento = fecha_vencimiento.add(2, 'days');
+        let it = itBoleta(boletas_creadas);
 
         let boleta = {
           matricula: id,
@@ -395,6 +391,8 @@ function esJovenProfesional(entidad, client) {
 
       //Si no tiene menos de 25 años, no es jóven profesional
       if (anios >= 25) return false;
+
+      let titulo_principal = profesional.formaciones.find(f => f.principal === true);
 
       let titulo_principal = profesional.formaciones.find(f => f.principal === true);
 
@@ -751,6 +749,49 @@ module.exports.verificarSuspension = function (id) {
           return module.exports.cambiarEstado(id, nuevo_estado);
         });
     });
+}
+
+module.exports.verificarInscripcion = function (id) {
+  return module.exports.get(id)
+    .then(matricula => {
+      //Si está como pendiente de pago de inscripcion, habilito, sino no
+      if (matricula.estado.id === 12) {
+        return MatriculaHistorial.getByMatricula(id)
+          .then(historial => {
+            let documento = historial.find(h => h.estado.id === 12).documento.id;
+            let nuevo_estado = {
+              updated_by: 25,   // Procesos de Sistema
+              documento,
+              estado: 13 //Habilitado
+            }
+
+            return module.exports.cambiarEstado(id, nuevo_estado);
+          })
+      }
+      else return Promise.resolve(false);
+    })
+}
+
+module.exports.verificarBoletasAnio = function (id, anio) {
+  let fecha_anio_verficiar = `${anio}-01-01`;
+  let table = Boleta.table;
+  let query = table.select(table.count().as('boletas_anio'))
+    .where(
+      table.tipo_comprobante.in([10, 16]),
+      table.matricula.equals(id),
+      table.fecha.gte(fecha_anio_verficiar)
+    )
+    .toQuery();
+
+  return connector.execQuery(query)
+    .then(r => {
+      let boletas_anio = +r.rows[0].boletas_anio;
+
+      //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
+      if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
+      else return Promise.resolve(false);
+    })
+    .catch(e => console.error(e))
 }
 
 module.exports.verificarInscripcion = function (id) {
