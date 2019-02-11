@@ -2,6 +2,7 @@ const connector = require(`../../db/connector`);
 const sql = require('node-sql-2');
 sql.setDialect('postgres');
 const Persona = require(`../Persona`);
+const utils = require('../../utils');
 
 const table = sql.define({
     name: 'legajo_comitente',
@@ -48,7 +49,7 @@ module.exports.add = function (data, client) {
     let query = table.insert(
         table.legajo.value(data.legajo),
         table.persona.value(data.persona),
-        table.porcentaje.value(data.porcentaje)
+        table.porcentaje.value(utils.getFloat(data.porcentaje))
     )
     .returning(table.star())
     .toQuery();
