@@ -79,6 +79,10 @@ const table = sql.define({
             dataType: 'int',
         },
         {
+            name: 'anulado_desc',
+            dataType: 'varchar(255)',
+        },
+        {
             name: 'contable',
             dataType: 'int',
         },
@@ -149,6 +153,7 @@ const select = [
     table.delegacion,
     table.operador,
     table.anulado,
+    table.anulado_desc,
     table.contable,
     table.created_by,
     table.updated_by

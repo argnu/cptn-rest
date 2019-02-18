@@ -80,7 +80,11 @@ const table = sql.define({
           name: 'vencido',
           dataType: 'boolean',
           defaultValue: 'false'
-        }
+        },
+        {
+          name: 'anulado_desc',
+          dataType: 'varchar(255)',
+        }      
     ],
 
     foreignKeys: [
@@ -130,6 +134,7 @@ const select = [
   TipoEstadoBoleta.table.id.as('estado.id'),
   TipoEstadoBoleta.table.valor.as('estado.valor'),
   table.vencido,
+  table.anulado_desc,
   table.created_by,
   table.updated_by
 ]

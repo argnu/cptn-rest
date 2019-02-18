@@ -79,6 +79,10 @@ const table = sql.define({
             dataType: 'date',
         },
         {
+            name: 'anulado_desc',
+            dataType: 'varchar(255)',
+        },          
+        {
             name: 'created_by',
             dataType: 'int',
         },
@@ -413,5 +417,5 @@ module.exports.patch = function(id, boleta, client) {
   boleta.updated_at = new Date();
   let query = table.update(boleta).where(table.id.equals(id)).toQuery();
 
-  return connector.execQuery(query, client);
+  return connector.execQuery(query, client)
 }

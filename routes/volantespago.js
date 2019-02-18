@@ -30,9 +30,8 @@ router.post('/', function(req, res) {
 router.post('/:id/anular', function(req, res) {
   if (!req.ability.can('update', 'VolantePago')) return utils.sinPermiso(res);
 
-  let volante = {
-    updated_by: req.user.id
-  }
+  let volante = req.body;
+  volante.updated_by = req.user.id;
   
   model.VolantePago.anular(req.params.id, volante)
     .then(r => res.status(200).json(r))

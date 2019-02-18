@@ -30,9 +30,8 @@ router.post('/', function(req, res) {
 router.post('/:id/anular', function(req, res) {
   if (!req.ability.can('update', 'Comprobante')) return utils.sinPermiso(res);
   
-  let comprobante = {
-    updated_by: req.user.id
-  }
+  let comprobante = req.body;
+  comprobante.updated_by = req.user.id;
   
   model.Comprobante.anular(req.params.id, comprobante)
     .then(r => res.status(200).json(r))
