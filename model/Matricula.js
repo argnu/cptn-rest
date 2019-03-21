@@ -15,126 +15,125 @@ const TipoMatricula = require('./tipos/TipoMatricula');
 const Boleta = require('./cobranzas/Boleta');
 const ValoresGlobales = require('./ValoresGlobales');
 const MatriculaHistorial = require('./MatriculaHistorial');
-const Documento = require('./Documento');
 const ComprobanteExencion = require('./cobranzas/ComprobanteExencion');
 
 const table = sql.define({
   name: 'matricula',
   columns: [{
-      name: 'id',
-      dataType: 'serial',
-      primaryKey: true
-    },
-    {
-      name: 'legajo',
-      dataType: 'int',
-    },
-    {
-      name: 'numeroMatricula',
-      dataType: 'varchar(20)'
-    },
-    {
-      name: 'numeroMatriculaCPAGIN',
-      dataType: 'varchar(20)'
-    },
-    {
-      name: 'entidad',
-      dataType: 'int',
-      notNull: true
-    },
-    {
-      name: 'solicitud',
-      dataType: 'int'
-    },
-    {
-      name: 'fechaResolucion',
-      dataType: 'date'
-    },
-    {
-      name: 'numeroActa',
-      dataType: 'varchar(50)'
-    },
-    {
-      name: 'fechaBaja',
-      dataType: 'date'
-    },
-    {
-      name: 'observaciones',
-      dataType: 'text'
-    },
-    {
-      name: 'notasPrivadas',
-      dataType: 'text'
-    },
-    {
-      name: 'asientoBajaF',
-      dataType: 'varchar(2)'
-    },
-    {
-      name: 'codBajaF',
-      dataType: 'varchar(20)'
-    },
-    {
-      name: 'estado',
-      dataType: 'int',
-      notNull: true
-    },
-    {
-      name: 'idMigracion',
-      dataType: 'int'
-    },
-    {
-      name: 'created_by',
-      dataType: 'int',
-    },
-    {
-      name: 'updated_by',
-      dataType: 'int',
-    },
-    {
-      name: 'created_at',
-      dataType: 'timestamptz',
-      defaultValue: 'current_date'
-    },
-    {
-      name: 'updated_at',
-      dataType: 'timestamptz',
-      defaultValue: 'current_date'
-    },
-    {
-      name: 'eliminado',
-      dataType: 'boolean',
-      defaultValue: false
-    }
+    name: 'id',
+    dataType: 'serial',
+    primaryKey: true
+  },
+  {
+    name: 'legajo',
+    dataType: 'int',
+  },
+  {
+    name: 'numeroMatricula',
+    dataType: 'varchar(20)'
+  },
+  {
+    name: 'numeroMatriculaCPAGIN',
+    dataType: 'varchar(20)'
+  },
+  {
+    name: 'entidad',
+    dataType: 'int',
+    notNull: true
+  },
+  {
+    name: 'solicitud',
+    dataType: 'int'
+  },
+  {
+    name: 'fechaResolucion',
+    dataType: 'date'
+  },
+  {
+    name: 'numeroActa',
+    dataType: 'varchar(50)'
+  },
+  {
+    name: 'fechaBaja',
+    dataType: 'date'
+  },
+  {
+    name: 'observaciones',
+    dataType: 'text'
+  },
+  {
+    name: 'notasPrivadas',
+    dataType: 'text'
+  },
+  {
+    name: 'asientoBajaF',
+    dataType: 'varchar(2)'
+  },
+  {
+    name: 'codBajaF',
+    dataType: 'varchar(20)'
+  },
+  {
+    name: 'estado',
+    dataType: 'int',
+    notNull: true
+  },
+  {
+    name: 'idMigracion',
+    dataType: 'int'
+  },
+  {
+    name: 'created_by',
+    dataType: 'int',
+  },
+  {
+    name: 'updated_by',
+    dataType: 'int',
+  },
+  {
+    name: 'created_at',
+    dataType: 'timestamptz',
+    defaultValue: 'current_date'
+  },
+  {
+    name: 'updated_at',
+    dataType: 'timestamptz',
+    defaultValue: 'current_date'
+  },
+  {
+    name: 'eliminado',
+    dataType: 'boolean',
+    defaultValue: false
+  }
   ],
 
   foreignKeys: [{
-      table: 'entidad',
-      columns: ['entidad'],
-      refColumns: ['id']
-    },
-    {
-      table: 'solicitud',
-      columns: ['solicitud'],
-      refColumns: ['id']
-    },
-    {
-      table: 't_estadomatricula',
-      columns: ['estado'],
-      refColumns: ['id']
-    },
-    {
-      table: 'usuario',
-      columns: ['created_by'],
-      refColumns: ['id'],
-      onUpdate: 'CASCADE'
-    },
-    {
-      table: 'usuario',
-      columns: ['updated_by'],
-      refColumns: ['id'],
-      onUpdate: 'CASCADE'
-    }
+    table: 'entidad',
+    columns: ['entidad'],
+    refColumns: ['id']
+  },
+  {
+    table: 'solicitud',
+    columns: ['solicitud'],
+    refColumns: ['id']
+  },
+  {
+    table: 't_estadomatricula',
+    columns: ['estado'],
+    refColumns: ['id']
+  },
+  {
+    table: 'usuario',
+    columns: ['created_by'],
+    refColumns: ['id'],
+    onUpdate: 'CASCADE'
+  },
+  {
+    table: 'usuario',
+    columns: ['updated_by'],
+    refColumns: ['id'],
+    onUpdate: 'CASCADE'
+  }
   ]
 });
 
@@ -156,7 +155,7 @@ function addMatriculaMigracion(matricula, client) {
     table.codBajaF.value(matricula.codBajaF),
     table.estado.value(matricula.estado)
   )
-  .returning(table.id).toQuery()
+    .returning(table.id).toQuery()
 
   return connector.execQuery(query, client)
     .then(r => r.rows[0]);
@@ -175,8 +174,8 @@ function addMatricula(matricula, client) {
     table.estado.value(matricula.estado),
     table.eliminado.value(false)
   )
-  .returning(table.id, table.entidad, table.numeroMatricula, table.solicitud)
-  .toQuery()
+    .returning(table.id, table.entidad, table.numeroMatricula, table.solicitud)
+    .toQuery()
 
   return connector.execQuery(query, client)
     .then(r => r.rows[0]);
@@ -186,24 +185,24 @@ function existMatricula(solicitud) {
   let query = table.select(
     table.id
   )
-  .where(table.solicitud.equals(solicitud).and(table.eliminado.equals(false)))
-  .toQuery();
+    .where(table.solicitud.equals(solicitud).and(table.eliminado.equals(false)))
+    .toQuery();
 
   return connector.execQuery(query)
-  .then(r => r.rows.length != 0);
+    .then(r => r.rows.length != 0);
 }
 
 
 // NO SE SI CUATRO NUMS O CINCO
 function completarConCeros(numero) {
-    let result = numero.toString();
-    let ceros = '0'.repeat(5 - result.length);
-    return ceros + result;
+  let result = numero.toString();
+  let ceros = '0'.repeat(5 - result.length);
+  return ceros + result;
 }
 
 function getTipoDom(domicilios) {
   let tipo = 'otras';
-  for(let domicilio of domicilios) {
+  for (let domicilio of domicilios) {
     let provincia = domicilio.domicilio.provincia.id;
     if (provincia === 14) return 'neuquen';
     else if (provincia === 7 || provincia === 8 || provincia === 23) tipo = 'limitrofes';
@@ -213,34 +212,34 @@ function getTipoDom(domicilios) {
 
 function getImporteInscripcion(id_matricula, fecha, client) {
   return module.exports.get(id_matricula, client)
-  .then(matricula => {
-    let id_var;
-    if (matricula.tipoEntidad == 'profesional') id_var = 1;
-    else {
-      let tipo_dom = getTipoDom(matricula.entidad.domicilios);
-      if (tipo_dom == 'neuquen') id_var = 7;
-      else if (tipo_dom == 'limitrofes') id_var = 8;
-      else id_var = 9;
-    }
+    .then(matricula => {
+      let id_var;
+      if (matricula.tipoEntidad == 'profesional') id_var = 1;
+      else {
+        let tipo_dom = getTipoDom(matricula.entidad.domicilios);
+        if (tipo_dom == 'neuquen') id_var = 7;
+        else if (tipo_dom == 'limitrofes') id_var = 8;
+        else id_var = 9;
+      }
 
-    return ValoresGlobales.getValida(id_var, fecha);
-  })
+      return ValoresGlobales.getValida(id_var, fecha);
+    })
 }
 
-module.exports.getDerechoAnual = function(id_matricula, fecha, client) {
+module.exports.getDerechoAnual = function (id_matricula, fecha, client) {
   return module.exports.get(id_matricula, client)
-  .then(r => {
-    let id_var;
-    if (r.tipoEntidad == 'profesional') id_var = 5;
-    else {
-      let tipo_dom = getTipoDom(matricula.entidad.domicilios);
-      if (tipo_dom == 'neuquen') id_var = 10;
-      else if (tipo_dom == 'limitrofes') id_var = 11;
-      else id_var = 12;
-    }
+    .then(r => {
+      let id_var;
+      if (r.tipoEntidad == 'profesional') id_var = 5;
+      else {
+        let tipo_dom = getTipoDom(matricula.entidad.domicilios);
+        if (tipo_dom == 'neuquen') id_var = 10;
+        else if (tipo_dom == 'limitrofes') id_var = 11;
+        else id_var = 12;
+      }
 
-    return ValoresGlobales.getValida(id_var, fecha);
-  })
+      return ValoresGlobales.getValida(id_var, fecha);
+    })
 }
 
 function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
@@ -251,33 +250,33 @@ function addBoletaInscripcion(id, tipoEntidad, documento, delegacion, client) {
     getImporteInscripcion(id, fecha, client),
     ValoresGlobales.getValida(6, fecha),
   ])
-  .then(valores => {
-    let importe = valores[0].valor;
-    let dias_vencimiento = valores[1].valor;
+    .then(valores => {
+      let importe = valores[0].valor;
+      let dias_vencimiento = valores[1].valor;
 
-    let boleta = {
-      matricula: id,
-      tipo_comprobante: tipoEntidad == 'profesional' ? 18 : 3, //18 es PRI, 3 es EMI
-      fecha: fecha,
-      total: importe,
-      estado: 1,   //1 ES 'Pendiente de Pago'
-      fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(dias_vencimiento, 'days'),
-      delegacion: delegacion,
-      items: [{
-        item: 1,
-        descripcion: `Derecho de inscripción de ${tipoEntidad == 'profesional' ? 'profesional' : 'empresa'}`,
-        importe: importe
-      }]
-    }
+      let boleta = {
+        matricula: id,
+        tipo_comprobante: tipoEntidad == 'profesional' ? 18 : 3, //18 es PRI, 3 es EMI
+        fecha: fecha,
+        total: importe,
+        estado: 1,   //1 ES 'Pendiente de Pago'
+        fecha_vencimiento: moment(fecha, 'DD/MM/YYYY').add(dias_vencimiento, 'days'),
+        delegacion: delegacion,
+        items: [{
+          item: 1,
+          descripcion: `Derecho de inscripción de ${tipoEntidad == 'profesional' ? 'profesional' : 'empresa'}`,
+          importe: importe
+        }]
+      }
 
-    return Boleta.add(boleta, client);
-  })
+      return Boleta.add(boleta, client);
+    })
 }
 
 
 function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
   function* itBoleta(boletas) {
-    for(let b of boletas) yield Boleta.add(b, client);
+    for (let b of boletas) yield Boleta.add(b, client);
   }
 
   //Obtengo el valor válido de derecho_anual (id=5) para la fecha actual
@@ -286,77 +285,73 @@ function addBoletasMensuales(id, tipoEntidad, delegacion, client) {
     module.exports.getDerechoAnual(id, new Date(), client),
     ValoresGlobales.getValida(6, new Date())
   ])
-  .then(([importe_anual, dias_vencimiento]) => {
-    let importe = importe_anual.valor / 12;
-    let anio_actual = new Date().getFullYear();
+    .then(([importe_anual, dias_vencimiento]) => {
+      let importe = importe_anual.valor / 12;
+      let anio_actual = new Date().getFullYear();
 
-    let boletas_creadas = [];
-    let primera_boleta = true;
+      let boletas_creadas = [];
+      let primera_boleta = true;
 
 
-    for(let mes_inicio = new Date().getMonth(); mes_inicio < 12; mes_inicio++) {
-      let fecha_primero_mes = primera_boleta ? new Date() : new Date(anio_actual, mes_inicio, 1);
-      let fecha_vencimiento = moment(fecha_primero_mes).add(dias_vencimiento.valor, 'days');
-      primera_boleta = false;
+      for (let mes_inicio = new Date().getMonth(); mes_inicio < 12; mes_inicio++) {
+        let fecha_primero_mes = primera_boleta ? new Date() : new Date(anio_actual, mes_inicio, 1);
+        let fecha_vencimiento = moment(fecha_primero_mes).add(dias_vencimiento.valor, 'days');
+        primera_boleta = false;
 
-      //SI EL VENCIMIENTO CAE SABADO O DOMINGO SE PASA AL LUNES
-      if (fecha_vencimiento.day() === 0)
-        fecha_vencimiento = fecha_vencimiento.add(1, 'days');
-      else if (fecha_vencimiento.day() === 6)
-        fecha_vencimiento = fecha_vencimiento.add(2, 'days');
+        let it = itBoleta(boletas_creadas);
 
-      let boleta = {
-        matricula: id,
-        tipo_comprobante: tipoEntidad == 'profesional' ? 16 : 10,  //16 ES PRA, 10 EMD
-        fecha: fecha_primero_mes,
-        total: importe,
-        estado: 1,   //1 ES 'Pendiente de Pago'
-        fecha_vencimiento: fecha_vencimiento.format('YYYY-MM-DD'),
-        fecha_update: new Date(),
-        delegacion: delegacion,
-        items: [{
-          item: 1,
-          descripcion: `Derecho anual ${tipoEntidad == 'profesional' ? 'profesionales' : 'empresas'} ${utils.getNombreMes(mes_inicio+1)} ${anio_actual}`,
-          importe: importe
-        }]
+        let boleta = {
+          matricula: id,
+          tipo_comprobante: tipoEntidad == 'profesional' ? 16 : 10,  //16 ES PRA, 10 EMD
+          fecha: fecha_primero_mes,
+          total: importe,
+          estado: 1,   //1 ES 'Pendiente de Pago'
+          fecha_vencimiento: fecha_vencimiento.format('YYYY-MM-DD'),
+          fecha_update: new Date(),
+          delegacion: delegacion,
+          items: [{
+            item: 1,
+            descripcion: `Derecho anual ${tipoEntidad == 'profesional' ? 'profesionales' : 'empresas'} ${utils.getNombreMes(mes_inicio + 1)} ${anio_actual}`,
+            importe: importe
+          }]
+        }
+
+        boletas_creadas.push(boleta);
       }
 
-      boletas_creadas.push(boleta);
-    }
+      let it = itBoleta(boletas_creadas);
 
-    let it = itBoleta(boletas_creadas);
+      function crearBoletas() {
+        let p = it.next().value;
+        if (p) return p.then(r => crearBoletas())
+        else return Promise.resolve();
+      }
 
-    function crearBoletas() {
-      let p = it.next().value;
-      if (p) return p.then(r => crearBoletas())
-      else return Promise.resolve();
-    }
-
-    crearBoletas();
-  })
+      crearBoletas();
+    })
 }
 
 function getTipoMatricula(id_profesional) {
   return ProfesionalTitulo.getByProfesional(id_profesional)
-  .then(p_titulos => Promise.all(p_titulos.map(t => TipoMatricula.get(t.titulo.tipo_matricula))))
-  .then(tipos_mat => {
-    tipos_mat.sort((a,b) => b.jerarquia_titulo - a.jerarquia_titulo);
-    return tipos_mat[0].valor;
-  });
+    .then(p_titulos => Promise.all(p_titulos.map(t => TipoMatricula.get(t.titulo.tipo_matricula))))
+    .then(tipos_mat => {
+      tipos_mat.sort((a, b) => b.jerarquia_titulo - a.jerarquia_titulo);
+      return tipos_mat[0].valor;
+    });
 }
 
 // tipo_provisorio hasta que se determine automáticamente una vez validados los titulos
-module.exports.getNumeroMatricula = function(tipo) {
+module.exports.getNumeroMatricula = function (tipo) {
   let query = `
     select max( NULLIF(regexp_replace("numeroMatricula", '\\D','','g'), '')::numeric ) as num
     from matricula
     where "numeroMatricula" LIKE '${tipo}%' AND length(regexp_replace("numeroMatricula", '\\D','','g'))=5`
 
   return connector.execRawQuery(query)
-  .then(r => {
-    let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
-    return tipo + completarConCeros(numero);
-  });
+    .then(r => {
+      let numero = r.rows[0] ? +r.rows[0].num + 1 : 1;
+      return tipo + completarConCeros(numero);
+    });
 }
 
 function crearBonificaciones(matricula, client) {
@@ -364,7 +359,7 @@ function crearBonificaciones(matricula, client) {
   let mes = new Date().getMonth();
   let promesas_bonifs = [];
 
-  for(let cantidad = 0; cantidad < 12; cantidad++) {
+  for (let cantidad = 0; cantidad < 12; cantidad++) {
     let bonificacion = {
       fecha: new Date(anio, mes, 1),
       matricula: matricula.id,
@@ -391,144 +386,149 @@ function crearBonificaciones(matricula, client) {
 //Devuelve si es joven profesional
 function esJovenProfesional(entidad, client) {
   return Profesional.get(entidad, client)
-  .then(profesional => {
-    let anios = moment().diff(profesional.fechaNacimiento, 'years');
+    .then(profesional => {
+      let anios = moment().diff(profesional.fechaNacimiento, 'years');
 
-    //Si no tiene menos de 25 años, no es jóven profesional
-    if (anios >= 25) return false;
+      //Si no tiene menos de 25 años, no es jóven profesional
+      if (anios >= 25) return false;
 
-    let titulo_principal = profesional.formaciones.find(f => f.principal === true);
+      let titulo_principal = profesional.formaciones.find(f => f.principal === true);
 
-    //Si no tiene título principal o el mismo no tiene fecha de emisión, no se puede determinar
-    //false por defecto
-    if (!titulo_principal || !titulo_principal.fechaEmision) return false;
+      let titulo_principal = profesional.formaciones.find(f => f.principal === true);
 
-    let meses_dif = moment().diff(titulo_principal.fechaEmision, 'months');
+      //Si no tiene título principal o el mismo no tiene fecha de emisión, no se puede determinar
+      //false por defecto
+      if (!titulo_principal || !titulo_principal.fechaEmision) return false;
 
-    //Si es Nivel Secundario y hace menos de 24 meses
-    if (titulo_principal.titulo.nivel.id === 1 && meses_dif < 24) return true;
+      let meses_dif = moment().diff(titulo_principal.fechaEmision, 'months');
 
-    //Si es Técnico o Nivel Universitario y hace menos de 12 meses
-    if (titulo_principal.titulo.nivel.id > 1
-      && titulo_principal.titulo.nivel.id < 5
-      && meses_dif < 12) return true;
+      //Si es Técnico o Nivel Universitario y hace menos de 12 meses
+      if (titulo_principal.titulo.nivel.id > 1
+        && titulo_principal.titulo.nivel.id < 5
+        && meses_dif < 12) return true;
 
-    //Cualquier otro caso no es jóven profesional
-    return false;
-  })
+      //Cualquier otro caso no es jóven profesional
+      return false;
+    })
 }
 
-module.exports.aprobar = function(matricula) {
+module.exports.aprobar = function (matricula) {
   let solicitud, matricula_added, conexion;
 
   return existMatricula(matricula.solicitud)
-  .then(exist => {
+    .then(exist => {
       if (!exist) {
         return Solicitud.get(matricula.solicitud)
-        .then(solicitud_get => {
-          solicitud = solicitud_get;
-          let tipo_matricula = solicitud.tipoEntidad == 'empresa' ? 'EMP' : matricula.tipo;
-          return module.exports.getNumeroMatricula(tipo_matricula);
-        })
-        .then(numero_mat => {
-          return connector.beginTransaction()
-          .then(con => {
-            conexion = con;
-            matricula.solicitud = solicitud.id;
-            matricula.entidad = solicitud.entidad.id;
-            matricula.estado = matricula.generar_boleta ? 12 : 13; // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
-            matricula.numeroMatricula = numero_mat;
-            return Solicitud.patch(solicitud.id, { estado: 2 }, conexion.client)  // 2 es 'Aprobada'
+          .then(solicitud_get => {
+            solicitud = solicitud_get;
+            let tipo_matricula = solicitud.tipoEntidad == 'empresa' ? 'EMP' : matricula.tipo;
+            return module.exports.getNumeroMatricula(tipo_matricula);
           })
-          .then(r => addMatricula(matricula, conexion.client))
-          .then(r => {
-            matricula_added = r;
-            matricula.id = matricula_added.id;
-            if (matricula.generar_boleta) {
-              return addBoletaInscripcion(
-                matricula_added.id,
-                solicitud.tipoEntidad,
-                matricula.documento,
-                matricula.delegacion,
-                conexion.client
-              );
-            }
-            else return Promise.resolve(false);
-          })
-          .then(r => solicitud.tipoEntidad == 'profesional' ? esJovenProfesional(solicitud.entidad.id, conexion.client): Promise.resolve(false))
+          .then(r => solicitud.tipoEntidad == 'profesional' ? esJovenProfesional(solicitud.entidad.id, conexion.client) : Promise.resolve(false))
           .then(es_joven => {
             if (!es_joven) return Promise.resolve();
             else return crearBonificaciones(matricula, conexion.client);
           })
           .then(r => addBoletasMensuales(matricula_added.id, solicitud.tipoEntidad, matricula.delegacion, conexion.client))
           .then(() => MatriculaHistorial.add({
-              matricula: matricula_added.id,
-              documento: matricula.documento,
-              estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
-              fecha: new Date(),
-              usuario: matricula.created_by
-            }, conexion.client)
+            matricula: matricula_added.id,
+            documento: matricula.documento,
+            estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
+            fecha: new Date(),
+            usuario: matricula.created_by
+          }, conexion.client)
           )
           .then(r => {
             return connector.commit(conexion.client)
               .then(r => {
-                conexion.done();
-                return matricula_added;
+                matricula_added = r;
+                matricula.id = matricula_added.id;
+                if (matricula.generar_boleta) {
+                  return addBoletaInscripcion(
+                    matricula_added.id,
+                    solicitud.tipoEntidad,
+                    matricula.documento,
+                    matricula.delegacion,
+                    conexion.client
+                  );
+                }
+                else return Promise.resolve(false);
               })
+              .then(r => esJovenProfesional(solicitud.entidad.id, conexion.client))
+              .then(es_joven => {
+                console.log(es_joven)
+                if (!es_joven) return Promise.resolve();
+                else return crearBonificaciones(matricula, conexion.client);
+              })
+              .then(r => addBoletasMensuales(matricula_added.id, solicitud.tipoEntidad, matricula.delegacion, conexion.client))
+              .then(() => MatriculaHistorial.add({
+                matricula: matricula_added.id,
+                documento: matricula.documento,
+                estado: matricula.generar_boleta ? 12 : 13, // 12 es 'Pendiente de Pago', 13 es 'Habilitada'
+                fecha: new Date(),
+                usuario: matricula.created_by
+              }, conexion.client)
+              )
+              .then(r => {
+                return connector.commit(conexion.client)
+                  .then(r => {
+                    conexion.done();
+                    return matricula_added;
+                  })
+              })
+              .catch(e => {
+                console.error(e)
+                connector.rollback(conexion.client);
+                conexion.done();
+                return Promise.reject(e);
+              });
           })
-          .catch(e => {
-            console.error(e)
-            connector.rollback(conexion.client);
-            conexion.done();
-            return Promise.reject(e);
-          });
-        })
       }
       else return Promise.reject({ http_code: 409, mensaje: "Ya existe una matrícula para dicha solicitud" });
-  })
+    })
 }
 
-module.exports.cambiarEstado = function(id, nuevo_estado) {
+module.exports.cambiarEstado = function (id, nuevo_estado) {
   let conexion;
 
   return connector.beginTransaction()
-  .then(conx => {
-    conexion = conx;
+    .then(conx => {
+      conexion = conx;
 
-    return MatriculaHistorial.add({
+      return MatriculaHistorial.add({
         matricula: id,
         documento: nuevo_estado.documento,
         estado: nuevo_estado.estado,
         fecha: new Date(),
         usuario: nuevo_estado.updated_by
       }, conexion.client
-    )
-    .then(() => {
-      let query = table.update({
-        estado: nuevo_estado.estado,
-        updated_by: nuevo_estado.updated_by,
-        updated_at: new Date()
-      })
-      .where(table.id.equals(id))
-      .returning(table.id, table.estado)
-      .toQuery();
+      )
+        .then(() => {
+          let query = table.update({
+            estado: nuevo_estado.estado,
+            updated_by: nuevo_estado.updated_by,
+            updated_at: new Date()
+          })
+            .where(table.id.equals(id))
+            .returning(table.id, table.estado)
+            .toQuery();
 
-      return connector.execQuery(query, conexion.client)
-      .then(r => r.rows[0]);
-    })
-    .then(matricula => {
-      return connector.commit(conexion.client)
-        .then(r => {
-          conexion.done();
-          return matricula;
+          return connector.execQuery(query, conexion.client)
+            .then(r => r.rows[0]);
         })
+        .then(matricula => {
+          return connector.commit(conexion.client)
+            .then(r => {
+              conexion.done();
+              return matricula;
+            })
+        })
+        .catch(e => {
+          connector.rollback(conexion.client);
+          conexion.done();
+          return Promise.reject(e);
+        });
     })
-    .catch(e => {
-      connector.rollback(conexion.client);
-      conexion.done();
-      return Promise.reject(e);
-    });
-  })
 }
 
 function filter(query, params) {
@@ -544,6 +544,9 @@ function filter(query, params) {
       query.where(q_or);
     }
     else query.where(table.numeroMatricula.ilike(`${params.tipo}%`));
+
+  let q_or_filter_tec = ['TECA', 'TEC-', 'IDO'].map(t => ` "numeroMatricula" ILIKE '${t}%' `).join('OR');
+  query.where(q_or_filter_tec);
 
 
   if (params.solicitud) {
@@ -583,14 +586,14 @@ module.exports.getAll = function (params, rol) {
     Entidad.table.tipo.as('tipoEntidad'),
     table.idMigracion
   ])
-  .from(
-    table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
-    .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-    .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-    .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-    .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
-  )
-  .where(table.eliminado.equals(false));
+    .from(
+      table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
+        .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+        .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+        .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
+        .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
+    )
+    .where(table.eliminado.equals(false));
 
   filter(query, params);
 
@@ -608,33 +611,36 @@ module.exports.getAll = function (params, rol) {
   if (params.limit && params.offset) query.offset(+params.offset);
 
   return connector.execQuery(query.toQuery())
-  .then(r => {
-    matriculas = r.rows.map(row => dot.object(row));
-    let proms = matriculas.map(m => {
-      if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad, rol)
-      else if (m.tipoEntidad == 'empresa') return Empresa.get(m.entidad);
-    });
-
-    return Promise.all(proms)
-    .then(rs => {
-      rs.forEach((r, i) => {
-        matriculas[i].entidad = r;
-        delete(matriculas[i].tipoEntidad);
+    .then(r => {
+      matriculas = r.rows.map(row => dot.object(row));
+      let proms = matriculas.map(m => {
+        if (m.tipoEntidad == 'profesional') return Profesional.get(m.entidad, rol)
+        else if (m.tipoEntidad == 'empresa') return Empresa.get(m.entidad);
       });
 
-      return utils.getTotalQuery(
-        table,
-        table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
-        .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-        .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-        .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-        .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id)),
-        (query) => {
-          filter(query, params);
+      return Promise.all(proms)
+        .then(rs => {
+          rs.forEach((r, i) => {
+            matriculas[i].entidad = r;
+            delete (matriculas[i].tipoEntidad);
+          });
+
+          return utils.getTotalQuery(
+            table,
+            table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
+              .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+              .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+              .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
+              .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id)),
+            (query) => {
+              filter(query, params);
+            })
+            .then(totalQuery => ({
+              resultados: matriculas,
+              totalQuery
+            }))
         })
-      .then(totalQuery => ({ totalQuery, resultados: matriculas }))
     })
-  })
 }
 
 module.exports.get = function (id, client) {
@@ -656,15 +662,15 @@ module.exports.get = function (id, client) {
     Entidad.table.tipo.as('tipoEntidad'),
     table.idMigracion
   ])
-  .from(
-    table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
-    .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
-    .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
-    .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
-    .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
-  )
-  .where(table.id.equals(id))
-  .toQuery();
+    .from(
+      table.join(TipoEstadoMatricula.table).on(table.estado.equals(TipoEstadoMatricula.table.id))
+        .join(Entidad.table).on(table.entidad.equals(Entidad.table.id))
+        .leftJoin(Profesional.table).on(table.entidad.equals(Profesional.table.id))
+        .leftJoin(Empresa.table).on(table.entidad.equals(Empresa.table.id))
+        .leftJoin(Solicitud.table).on(table.solicitud.equals(Solicitud.table.id))
+    )
+    .where(table.id.equals(id))
+    .toQuery();
 
   return connector.execQuery(query, client)
     .then(r => {
@@ -684,7 +690,7 @@ module.exports.getMigracion = function (id, empresa) {
     .from(table.join(Entidad.table).on(table.entidad.equals(Entidad.table.id)))
     .where(
       table.idMigracion.equals(id)
-      .and(Entidad.table.tipo.equals(empresa ? 'empresa' : 'profesional'))
+        .and(Entidad.table.tipo.equals(empresa ? 'empresa' : 'profesional'))
     )
     .toQuery();
 
@@ -710,63 +716,63 @@ module.exports.patch = function (id, matricula, client) {
   return connector.execQuery(query, client);
 }
 
-module.exports.verificarSuspension = function(id) {
+module.exports.verificarSuspension = function (id) {
   return module.exports.get(id)
-  .then(matricula => {
-    let table = Boleta.table;
-    let query = table.select(table.count().as('cantidad_sin_pagar'))
-    .where(
-        table.estado.equals(1),
-        table.tipo_comprobante.in([10,16]),
-        table.matricula.equals(matricula.id),
-        table.fecha_vencimiento.lt(new Date())
-    )
-    .toQuery();
+    .then(matricula => {
+      let table = Boleta.table;
+      let query = table.select(table.count().as('cantidad_sin_pagar'))
+        .where(
+          table.estado.equals(1),
+          table.tipo_comprobante.in([10, 16]),
+          table.matricula.equals(matricula.id),
+          table.fecha_vencimiento.lt(new Date())
+        )
+        .toQuery();
 
-    return connector.execQuery(query)
-    .then(r => {
-        let cantidad_sin_pagar = +r.rows[0].cantidad_sin_pagar;
-        let nuevo_estado = {
-          updated_by: 25,   // Procesos de Sistema
-          documento: 3299    //Resolución 008/18
-        }
+      return connector.execQuery(query)
+        .then(r => {
+          let cantidad_sin_pagar = +r.rows[0].cantidad_sin_pagar;
+          let nuevo_estado = {
+            updated_by: 25,   // Procesos de Sistema
+            documento: 3299    //Resolución 008/18
+          }
 
-        //Tiene 4 o más cuotas sin abonar y está habilitado
-        if (matricula.estado.id === 13 && cantidad_sin_pagar >= 4) {
-          nuevo_estado.estado = 24; // Suspendido por mora cuatrimestral
-        }
-        else if (matricula.estado.id === 24 && cantidad_sin_pagar < 4) {
-          nuevo_estado.estado = 13; // Suspendido por mora cuatrimestral
-        }
-        else return Promise.resolve();
+          //Tiene 4 o más cuotas sin abonar y está habilitado
+          if (matricula.estado.id === 13 && cantidad_sin_pagar >= 4) {
+            nuevo_estado.estado = 24; // Suspendido por mora cuatrimestral
+          }
+          else if (matricula.estado.id === 24 && cantidad_sin_pagar < 4) {
+            nuevo_estado.estado = 13; // Suspendido por mora cuatrimestral
+          }
+          else return Promise.resolve();
 
-        return module.exports.cambiarEstado(id, nuevo_estado);
+          return module.exports.cambiarEstado(id, nuevo_estado);
+        });
     });
-  });
 }
 
-module.exports.verificarInscripcion = function(id) {
+module.exports.verificarInscripcion = function (id) {
   return module.exports.get(id)
-  .then(matricula => {
-    //Si está como pendiente de pago de inscripcion, habilito, sino no
-    if (matricula.estado.id === 12) {
-      return MatriculaHistorial.getByMatricula(id)
-      .then(historial => {
-        let documento = historial.find(h => h.estado.id === 12).documento.id;
-        let nuevo_estado = {
-          updated_by: 25,   // Procesos de Sistema
-          documento,
-          estado: 13 //Habilitado
-        }
+    .then(matricula => {
+      //Si está como pendiente de pago de inscripcion, habilito, sino no
+      if (matricula.estado.id === 12) {
+        return MatriculaHistorial.getByMatricula(id)
+          .then(historial => {
+            let documento = historial.find(h => h.estado.id === 12).documento.id;
+            let nuevo_estado = {
+              updated_by: 25,   // Procesos de Sistema
+              documento,
+              estado: 13 //Habilitado
+            }
 
-        return module.exports.cambiarEstado(id, nuevo_estado);
-      })
-    }
-    else return Promise.resolve(false);
-  })
+            return module.exports.cambiarEstado(id, nuevo_estado);
+          })
+      }
+      else return Promise.resolve(false);
+    })
 }
 
-module.exports.verificarBoletasAnio = function(id, anio) {
+module.exports.verificarBoletasAnio = function (id, anio) {
   let fecha_anio_verficiar = `${anio}-01-01`;
   let table = Boleta.table;
   let query = table.select(table.count().as('boletas_anio'))
@@ -778,12 +784,55 @@ module.exports.verificarBoletasAnio = function(id, anio) {
     .toQuery();
 
   return connector.execQuery(query)
-  .then(r => {
-    let boletas_anio = +r.rows[0].boletas_anio;
+    .then(r => {
+      let boletas_anio = +r.rows[0].boletas_anio;
 
-    //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
-    if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
-    else return Promise.resolve(false);
-  })
-  .catch(e => console.error(e))
+      //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
+      if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
+      else return Promise.resolve(false);
+    })
+    .catch(e => console.error(e))
+}
+
+module.exports.verificarInscripcion = function (id) {
+  return module.exports.get(id)
+    .then(matricula => {
+      //Si está como pendiente de pago de inscripcion, habilito, sino no
+      if (matricula.estado.id === 12) {
+        return MatriculaHistorial.getByMatricula(id)
+          .then(historial => {
+            let documento = historial.find(h => h.estado.id === 12).documento.id;
+            let nuevo_estado = {
+              updated_by: 25,   // Procesos de Sistema
+              documento,
+              estado: 13 //Habilitado
+            }
+
+            return module.exports.cambiarEstado(id, nuevo_estado);
+          })
+      }
+      else return Promise.resolve(false);
+    })
+}
+
+module.exports.verificarBoletasAnio = function (id, anio) {
+  let fecha_anio_verficiar = `${anio}-01-01`;
+  let table = Boleta.table;
+  let query = table.select(table.count().as('boletas_anio'))
+    .where(
+      table.tipo_comprobante.in([10, 16]),
+      table.matricula.equals(id),
+      table.fecha.gte(fecha_anio_verficiar)
+    )
+    .toQuery();
+
+  return connector.execQuery(query)
+    .then(r => {
+      let boletas_anio = +r.rows[0].boletas_anio;
+
+      //La matrícula no tiene cargadas boletas en el año en cuestión, hay que cargarlas
+      if (boletas_anio == 0) return module.exports.get(id).then(matricula => addBoletasMensuales(id, matricula.entidad.tipo, 1));
+      else return Promise.resolve(false);
+    })
+    .catch(e => console.error(e))
 }
